@@ -938,6 +938,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
       targetPath: string;
       diffDigest: string;
       sourceDigest: string;
+      baseCommitSha: string;
       source: string;
       hdfApprovalSourceRef: string;
     } | null = null;
@@ -950,6 +951,10 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
       const gate = requireObject(hdf.humanGateDecision, 'v11AuthorizationContext.humanGateDecision');
       if (
         hdf.reservedHumanAuthority !== true ||
+        hdf.actionClass !== 'SCOPED_WRITE' ||
+        typeof hdf.projectId !== 'string' || !hdf.projectId.trim() ||
+        typeof hdf.environment !== 'string' || /production|producao/iu.test(hdf.environment) ||
+        hdf.reversible !== true ||
         teamFirst.attempted !== true ||
         teamFirst.fallbackExhausted !== true ||
         !Array.isArray(teamFirst.evidenceRefs) || teamFirst.evidenceRefs.length === 0 ||
@@ -993,6 +998,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         targetPath: proposalTargetPath,
         diffDigest: proposalDiffDigest,
         sourceDigest: requireNonEmptyString(sourceArtifact.digest, 'scaffold proposal source digest'),
+        baseCommitSha: proposalBaseSha,
         source: source.toString('utf8'),
         hdfApprovalSourceRef: String(gate.sourceRef),
       };
@@ -1009,6 +1015,12 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         'INVALID_CONTEXT',
         'Workspace is outside the authorized root',
         false,
+      );
+    if (scaffoldProposal && scaffoldProposal.baseCommitSha !== snapshot.headSha)
+      throw new ExternalActionAdapterError(
+        'RESERVATION_CONFLICT',
+        'Astryx scaffold proposal base SHA does not match the current authorized workspace',
+        true,
       );
     if (snapshot.repository.toLowerCase() !== repository.toLowerCase())
       throw new ExternalActionAdapterError(
@@ -1054,7 +1066,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         '--- END VERIFIED ASTRYX TEMPLATE SOURCE ---',
       ] : []),
       'Modify only the listed allowed repository paths. Do not commit, merge, deploy, publish, or use shell commands.',
-    ].join('\\n');
+    ].join('\n');
 
     let executionWorkspace: CodeBuddyExecutionWorkspace | null = null;
     let publishedChanges: CodeBuddyChangeEvidence | null = null;
