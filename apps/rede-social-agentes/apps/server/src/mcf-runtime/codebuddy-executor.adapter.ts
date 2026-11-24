@@ -951,6 +951,17 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         );
       }
       const projectId = requireNonEmptyString(request.inputs.projectId, 'projectId');
+      const persistedProjectId = requireNonEmptyString(
+        request.context?.projectId,
+        'persisted mission projectId',
+      );
+      if (projectId !== persistedProjectId) {
+        throw new ExternalActionAdapterError(
+          'INVALID_CONTEXT',
+          'Astryx HDF projectId must match the persisted mission projectId',
+          false,
+        );
+      }
       const missionId = requireNonEmptyString(
         request.context?.missionId,
         'mission context missionId',
