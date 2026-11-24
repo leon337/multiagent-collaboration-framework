@@ -2,8 +2,8 @@ id: MCF-FULLSTACK-VISUAL-DEVELOPMENT
 version: 0.1.0
 status: EXPERIMENTAL
 classification: orchestration_contract_only
-runtime_adapter: PENDING
-receipt_validator: PENDING
+runtime_adapter: PARTIAL_READ_ONLY_COMPONENT_DISCOVERY
+receipt_validator: MCF_RUNTIME_EVIDENCE_VALIDATOR
 provider:
   name: Astryx
   role: optional_visual_design_system
@@ -13,9 +13,8 @@ provider:
     react: ">=19"
   cli:
     discovery:
-      - "pnpm exec astryx component --list"
-      - "pnpm exec astryx component <ComponentName>"
-      - "pnpm exec astryx component <ComponentName> --detail compact"
+      - "pnpm exec astryx --json component --list"
+      - "pnpm exec astryx --json component <ComponentName> --detail compact"
     styling:
       - "StyleX is an internal authoring implementation; consumers use precompiled CSS and may customize with CSS or className."
     safety:
@@ -23,6 +22,8 @@ provider:
       - "Install the scoped @astryxdesign/cli package as a pinned project dependency and commit the lockfile."
       - "Run CLI only in an isolated authorized workspace."
       - "Capture stdout, stderr, exit code, package versions and working directory."
+      - "The MCF Astryx adapter currently exposes only read-only component discovery; it is disabled by default and does not scaffold or write project files."
+      - "Use MCF-IMPLEMENT-CHANGE and its scoped-write/HDF gates for proposed code changes; never treat CLI output as authorization."
 scope:
   includes:
     - product_to_fullstack_plan
