@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: \${{ github.head_ref }}
+          ref: ${{ github.head_ref }}
           persist-credentials: true
       - uses: actions/setup-node@v4
         with:
@@ -41,5 +41,5 @@ jobs:
           else
             git add -A
             git commit -m "style(astryx): format final pilot and registry delta"
-            git push origin "HEAD:\${GITHUB_HEAD_REF}"
+            git push origin "HEAD:${GITHUB_HEAD_REF}"
           fi
