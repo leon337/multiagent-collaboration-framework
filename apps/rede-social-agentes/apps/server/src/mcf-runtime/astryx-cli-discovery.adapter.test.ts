@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -48,7 +48,7 @@ const request = (
   },
 });
 
-function jsonResponse(type: string, data: Record<string, unknown>): string {
+function jsonResponse(type: string, data: Record<string, unknown>, copy = 'project'): string {
   return JSON.stringify({
     apiVersion: 1,
     type,
@@ -57,10 +57,40 @@ function jsonResponse(type: string, data: Record<string, unknown>): string {
       answeredBy: {
         cli: '0.7.2',
         core: '0.7.2',
-        copy: 'project',
+        copy,
       },
     },
   });
+}
+
+async function createWorkspace(): Promise<string> {
+  const workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
+  const packageRoot = join(workspace, 'node_modules', '@astryxdesign', 'cli');
+  const binaryDirectory = join(packageRoot, 'clients', 'cli', 'bin');
+  await mkdir(binaryDirectory, { recursive: true });
+  await writeFile(
+    join(packageRoot, 'package.json'),
+    JSON.stringify({
+      name: '@astryxdesign/cli',
+      version: '0.7.2',
+      bin: { astryx: './clients/cli/bin/astryx.mjs' },
+    }),
+  );
+  await writeFile(join(binaryDirectory, 'astryx.mjs'), '#!/usr/bin/env node\n');
+  return workspace;
+}
+
+function localCliBinary(workspace: string): string {
+  return join(
+    workspace,
+    'node_modules',
+    '@astryxdesign',
+    'cli',
+    'clients',
+    'cli',
+    'bin',
+    'astryx.mjs',
+  );
 }
 
 const evidence = (): EvidenceValidator =>
@@ -107,7 +137,7 @@ describe('Astryx CLI discovery adapter', () => {
 
   it('requires an explicit absolute workspace when enabled', async () => {
     const runner = vi.fn();
-    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, '', 'pnpm', runner as never);
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, '', runner as never);
 
     await expect(subject.execute(request())).rejects.toMatchObject({
       code: 'INVALID_CONTEXT',
@@ -121,7 +151,6 @@ describe('Astryx CLI discovery adapter', () => {
       evidence(),
       true,
       process.cwd(),
-      'pnpm',
       runner as never,
     );
 
@@ -131,16 +160,10 @@ describe('Astryx CLI discovery adapter', () => {
     expect(runner).not.toHaveBeenCalled();
   });
 
-  it('fails closed while disabled without executing a command', async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
+  it('fails closed while disabled without resolving or executing a CLI', async () => {
+    workspace = await createWorkspace();
     const runner = vi.fn();
-    const subject = new AstryxCliDiscoveryAdapter(
-      evidence(),
-      false,
-      workspace,
-      'pnpm',
-      runner as never,
-    );
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), false, workspace, runner as never);
 
     await expect(subject.execute(request())).rejects.toMatchObject({
       code: 'UNSUPPORTED_TARGET',
@@ -148,10 +171,22 @@ describe('Astryx CLI discovery adapter', () => {
     expect(runner).not.toHaveBeenCalled();
   });
 
-  it('executes the fixed list command and emits a trusted readonly receipt', async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
-    const runner = vi.fn(async (_binary: string, args: string[], options: unknown) => {
-      expect(args).toEqual(['exec', 'astryx', '--json', 'component', '--list']);
+  it('fails closed when the project-local CLI package is missing', async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'astryx-empty-'));
+    const runner = vi.fn();
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner as never);
+
+    await expect(subject.execute(request())).rejects.toMatchObject({
+      code: 'INVALID_CONTEXT',
+    });
+    expect(runner).not.toHaveBeenCalled();
+  });
+
+  it('executes only the verified workspace-local binary and emits a trusted receipt', async () => {
+    workspace = await createWorkspace();
+    const runner = vi.fn(async (binary: string, args: string[], options: unknown) => {
+      expect(binary).toBe(process.execPath);
+      expect(args).toEqual([localCliBinary(workspace!), '--json', 'component', '--list']);
       expect(options).toMatchObject({
         cwd: workspace,
         maxBuffer: 32_768,
@@ -163,7 +198,7 @@ describe('Astryx CLI discovery adapter', () => {
       };
     });
     const validator = evidence();
-    const subject = new AstryxCliDiscoveryAdapter(validator, true, workspace, 'pnpm', runner);
+    const subject = new AstryxCliDiscoveryAdapter(validator, true, workspace, runner);
     const receipt = await subject.execute(request());
 
     expect(receipt).toMatchObject({
@@ -177,6 +212,7 @@ describe('Astryx CLI discovery adapter', () => {
         cliVersion: '0.7.2',
         coreVersion: '0.7.2',
         cliCopy: 'project',
+        cliBinary: localCliBinary(workspace),
         stdout: jsonResponse('component.list', { components: { actions: [] } }),
       },
     });
@@ -184,11 +220,10 @@ describe('Astryx CLI discovery adapter', () => {
   });
 
   it('uses documented detail options and preserves the requested resource in receipts', async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
+    workspace = await createWorkspace();
     const runner = vi.fn(async (_binary: string, args: string[]) => {
       expect(args).toEqual([
-        'exec',
-        'astryx',
+        localCliBinary(workspace!),
         '--json',
         'component',
         'Button',
@@ -198,7 +233,7 @@ describe('Astryx CLI discovery adapter', () => {
       return { stdout: jsonResponse('component.detail', { name: 'Button' }), stderr: '' };
     });
     const validator = evidence();
-    const subject = new AstryxCliDiscoveryAdapter(validator, true, workspace, 'pnpm', runner);
+    const subject = new AstryxCliDiscoveryAdapter(validator, true, workspace, runner);
     const aliasRequest = {
       ...request('read-component-docs', { componentName: 'Button' }),
       tool: {
@@ -213,8 +248,21 @@ describe('Astryx CLI discovery adapter', () => {
     );
   });
 
+  it('truncates stderr at a valid UTF-8 byte boundary', async () => {
+    workspace = await createWorkspace();
+    const runner = vi.fn(async () => ({
+      stdout: jsonResponse('component.list', { components: { actions: [] } }),
+      stderr: 'é'.repeat(1_500),
+    }));
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner);
+    const receipt = await subject.execute(request());
+
+    expect(Buffer.byteLength(String(receipt.metadata.stderr), 'utf8')).toBe(2_048);
+    expect(receipt.metadata.stderr).toBe('é'.repeat(1_024));
+  });
+
   it('classifies the Node execFile SIGTERM timeout as retryable', async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
+    workspace = await createWorkspace();
     const timeout = Object.assign(new Error('command timed out'), {
       killed: true,
       signal: 'SIGTERM',
@@ -222,7 +270,7 @@ describe('Astryx CLI discovery adapter', () => {
     const runner = vi.fn(async () => {
       throw timeout;
     });
-    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, 'pnpm', runner);
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner);
 
     await expect(subject.execute(request())).rejects.toMatchObject({
       code: 'ADAPTER_TIMEOUT',
@@ -231,15 +279,10 @@ describe('Astryx CLI discovery adapter', () => {
   });
 
   it('rejects global or fallback CLI provenance', async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
-    const untrusted = JSON.stringify({
-      apiVersion: 1,
-      type: 'component.list',
-      data: { components: {} },
-      meta: { answeredBy: { cli: '0.7.2', core: '0.7.2', copy: 'global' } },
-    });
+    workspace = await createWorkspace();
+    const untrusted = jsonResponse('component.list', { components: {} }, 'global');
     const runner = vi.fn(async () => ({ stdout: untrusted, stderr: '' }));
-    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, 'pnpm', runner);
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner);
 
     await expect(subject.execute(request())).rejects.toMatchObject({
       code: 'INVALID_RESPONSE',
@@ -247,9 +290,9 @@ describe('Astryx CLI discovery adapter', () => {
   });
 
   it('rejects CLI output above the configured byte limit', async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
+    workspace = await createWorkspace();
     const runner = vi.fn(async () => ({ stdout: 'x'.repeat(32_769), stderr: '' }));
-    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, 'pnpm', runner);
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner);
 
     await expect(subject.execute(request())).rejects.toMatchObject({
       code: 'INVALID_RESPONSE',
@@ -257,15 +300,9 @@ describe('Astryx CLI discovery adapter', () => {
   });
 
   it('validates component names before passing them as CLI arguments', async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
+    workspace = await createWorkspace();
     const runner = vi.fn();
-    const subject = new AstryxCliDiscoveryAdapter(
-      evidence(),
-      true,
-      workspace,
-      'pnpm',
-      runner as never,
-    );
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner as never);
 
     await expect(
       subject.execute(request('read-component-docs', { componentName: 'Button; rm -rf /' })),
