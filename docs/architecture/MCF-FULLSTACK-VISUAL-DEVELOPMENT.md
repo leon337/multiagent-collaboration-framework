@@ -1,8 +1,8 @@
 # MCF Full-Stack Visual Development
 
 **ID:** MCF-FULLSTACK-VISUAL-DEVELOPMENT  
-**Versão:** 0.1.0  
-**Classificação:** EXPERIMENTAL — contrato de orquestração registrado; descoberta de componentes/templates e proposta de scaffold em workspace descartável implementadas; aplicação governada via CodeBuddy e piloto full-stack em qualificação.  
+**Versão:** 0.2.0  
+**Classificação:** EXPERIMENTAL — descoberta de componentes/templates, proposta de scaffold em workspace descartável, aplicação governada via CodeBuddy e piloto full-stack foram qualificados; promoção da Skill aguarda missão autônoma MCF ponta a ponta.  
 **Autoridade:** LEANDRO  
 **Coordenação:** MESTRE
 
