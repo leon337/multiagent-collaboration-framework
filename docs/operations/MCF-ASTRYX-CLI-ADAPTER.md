@@ -10,20 +10,29 @@ The adapter connects Astryx component discovery to the existing MCF ExternalActi
 
 Allowlisted operations:
 
-- `list-components` → fixed argv: `component --list`
-- `read-component-docs` → fixed argv: `component <ComponentName> --compact`
+- `list-components` → fixed argv: `exec astryx component --list`
+- `read-component-docs` → fixed argv: `exec astryx component <ComponentName> --detail compact`
 
-The component identifier must match `^[A-Z][A-Za-z0-9]{0,63}$`. Model input is never interpreted as a shell command. Execution uses `execFile` (no shell), a bounded timeout, a 32 KiB output limit and a realpath-verified working directory. Only bounded stdout/stderr and command metadata are included in the trusted MCF receipt.
+The runtime invokes `pnpm` with fixed arguments and resolves the project-local `astryx` executable through `pnpm exec`. The workspace must install and pin `@astryxdesign/cli` as a project dependency. Do not use `npx astryx`: that unscoped npm package name resolves to an unrelated package. The component identifier must match `^[A-Z][A-Za-z0-9]{0,63}$`.
+
+Execution uses `execFile` (no shell), a bounded timeout, a 32 KiB output limit and a realpath-verified working directory. The receipt preserves the exact requested resource value so EvidenceValidator can verify it without alias mismatch.
 
 ## Runtime configuration
 
 All settings are opt-in and disabled by default:
 
 - `MCF_ASTRYX_CLI_ENABLED=true` — enable discovery.
-- `MCF_ASTRYX_WORKSPACE_ROOT=/absolute/path/to/isolated/workspace` — existing workspace directory.
-- `MCF_ASTRYX_CLI_BINARY=/absolute/path/to/astryx` — optional executable override; default is `astryx` resolved by the runtime PATH.
+- `MCF_ASTRYX_WORKSPACE_ROOT=/absolute/path/to/isolated/workspace` — existing workspace directory with the pinned CLI dependency installed.
+- `MCF_ASTRYX_CLI_BINARY=/absolute/path/to/pnpm` — optional executable override; default is `pnpm`.
 
-Install and pin the Astryx CLI in the authorized workspace before enabling. Keep the package lockfile committed. Do not point the workspace at a production checkout. Do not set the enable flag in production without a separate authorization and deployment gate.
+Install the scoped package in the isolated workspace and commit its lockfile before enabling:
+
+```sh
+pnpm add -D @astryxdesign/cli@<pinned-version>
+pnpm exec astryx --help
+```
+
+Do not point the workspace at a production checkout. Do not set the enable flag in production without a separate authorization and deployment gate.
 
 ## Security boundary
 
@@ -37,7 +46,7 @@ Install and pin the Astryx CLI in the authorized workspace before enabling. Keep
 
 ## Validation
 
-The adapter test suite covers exact support boundaries, disabled-by-default behavior, fixed argv, receipt metadata, component-name validation and PermissionEngine rejection. Run from the server workspace:
+The adapter test suite covers exact support boundaries, disabled-by-default behavior, fixed argv, receipt metadata and resource preservation, component-name validation and PermissionEngine rejection. Run from the server workspace:
 
 ```sh
 pnpm vitest run src/mcf-runtime/astryx-cli-discovery.adapter.test.ts
