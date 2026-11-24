@@ -1036,16 +1036,24 @@ function validateAstryxDiscoveryReceipt(
     return reject('Astryx discovery evidence stdout is not valid JSON');
   }
 
-  if (!isRecord(envelope) || envelope.apiVersion !== 1) {
+  const parsedEnvelope = requireRecord(
+    envelope,
+    'Astryx discovery evidence has an unsupported CLI JSON envelope',
+  );
+  if (parsedEnvelope.apiVersion !== 1) {
     reject('Astryx discovery evidence has an unsupported CLI JSON envelope');
   }
 
   const expectedType = operation === 'list-components' ? 'component.list' : 'component.detail';
-  if (envelope.type !== expectedType || !isRecord(envelope.meta)) {
+  if (parsedEnvelope.type !== expectedType) {
     reject('Astryx discovery evidence response type is invalid');
   }
+  const meta = requireRecord(
+    parsedEnvelope.meta,
+    'Astryx discovery evidence requires response metadata',
+  );
   const answeredBy = requireRecord(
-    envelope.meta.answeredBy,
+    meta.answeredBy,
     'Astryx discovery evidence requires answeredBy provenance',
   );
   if (
@@ -1057,7 +1065,7 @@ function validateAstryxDiscoveryReceipt(
   }
 
   const data = requireRecord(
-    envelope.data,
+    parsedEnvelope.data,
     'Astryx discovery evidence requires a component data object',
   );
   if (operation === 'list-components') {
