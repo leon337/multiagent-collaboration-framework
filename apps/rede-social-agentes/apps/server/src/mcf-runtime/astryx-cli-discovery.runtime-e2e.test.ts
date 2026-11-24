@@ -253,6 +253,7 @@ describe('MCF Astryx component discovery canonical runtime E2E', () => {
       corePackage: '@astryxdesign/core',
       cliVersion: '0.7.2',
       coreVersion: '0.7.2',
+      corePackageRoot: join(workspace, 'node_modules', '@astryxdesign', 'core'),
       cliCopy: 'project',
       readOnly: true,
       exitCode: 0,
