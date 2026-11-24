@@ -742,3 +742,15 @@ Limites observados:
 - não há integração executável ao MissionRuntime, autorização de produção ou deploy.
 
 Runner online, workflow health aprovado, capability executável no MissionRuntime e produção são estados distintos. Consultar GitHub, o repositório privado e o host ao vivo antes de qualquer operação. Não inferir acesso privado ou disponibilidade do host em novas sessões.
+
+
+## MCF Full-Stack Visual Development — EXPERIMENTAL
+
+- Skill registrada: `MCF-FULLSTACK-VISUAL-DEVELOPMENT@0.1.0`.
+- Astryx (Meta) é provider visual opcional; não é backend, framework full-stack nem agente orquestrador.
+- A arquitetura preserva contratos independentes de API/domínio/dados, autorização server-side e validação MCF.
+- A Skill é contrato de orquestração experimental, **não executável pelo runtime atual**.
+- Adapter CLI isolado, scaffolding governado, receipt schema, Evidence Validator e E2E MissionRuntime → Adapter permanecem PENDING.
+- Não contar esta Skill entre as executáveis até comprovação em código e testes.
+- Produção não é afetada; merge em main não autoriza deploy.
+- Fonte técnica do provider: https://github.com/meta/astryx e https://github.com/meta/astryx/wiki/System-Architecture.
