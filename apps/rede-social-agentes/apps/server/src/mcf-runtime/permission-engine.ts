@@ -157,6 +157,24 @@ function assertStagingDeployInputs(
   }
 }
 
+function assertAstryxDiscoveryBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
+  if (provider !== 'mcf-astryx-cli') return;
+  if (
+    skillId !== 'MCF-ASTRYX-COMPONENT-DISCOVERY' ||
+    resource !== 'astryx-design-system' ||
+    !['list-components', 'read-component-docs'].includes(operation)
+  ) {
+    throw new McfPermissionDeniedError(
+      'Astryx CLI is restricted to readonly component discovery for MCF-ASTRYX-COMPONENT-DISCOVERY',
+    );
+  }
+}
+
 function assertSecurityReviewBoundary(
   skillId: string,
   provider: string,
@@ -477,6 +495,7 @@ export class PermissionEngine {
     assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);
     assertLocalAgentTeamBoundary(skill.skillId, provider, operation, resource);
     assertGoogleBridgeReadBoundary(skill.skillId, provider, operation, resource);
+    assertAstryxDiscoveryBoundary(skill.skillId, provider, operation, resource);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');

@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import { isAbsolute, relative, sep } from 'node:path';
 
 import { Injectable } from '@nestjs/common';
 import type { McfSkillDefinition, McfToolReceipt, McfToolReceiptStatus } from '@rsa/contracts';
@@ -887,6 +888,232 @@ function validatePullRequestReceipt(receipt: McfToolReceipt): void {
   requireString(receipt.metadata, 'prState', 'pull request evidence requires prState');
 }
 
+function validateAstryxDiscoveryReceipt(
+  receipt: McfToolReceipt,
+  expected: McfToolRequest,
+  inputs: Readonly<Record<string, unknown>> = {},
+): void {
+  const isPathWithin = (parent: string, child: string): boolean => {
+    const candidate = relative(parent, child);
+    return (
+      candidate === '' ||
+      (candidate !== '..' && !candidate.startsWith(`..${sep}`) && !isAbsolute(candidate))
+    );
+  };
+
+  if (
+    canonicalizeProvider(receipt.provider) !== 'mcf-astryx-cli' ||
+    canonicalizeToolValue(expected.resource) !== 'astryx-design-system' ||
+    receipt.status !== 'SUCCEEDED'
+  ) {
+    reject('Astryx discovery evidence requires the governed read-only provider and resource');
+  }
+
+  const operation = canonicalizeToolValue(expected.operation);
+  if (!['list-components', 'read-component-docs'].includes(operation)) {
+    reject('Astryx discovery evidence contains an unsupported operation');
+  }
+
+  if (
+    requireString(receipt.metadata, 'adapterId', 'Astryx discovery evidence requires adapterId') !==
+    'mcf-astryx-cli-readonly-v1'
+  ) {
+    reject('Astryx discovery evidence was not produced by the approved adapter');
+  }
+
+  if (
+    !requireBoolean(receipt.metadata, 'readOnly', 'Astryx discovery evidence requires readOnly')
+  ) {
+    reject('Astryx discovery evidence must be read-only');
+  }
+
+  if (
+    requireString(receipt.metadata, 'cliPackage', 'Astryx evidence requires cliPackage') !==
+      '@astryxdesign/cli' ||
+    requireString(receipt.metadata, 'corePackage', 'Astryx evidence requires corePackage') !==
+      '@astryxdesign/core'
+  ) {
+    reject('Astryx discovery evidence must identify the official scoped packages');
+  }
+
+  const cliVersion = requireString(
+    receipt.metadata,
+    'cliVersion',
+    'Astryx discovery evidence requires cliVersion',
+  );
+  const coreVersion = requireString(
+    receipt.metadata,
+    'coreVersion',
+    'Astryx discovery evidence requires coreVersion',
+  );
+  const semver = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
+  if (
+    !semver.test(cliVersion) ||
+    !semver.test(coreVersion) ||
+    requireString(receipt.metadata, 'cliCopy', 'Astryx evidence requires cliCopy') !== 'project'
+  ) {
+    reject('Astryx discovery evidence must bind project-local CLI and Core versions');
+  }
+
+  const workspace = requireString(
+    receipt.metadata,
+    'workspace',
+    'Astryx discovery evidence requires workspace',
+  );
+  const packageRoot = requireString(
+    receipt.metadata,
+    'cliPackageRoot',
+    'Astryx discovery evidence requires cliPackageRoot',
+  );
+  const cliBinary = requireString(
+    receipt.metadata,
+    'cliBinary',
+    'Astryx discovery evidence requires cliBinary',
+  );
+  const corePackageRoot = requireString(
+    receipt.metadata,
+    'corePackageRoot',
+    'Astryx discovery evidence requires corePackageRoot',
+  );
+  if (
+    !isAbsolute(workspace) ||
+    !isAbsolute(packageRoot) ||
+    !isAbsolute(cliBinary) ||
+    !isAbsolute(corePackageRoot) ||
+    isPathWithin(process.cwd(), workspace) ||
+    isPathWithin(workspace, process.cwd()) ||
+    !isPathWithin(workspace, packageRoot) ||
+    !isPathWithin(packageRoot, cliBinary) ||
+    !isPathWithin(workspace, corePackageRoot) ||
+    isPathWithin(packageRoot, corePackageRoot) ||
+    isPathWithin(corePackageRoot, packageRoot)
+  ) {
+    reject(
+      'Astryx discovery evidence must bind workspace-local CLI and Core packages outside the runtime checkout',
+    );
+  }
+
+  const command = requireNonEmptyArray(
+    receipt.metadata,
+    'command',
+    'Astryx discovery evidence requires command',
+  );
+  if (command[0] !== process.execPath || command[1] !== cliBinary) {
+    reject('Astryx discovery evidence must execute the verified workspace-local CLI with Node');
+  }
+
+  const expectedArgs =
+    operation === 'list-components'
+      ? ['--json', 'component', '--list']
+      : (() => {
+          const componentName = inputs.componentName;
+          if (
+            typeof componentName !== 'string' ||
+            !/^[A-Z][A-Za-z0-9]{0,63}$/u.test(componentName)
+          ) {
+            return reject('Astryx component documentation evidence requires a valid componentName');
+          }
+          return ['--json', 'component', componentName, '--detail', 'compact'];
+        })();
+
+  if (
+    command.length !== expectedArgs.length + 2 ||
+    expectedArgs.some((argument, index) => command[index + 2] !== argument)
+  ) {
+    reject('Astryx discovery evidence command does not match the fixed allowlist');
+  }
+
+  const stdout = requireString(
+    receipt.metadata,
+    'stdout',
+    'Astryx discovery evidence requires stdout',
+  );
+  const outputBytes = requireNonNegativeInteger(
+    receipt.metadata,
+    'outputBytes',
+    'Astryx discovery evidence requires outputBytes',
+  );
+  const outputDigest = requireString(
+    receipt.metadata,
+    'outputDigest',
+    'Astryx discovery evidence requires outputDigest',
+  );
+  if (
+    outputBytes !== Buffer.byteLength(stdout, 'utf8') ||
+    outputBytes > 32_768 ||
+    !/^[a-f0-9]{64}$/u.test(outputDigest) ||
+    outputDigest !== createHash('sha256').update(stdout).digest('hex')
+  ) {
+    reject('Astryx discovery evidence output size or digest is invalid');
+  }
+
+  if (
+    requireNonNegativeInteger(
+      receipt.metadata,
+      'exitCode',
+      'Astryx discovery evidence requires exitCode',
+    ) !== 0
+  ) {
+    reject('Astryx discovery evidence requires a successful CLI exit code');
+  }
+
+  const stderr = receipt.metadata.stderr;
+  if (typeof stderr !== 'string' || Buffer.byteLength(stderr, 'utf8') > 2_048) {
+    reject('Astryx discovery evidence stderr exceeds its bounded capture');
+  }
+
+  let envelope: unknown;
+  try {
+    envelope = JSON.parse(stdout);
+  } catch {
+    return reject('Astryx discovery evidence stdout is not valid JSON');
+  }
+
+  const parsedEnvelope = requireRecord(
+    envelope,
+    'Astryx discovery evidence has an unsupported CLI JSON envelope',
+  );
+  if (parsedEnvelope.apiVersion !== 1) {
+    reject('Astryx discovery evidence has an unsupported CLI JSON envelope');
+  }
+
+  const expectedType = operation === 'list-components' ? 'component.list' : 'component.detail';
+  if (parsedEnvelope.type !== expectedType) {
+    reject('Astryx discovery evidence response type is invalid');
+  }
+  const meta = requireRecord(
+    parsedEnvelope.meta,
+    'Astryx discovery evidence requires response metadata',
+  );
+  const answeredBy = requireRecord(
+    meta.answeredBy,
+    'Astryx discovery evidence requires answeredBy provenance',
+  );
+  if (
+    answeredBy.cli !== cliVersion ||
+    answeredBy.core !== coreVersion ||
+    answeredBy.copy !== 'project'
+  ) {
+    reject('Astryx discovery evidence package provenance does not match the receipt');
+  }
+
+  const data = requireRecord(
+    parsedEnvelope.data,
+    'Astryx discovery evidence requires a component data object',
+  );
+  if (operation === 'list-components') {
+    requireRecord(
+      data.components,
+      'Astryx discovery evidence component list is missing its catalog',
+    );
+    if (data.detail !== 'names') {
+      reject('Astryx discovery evidence component list must use the fixed names detail level');
+    }
+  } else if (data.name !== inputs.componentName) {
+    reject('Astryx discovery evidence component does not match the current request');
+  }
+}
+
 function validateVisualDesktopAuditReceipt(
   receipt: McfToolReceipt,
   inputs: Readonly<Record<string, unknown>> = {},
@@ -1364,6 +1591,9 @@ export class EvidenceValidator {
         break;
       case 'MCF-AUDIT-VISUAL-DESKTOP':
         validateVisualDesktopAuditReceipt(receipt, inputs);
+        break;
+      case 'MCF-ASTRYX-COMPONENT-DISCOVERY':
+        validateAstryxDiscoveryReceipt(receipt, expected, inputs);
         break;
       default:
         break;

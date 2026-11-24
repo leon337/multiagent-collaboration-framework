@@ -5,6 +5,7 @@ import { DatabaseModule } from '../database.module.js';
 import { DatabaseService } from '../database.service.js';
 import { IdentityModule } from '../identity/identity.module.js';
 import { AdapterRegistry } from './adapter-registry.js';
+import { AstryxCliDiscoveryAdapter } from './astryx-cli-discovery.adapter.js';
 import { AgentExecutionService } from './agent-execution.service.js';
 import { ProviderAdapterRegistry } from './provider-adapter.registry.js';
 import { BoundStagingDeployReconciliationService } from './bound-staging-deploy-reconciliation.service.js';
@@ -131,6 +132,16 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
       inject: [EvidenceValidator],
     },
     {
+      provide: AstryxCliDiscoveryAdapter,
+      useFactory: (evidence: EvidenceValidator) =>
+        new AstryxCliDiscoveryAdapter(
+          evidence,
+          process.env.MCF_ASTRYX_CLI_ENABLED === 'true',
+          process.env.MCF_ASTRYX_WORKSPACE_ROOT ?? '',
+        ),
+      inject: [EvidenceValidator],
+    },
+    {
       provide: GoogleBridgeReadAdapter,
       useFactory: (evidence: EvidenceValidator) =>
         new GoogleBridgeReadAdapter(
@@ -190,6 +201,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         codeBuddy: CodeBuddyExecutorAdapter,
         localAgentTeam: LocalAgentTeamAdapter,
         googleBridgeRead: GoogleBridgeReadAdapter,
+        astryxCli: AstryxCliDiscoveryAdapter,
       ) =>
         new AdapterRegistry([
           githubReview,
@@ -199,6 +211,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           codeBuddy,
           localAgentTeam,
           googleBridgeRead,
+          astryxCli,
         ]),
       inject: [
         GitHubCodeReviewAdapter,
@@ -208,6 +221,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         CodeBuddyExecutorAdapter,
         LocalAgentTeamAdapter,
         GoogleBridgeReadAdapter,
+        AstryxCliDiscoveryAdapter,
       ],
     },
     {
