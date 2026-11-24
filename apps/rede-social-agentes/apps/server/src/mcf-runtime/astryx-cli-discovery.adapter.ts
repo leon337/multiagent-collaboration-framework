@@ -366,7 +366,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
           }
           return value;
         });
-        if (!allowedPaths.some((scope) => targetPath === scope || targetPath.startsWith(`${scope}/`))) {
+        if (!allowedPaths.some((scope) => rawPath === scope || rawPath.startsWith(`${scope}/`))) {
           return invalidContext('targetPath must remain inside an explicitly approved allowed_paths entry');
         }
         proposalWorkspace = await mkdtemp(resolve(cwd, '.mcf-astryx-proposal-'));
