@@ -50,7 +50,7 @@ Capacidades comprovadas incluem:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - dispatcher de ações externas e adapters com evidência verificável;
-- **19 skills executáveis no servidor atual**; a Skill Astryx existente foi ampliada nesta branch para descoberta de templates e propostas de scaffold somente em scratch; aplicação separada via CodeBuddy exige HDF + SCOPED_WRITE; a Skill full-stack permanece experimental até a qualificação do piloto;
+- **19 skills executáveis no servidor atual**; a Skill Astryx existente foi ampliada nesta branch para descoberta de templates e propostas de scaffold somente em scratch; aplicação separada via CodeBuddy exige HDF + SCOPED_WRITE; a Skill full-stack permanece experimental até uma missão autônoma MCF ponta a ponta;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA, readiness/version e recovery por redeploy;
