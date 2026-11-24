@@ -44,8 +44,8 @@ MCF Product + UX + Architecture
 MCF Full-Stack Visual Development (orchestration contract)
           |
           +--> Visual Provider Adapter (Astryx first; alternatives later)
-          |       +-- component discovery / docs
-          |       +-- template discovery / scaffold
+          |       +-- read-only component discovery / docs
+          |       +-- template source/skeleton and scaffold (future gated capability)
           |       +-- theme and token guidance
           |
           +--> Frontend implementation
@@ -120,14 +120,14 @@ MCF HDF + Permission Engine + Evidence Validator + Receipt + PR gates
 
 Esta alteração registra a Skill experimental e a arquitetura no repositório. **Não declara integração executável no runtime.** Permanecem necessários:
 
-1. Skill definition/schema compatível com o loader runtime atual.
-2. Adapter read-only de descoberta de componentes Astryx CLI implementado na PR #579, com allowlist, timeout, workspace absoluto, versões CLI/Core, receipt assinado e validação semântica.
-3. Adapter de scaffolding/alteração de arquivos sujeito a HDF, paths permitidos e diff review.
-4. Evidence Validator e receipt semântico implementados para descoberta de componentes; receipts de scaffolding/escrita continuam pendentes.
+1. Skill de descoberta Astryx compatível com o loader e registrada no SkillExecutor; a Skill full-stack continua contrato de orquestração, não executável.
+2. Adapter read-only de descoberta de componentes implementado na PR #579: allowlist, timeout, workspace absoluto e disjunto do checkout, resolução do pacote e binário local, execução por Node/execFile sem shell/PATH fallback, versões CLI/Core, receipt assinado e validação semântica. Foundation CI testa CLI/Core 0.7.17 reais.
+3. Adapter de template source/skeleton e scaffolding em diff-proposal sujeito a HDF, paths permitidos e diff review.
+4. Evidence Validator e receipt semântico implementados para descoberta de componentes; receipts de proposta/escrita continuam pendentes.
 5. Testes unitários e E2E do fluxo MissionRuntime → SkillExecutor → Dispatcher → Adapter → EvidenceValidator implementados para descoberta read-only.
-6. Adapter de scaffolding em diff-proposal com HDF/SCOPED_WRITE, benchmark visual e projeto-piloto full-stack não produtivo ainda são gates futuros antes de promover de EXPERIMENTAL para CURRENT_IMPLEMENTED.
+6. Template source/skeleton, scaffolding em diff-proposal com HDF/SCOPED_WRITE, benchmark visual e projeto-piloto full-stack não produtivo ainda são gates futuros antes de promover de EXPERIMENTAL para CURRENT_IMPLEMENTED.
 
-Não habilitar execução arbitrária de shell nem expor o CLI a produção. O adapter inicial deve operar em workspace isolado e disabled-by-default até concluir os gates de segurança.
+Não habilitar execução arbitrária de shell nem expor o CLI a produção. O adapter de descoberta opera em workspace isolado, com binário local verificado e disabled-by-default. Nenhuma escrita ou deploy é permitido nesta capability.
 
 ## 9. Projeto-piloto recomendado
 
