@@ -1,0 +1,27 @@
+{
+  "name": "mcf-astryx-experiment-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 41782 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 41782 --strictPort",
+    "astryx": "node ./node_modules/@astryxdesign/cli/clients/cli/bin/astryx.mjs"
+  },
+  "dependencies": {
+    "@astryxdesign/core": "0.7.16",
+    "@astryxdesign/theme-neutral": "0.7.16",
+    "@stylexjs/stylex": "0.19.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@astryxdesign/cli": "0.7.16",
+    "vite": "8.1.5"
+  },
+  "allowScripts": {
+    "@astryxdesign/cli@0.7.16": true,
+    "@astryxdesign/core@0.7.16": true
+  }
+}
