@@ -118,16 +118,21 @@ MCF HDF + Permission Engine + Evidence Validator + Receipt + PR gates
 
 ## 8. Estado de implementação e próximos limites
 
-Esta alteração registra a Skill experimental e a arquitetura no repositório. **Não declara integração executável no runtime.** Permanecem necessários:
+Esta PR registra a Skill experimental e a arquitetura. **A Skill full-stack não é executável pelo runtime.** A descoberta Astryx read-only está isolada na PR #579 e ainda não deve ser considerada disponível no `main` até concluir CI, revisão e merge.
 
-1. Skill de descoberta Astryx compatível com o loader e registrada no SkillExecutor; a Skill full-stack continua contrato de orquestração, não executável.
-2. Adapter read-only de descoberta de componentes implementado na PR #579: allowlist, timeout, workspace absoluto e disjunto do checkout, resolução do pacote e binário local, execução por Node/execFile sem shell/PATH fallback, versões CLI/Core, receipt assinado e validação semântica. Foundation CI testa CLI/Core 0.7.17 reais.
-3. Adapter de template source/skeleton e scaffolding em diff-proposal sujeito a HDF, paths permitidos e diff review.
-4. Evidence Validator e receipt semântico implementados para descoberta de componentes; receipts de proposta/escrita continuam pendentes.
-5. Testes unitários e E2E do fluxo MissionRuntime → SkillExecutor → Dispatcher → Adapter → EvidenceValidator implementados para descoberta read-only.
-6. Template source/skeleton, scaffolding em diff-proposal com HDF/SCOPED_WRITE, benchmark visual e projeto-piloto full-stack não produtivo ainda são gates futuros antes de promover de EXPERIMENTAL para CURRENT_IMPLEMENTED.
+### Proposta separada na PR #579
 
-Não habilitar execução arbitrária de shell nem expor o CLI a produção. O adapter de descoberta opera em workspace isolado, com binário local verificado e disabled-by-default. Nenhuma escrita ou deploy é permitido nesta capability.
+A PR #579 contém a implementação candidata da descoberta de componentes: allowlist de operações read-only, workspace isolado, resolução do pacote/binário local, execução por Node/execFile sem shell ou PATH fallback, receipt assinado e validação semântica. O PR também inclui testes unitários, integração com CLI real e E2E do MissionRuntime. Esses itens só passam a integrar a capacidade disponível no `main` após os gates e o merge da PR #579.
+
+### Pendências para desenvolvimento visual/full-stack completo
+
+1. Adapter para template source/skeleton e scaffolding em diff-proposal, sujeito a HDF, paths permitidos e diff review.
+2. Receipts e Evidence Validator para propostas de escrita, com proveniência e diff digest.
+3. Aplicação de diffs somente por SCOPED_WRITE, com aprovação explícita e rollback.
+4. Benchmark visual e projeto-piloto full-stack não produtivo cobrindo frontend, API, banco isolado, autorização server-side, acessibilidade, visual regression e rollback.
+5. Evidências E2E de uma aplicação completa antes de promover a Skill de EXPERIMENTAL para CURRENT_IMPLEMENTED.
+
+Não habilitar execução arbitrária de shell nem expor o CLI a produção. A descoberta proposta em PR #579 permanece read-only e disabled-by-default. Nenhuma escrita ou deploy é permitido nesta capability.
 
 ## 9. Projeto-piloto recomendado
 
