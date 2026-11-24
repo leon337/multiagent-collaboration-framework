@@ -98,4 +98,4 @@ pnpm vitest run src/mcf-runtime/codebuddy-executor.adapter.test.ts
 pnpm typecheck
 ```
 
-This adapter increment does not promote the orchestration Skill to `CURRENT_IMPLEMENTED` by itself. Promotion requires the full-stack pilot workflow, current CI, documentation validation and review evidence to pass on the exact PR head.
+This adapter increment and pilot do not promote the orchestration Skill to `CURRENT_IMPLEMENTED` by themselves. The pilot, committed lockfile/baselines, current CI, documentation validation and security review qualify the provider boundary. Promotion additionally requires a mission-level autonomous MCF E2E through MissionRuntime, SkillExecutor, Dispatcher, EvidenceValidator and the real CodeBuddy host, with canonical HDF approval, diff scope, tests, rollback and SHA-linked handoff. Until then the full-stack orchestration Skill remains EXPERIMENTAL and is not counted among executable Skills.
