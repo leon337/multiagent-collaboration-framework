@@ -148,7 +148,7 @@ A descoberta read-only inicial foi integrada ao `main` pela PR #579, merge squas
 
 ### Aplicação governada
 
-A aplicação ocorre separadamente por `MCF-IMPLEMENT-CHANGE` / CodeBuddy. Quando um receipt de scaffold é fornecido, o adapter exige `authorizedScope=true`, `SCOPED_WRITE`, HDF v1.1 canonicalizado pelo MissionRuntime, com `actionClass=SCOPED_WRITE`, project/mission binding, TEAM_FIRST, referência ao receipt exato e sourceRef `human-authority:<uuid>` gerado pelo servidor para a conta autenticada de LEANDRO. O SHA base e o repositório precisam corresponder ao workspace Git limpo; somente paths aprovados podem mudar. A execução ocorre em Git worktree descartável + Bubblewrap; publicação não comita e rollback transacional é verificado.
+A aplicação ocorre separadamente por `MCF-IMPLEMENT-CHANGE` / CodeBuddy. Quando um receipt de scaffold é fornecido, o adapter exige `authorizedScope=true`, `SCOPED_WRITE`, HDF v1.1 canonicalizado pelo MissionRuntime, com `actionClass=SCOPED_WRITE`, project/mission binding validado contra `mission.contract.projectId` persistido (não apenas contra campos fornecidos pelo chamador), TEAM_FIRST, referência ao receipt exato e sourceRef `human-authority:<uuid>` gerado pelo servidor para a conta autenticada de LEANDRO. O SHA base e o repositório precisam corresponder ao workspace Git limpo; somente paths aprovados podem mudar. A execução ocorre em Git worktree descartável + Bubblewrap; publicação não comita e rollback transacional é verificado.
 
 ### Projeto-piloto não produtivo
 
