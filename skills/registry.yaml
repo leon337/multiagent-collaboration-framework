@@ -187,6 +187,7 @@ skills:
         branch,
         issue,
         design_reference,
+        projectId,
         scaffoldProposalReceipt,
         v11AuthorizationContext,
         authorizedScope,
