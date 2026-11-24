@@ -82,6 +82,12 @@ async function createWorkspace(): Promise<string> {
     }),
   );
   await writeFile(join(binaryDirectory, 'astryx.mjs'), '#!/usr/bin/env node\n');
+  const corePackageRoot = join(workspace, 'node_modules', '@astryxdesign', 'core');
+  await mkdir(corePackageRoot, { recursive: true });
+  await writeFile(
+    join(corePackageRoot, 'package.json'),
+    JSON.stringify({ name: '@astryxdesign/core', version: '0.7.2' }),
+  );
   return workspace;
 }
 
