@@ -135,7 +135,7 @@ Aplicação hospedeira:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - External Action Dispatcher e adapters com evidência;
-- 21 skills executáveis no `main` após a reconciliação do registro; o conjunto inclui MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0 (disabled-by-default, descoberta read-only), MCF-OPERATE-DUAL-BROWSER e MCF-GOOGLE-CLOUD-READ; esta branch evolui Astryx para 0.2.0 com template discovery e scaffold proposal isolado, sem escrita no checkout;
+- 21 skills executáveis no `main` após a reconciliação do registro; o conjunto inclui MCF-ASTRYX-COMPONENT-DISCOVERY@0.2.0 (disabled-by-default, descoberta de componentes/templates e scaffold proposal isolado, sem escrita no checkout), MCF-OPERATE-DUAL-BROWSER e MCF-GOOGLE-CLOUD-READ; a evolução foi integrada pela PR #581 (`5d64ffcd`);
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA/readiness/version e recovery por redeploy de SHA saudável;
@@ -746,7 +746,7 @@ Runner online, workflow health aprovado, capability executável no MissionRuntim
 
 ## MCF Astryx Component/Template Discovery — CURRENT_IMPLEMENTED
 
-- Skill `MCF-ASTRYX-COMPONENT-DISCOVERY@0.2.0` mantém o ID executável já integrado pela PR #579; esta branch amplia a definição para READ_ONLY + READ_AND_PROPOSE.
+- Skill `MCF-ASTRYX-COMPONENT-DISCOVERY@0.2.0` mantém o ID executável integrado pela PR #579 e foi ampliada pela PR #581 (`5d64ffcd`) para READ_ONLY + READ_AND_PROPOSE.
 - Continua disabled-by-default; exige `MCF_ASTRYX_CLI_ENABLED=true` e `MCF_ASTRYX_WORKSPACE_ROOT` absoluto e isolado.
 - READ_ONLY: componentes, documentação compacta, catálogo de templates, fonte e skeleton.
 - READ_AND_PROPOSE: `draft-template-scaffold` copia um único arquivo somente para scratch descartável, valida path aprovado, source/diff SHA-256 e remove o workspace antes do receipt.
@@ -760,7 +760,7 @@ Runner online, workflow health aprovado, capability executável no MissionRuntim
 - Astryx (Meta) é provider visual opcional; não é backend, framework full-stack nem agente orquestrador.
 - A arquitetura preserva contratos independentes de API/domínio/dados, autorização server-side e validação MCF.
 - A Skill continua contrato de orquestração experimental, **não executável pelo runtime atual**.
-- A capacidade de template/scaffold e aplicação governada está implementada nesta branch; o piloto full-stack, visual regression, acessibilidade, rollback, lockfile e gates MCF qualificam a fronteira técnica. O receipt valida SHA-256 do source e do diff (incluindo o digest dentro do artefato), encoding base64 canônico e delimitadores LF reais.
+- A capacidade de template/scaffold e aplicação governada está implementada na `main` pela PR #581 (`5d64ffcd`); o piloto full-stack, visual regression, acessibilidade, rollback, lockfile e gates MCF qualificam a fronteira técnica. O receipt valida SHA-256 do source e do diff (incluindo o digest dentro do artefato), encoding base64 canônico e delimitadores LF reais.
 - A Skill permanece EXPERIMENTAL até uma missão autônoma MCF provar o fluxo ponta a ponta com CodeBuddy real, HDF canonicalizado, TEAM_FIRST, SCOPED_WRITE, rollback e evidências vinculadas ao SHA. Para aplicação, MissionRuntime fornece o `projectId` persistido em `mission.contract`; CodeBuddy rejeita HDF/input de outro projeto antes de executar.
 - O piloto `examples/astryx-fullstack-pilot/` usa React 19 + Astryx, API autenticada server-side, PostgreSQL com schema isolado, migration, rollback transacional, limpeza do schema, Playwright desktop/mobile, axe e pixel baselines.
 - Não contar a Skill full-stack nem os nove contratos MCF-WEB-* entre as 21 Skills executáveis; produção não é afetada e merge em main não autoriza deploy.
