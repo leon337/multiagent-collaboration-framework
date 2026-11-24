@@ -164,8 +164,13 @@ try {
   if (authorized.status() !== 200 || (await authorized.json()).length !== 1)
     throw new Error("Authenticated API/database round-trip failed.");
 
-  const schemaMatch = api.logs().match(/MCF_ASTRYX_PILOT_READY 3001 (mcf_pilot_[a-f0-9]{32})/u);
-  if (!schemaMatch) throw new Error("Isolated PostgreSQL schema identifier was not emitted by the API.");
+  const schemaMatch = api
+    .logs()
+    .match(/MCF_ASTRYX_PILOT_READY 3001 (mcf_pilot_[a-f0-9]{32})/u);
+  if (!schemaMatch)
+    throw new Error(
+      "Isolated PostgreSQL schema identifier was not emitted by the API.",
+    );
   const schema = schemaMatch[1];
   const rollbackPool = new Pool({ connectionString: process.env.DATABASE_URL });
   const rollbackClient = await rollbackPool.connect();
@@ -177,10 +182,13 @@ try {
     );
     await rollbackClient.query("ROLLBACK");
     const rollbackCheck = await rollbackClient.query(
-      'SELECT COUNT(*)::int AS count FROM "' + schema + '".tasks WHERE title = $1',
+      'SELECT COUNT(*)::int AS count FROM "' +
+        schema +
+        '".tasks WHERE title = $1',
       ["ROLLBACK-CHECK"],
     );
-    if (rollbackCheck.rows[0].count !== 0) throw new Error("PostgreSQL transaction rollback left a row behind.");
+    if (rollbackCheck.rows[0].count !== 0)
+      throw new Error("PostgreSQL transaction rollback left a row behind.");
   } finally {
     rollbackClient.release();
     await rollbackPool.end();
@@ -245,16 +253,22 @@ try {
   await stop(preview);
   await stop(api);
   if (api && process.env.DATABASE_URL) {
-    const schemaMatch = api.logs().match(/MCF_ASTRYX_PILOT_READY 3001 (mcf_pilot_[a-f0-9]{32})/u);
+    const schemaMatch = api
+      .logs()
+      .match(/MCF_ASTRYX_PILOT_READY 3001 (mcf_pilot_[a-f0-9]{32})/u);
     if (schemaMatch) {
-      const cleanupPool = new Pool({ connectionString: process.env.DATABASE_URL });
+      const cleanupPool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+      });
       const cleanupCheck = await cleanupPool.query(
         "SELECT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = $1) AS exists",
         [schemaMatch[1]],
       );
       await cleanupPool.end();
       if (cleanupCheck.rows[0].exists) {
-        process.stderr.write("PostgreSQL pilot schema was not dropped during shutdown.\\n");
+        process.stderr.write(
+          "PostgreSQL pilot schema was not dropped during shutdown.\\n",
+        );
         process.exitCode = 1;
       }
     }
