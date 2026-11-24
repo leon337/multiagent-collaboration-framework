@@ -177,7 +177,7 @@ function parseCliEnvelope(
 }
 
 export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
-  readonly adapterId = 'mcf-astryx-cli-readonly-v1';
+  readonly adapterId = 'mcf-astryx-cli-governed-v2';
 
   constructor(
     private readonly evidence: EvidenceValidator,
@@ -340,7 +340,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         args = ['--json', 'template', id, '--skeleton'];
       } else {
         const rawPath = request.inputs.targetPath;
-        if (typeof rawPath !== 'string' || rawPath !== rawPath.trim() || rawPath.startsWith('/') || rawPath.includes('\\') || rawPath.includes('\\0')) {
+        if (typeof rawPath !== 'string' || rawPath !== rawPath.trim() || rawPath.startsWith('/') || rawPath.includes('\\') || rawPath.includes('\0')) {
           return invalidContext('targetPath must be a safe repository-relative file path');
         }
         const segments = rawPath.split('/');
@@ -481,6 +481,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         cliBinary: packages.cliBinary,
         corePackageRoot: packages.corePackageRoot,
         readOnly: !isProposal,
+        ...(templateId ? { templateId } : {}),
         ...(isProposal ? {
           proposalOnly: true, writeMode: 'DISPOSABLE_PROPOSAL_ONLY',
           proposalWorkspace: proposalWorkspace ?? null, proposalWorkspaceCleaned: true,
