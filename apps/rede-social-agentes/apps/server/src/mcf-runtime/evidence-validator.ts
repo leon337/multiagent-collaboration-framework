@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import { isAbsolute } from 'node:path';
 
 import { Injectable } from '@nestjs/common';
 import type { McfSkillDefinition, McfToolReceipt, McfToolReceiptStatus } from '@rsa/contracts';
@@ -887,6 +888,186 @@ function validatePullRequestReceipt(receipt: McfToolReceipt): void {
   requireString(receipt.metadata, 'prState', 'pull request evidence requires prState');
 }
 
+function validateAstryxDiscoveryReceipt(
+  receipt: McfToolReceipt,
+  expected: McfToolRequest,
+  inputs: Readonly<Record<string, unknown>> = {},
+): void {
+  if (
+    canonicalizeProvider(receipt.provider) !== 'mcf-astryx-cli' ||
+    canonicalizeToolValue(expected.resource) !== 'astryx-design-system' ||
+    receipt.status !== 'SUCCEEDED'
+  ) {
+    reject('Astryx discovery evidence requires the governed read-only provider and resource');
+  }
+
+  const operation = canonicalizeToolValue(expected.operation);
+  if (!['list-components', 'read-component-docs'].includes(operation)) {
+    reject('Astryx discovery evidence contains an unsupported operation');
+  }
+
+  const adapterId = requireString(
+    receipt.metadata,
+    'adapterId',
+    'Astryx discovery evidence requires adapterId',
+  );
+  if (adapterId !== 'mcf-astryx-cli-readonly-v1') {
+    reject('Astryx discovery evidence was not produced by the approved adapter');
+  }
+
+  if (!requireBoolean(receipt.metadata, 'readOnly', 'Astryx discovery evidence requires readOnly')) {
+    reject('Astryx discovery evidence must be read-only');
+  }
+
+  if (
+    requireString(receipt.metadata, 'cliPackage', 'Astryx evidence requires cliPackage') !==
+      '@astryxdesign/cli' ||
+    requireString(receipt.metadata, 'corePackage', 'Astryx evidence requires corePackage') !==
+      '@astryxdesign/core'
+  ) {
+    reject('Astryx discovery evidence must identify the official scoped packages');
+  }
+
+  const cliVersion = requireString(
+    receipt.metadata,
+    'cliVersion',
+    'Astryx discovery evidence requires cliVersion',
+  );
+  const coreVersion = requireString(
+    receipt.metadata,
+    'coreVersion',
+    'Astryx discovery evidence requires coreVersion',
+  );
+  const semver = /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$/u;
+  if (
+    !semver.test(cliVersion) ||
+    !semver.test(coreVersion) ||
+    requireString(receipt.metadata, 'cliCopy', 'Astryx evidence requires cliCopy') !== 'project'
+  ) {
+    reject('Astryx discovery evidence must bind project-local CLI and Core versions');
+  }
+
+  const workspace = requireString(
+    receipt.metadata,
+    'workspace',
+    'Astryx discovery evidence requires workspace',
+  );
+  if (!isAbsolute(workspace)) {
+    reject('Astryx discovery evidence workspace must be absolute');
+  }
+
+  const command = requireNonEmptyArray(
+    receipt.metadata,
+    'command',
+    'Astryx discovery evidence requires command',
+  );
+  const executable = command[0];
+  if (typeof executable !== 'string' || !/(?:^|[\\/])pnpm(?:\\.cmd)?$/iu.test(executable)) {
+    reject('Astryx discovery evidence must use the pnpm project runner');
+  }
+
+  const expectedArgs =
+    operation === 'list-components'
+      ? ['exec', 'astryx', '--json', 'component', '--list']
+      : (() => {
+          const componentName = inputs.componentName;
+          if (
+            typeof componentName !== 'string' ||
+            !/^[A-Z][A-Za-z0-9]{0,63}$/u.test(componentName)
+          ) {
+            return reject('Astryx component documentation evidence requires a valid componentName');
+          }
+          return ['exec', 'astryx', '--json', 'component', componentName, '--detail', 'compact'];
+        })();
+
+  if (
+    command.length !== expectedArgs.length + 1 ||
+    expectedArgs.some((argument, index) => command[index + 1] !== argument)
+  ) {
+    reject('Astryx discovery evidence command does not match the fixed allowlist');
+  }
+
+  const stdout = requireString(
+    receipt.metadata,
+    'stdout',
+    'Astryx discovery evidence requires stdout',
+  );
+  const outputBytes = requireNonNegativeInteger(
+    receipt.metadata,
+    'outputBytes',
+    'Astryx discovery evidence requires outputBytes',
+  );
+  const outputDigest = requireString(
+    receipt.metadata,
+    'outputDigest',
+    'Astryx discovery evidence requires outputDigest',
+  );
+  if (
+    outputBytes !== Buffer.byteLength(stdout, 'utf8') ||
+    outputBytes > 32_768 ||
+    !/^[a-f0-9]{64}$/u.test(outputDigest) ||
+    outputDigest !== createHash('sha256').update(stdout).digest('hex')
+  ) {
+    reject('Astryx discovery evidence output size or digest is invalid');
+  }
+
+  if (
+    requireNonNegativeInteger(
+      receipt.metadata,
+      'exitCode',
+      'Astryx discovery evidence requires exitCode',
+    ) !== 0
+  ) {
+    reject('Astryx discovery evidence requires a successful CLI exit code');
+  }
+
+  const stderr = receipt.metadata.stderr;
+  if (typeof stderr !== 'string' || Buffer.byteLength(stderr, 'utf8') > 2_048) {
+    reject('Astryx discovery evidence stderr exceeds its bounded capture');
+  }
+
+  let envelope: unknown;
+  try {
+    envelope = JSON.parse(stdout);
+  } catch {
+    return reject('Astryx discovery evidence stdout is not valid JSON');
+  }
+
+  if (!isRecord(envelope) || envelope.apiVersion !== 1) {
+    reject('Astryx discovery evidence has an unsupported CLI JSON envelope');
+  }
+
+  const expectedType =
+    operation === 'list-components' ? 'component.list' : 'component.detail';
+  if (envelope.type !== expectedType || !isRecord(envelope.meta)) {
+    reject('Astryx discovery evidence response type is invalid');
+  }
+  const answeredBy = requireRecord(
+    envelope.meta.answeredBy,
+    'Astryx discovery evidence requires answeredBy provenance',
+  );
+  if (
+    answeredBy.cli !== cliVersion ||
+    answeredBy.core !== coreVersion ||
+    answeredBy.copy !== 'project'
+  ) {
+    reject('Astryx discovery evidence package provenance does not match the receipt');
+  }
+
+  const data = requireRecord(
+    envelope.data,
+    'Astryx discovery evidence requires a component data object',
+  );
+  if (operation === 'list-components') {
+    requireRecord(
+      data.components,
+      'Astryx discovery evidence component list is missing its catalog',
+    );
+  } else if (data.name !== inputs.componentName) {
+    reject('Astryx discovery evidence component does not match the current request');
+  }
+}
+
 function validateVisualDesktopAuditReceipt(
   receipt: McfToolReceipt,
   inputs: Readonly<Record<string, unknown>> = {},
@@ -1364,6 +1545,9 @@ export class EvidenceValidator {
         break;
       case 'MCF-AUDIT-VISUAL-DESKTOP':
         validateVisualDesktopAuditReceipt(receipt, inputs);
+        break;
+      case 'MCF-ASTRYX-COMPONENT-DISCOVERY':
+        validateAstryxDiscoveryReceipt(receipt, expected, inputs);
         break;
       default:
         break;
