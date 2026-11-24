@@ -1,4 +1,4 @@
-name: Temporary Astryx Formatting
+name: Temporary Astryx Formatting Pass
 on:
   push:
     branches: [feat/mcf-astryx-governed-scaffolding]
