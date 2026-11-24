@@ -1,3 +1,4 @@
+
 import { randomUUID } from 'node:crypto';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -8,7 +9,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { McfToolReceipt } from '@rsa/contracts';
 
 import { AdapterRegistry } from './adapter-registry.js';
-import { AstryxCliDiscoveryAdapter, ASTRYX_PROVIDER, ASTRYX_RESOURCE, ASTRYX_SKILL } from './astryx-cli-discovery.adapter.js';
+import {
+  AstryxCliDiscoveryAdapter,
+  ASTRYX_PROVIDER,
+  ASTRYX_RESOURCE,
+  ASTRYX_SKILL,
+} from './astryx-cli-discovery.adapter.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import type { ExternalActionLedger } from './external-action-ledger.js';
@@ -25,7 +31,7 @@ import { SkillExecutor } from './skill-executor.js';
 import { SkillRegistryLoader } from './skill-registry.loader.js';
 
 beforeEach(() => {
-  process.env.DATABASE_URL = 'postgresql://rsa:rsa@127.0.0.1:5432/rsa';
+  process.env.DATABASE_URL = '***127.0.0.1:5432/rsa';
   process.env.MCF_RECEIPT_SECRET = 'test-only-mcf-receipt-secret-0000000001';
 });
 
@@ -127,19 +133,17 @@ function cliResponse(type: string, data: Record<string, unknown>): string {
 function runtime(
   workspace: string,
   enabled: boolean,
-  runner: (binary: string, args: string[], options: unknown) => Promise<{
+  runner: (
+    binary: string,
+    args: string[],
+    options: unknown,
+  ) => Promise<{
     stdout: string;
     stderr: string;
   }>,
 ) {
   const evidence = new EvidenceValidator();
-  const adapter = new AstryxCliDiscoveryAdapter(
-    evidence,
-    enabled,
-    workspace,
-    'pnpm',
-    runner,
-  );
+  const adapter = new AstryxCliDiscoveryAdapter(evidence, enabled, workspace, 'pnpm', runner);
   const adapters = new AdapterRegistry([adapter]);
   const ledger = new InMemoryExternalLedger();
   const dispatcher = new ExternalActionDispatcher(
