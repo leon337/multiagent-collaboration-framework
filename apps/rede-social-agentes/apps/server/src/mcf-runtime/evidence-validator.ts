@@ -1137,6 +1137,8 @@ function validateAstryxDiscoveryReceipt(
           'byteLength',
           'Scaffold diff artifact requires byteLength',
         ) !== diffBytes.byteLength ||
+        requireString(diff, 'digest', 'Scaffold diff artifact requires digest') !==
+          createHash('sha256').update(diffBytes).digest('hex') ||
         requireString(receipt.metadata, 'diffDigest', 'Scaffold evidence requires diffDigest') !==
           createHash('sha256').update(diffBytes).digest('hex') ||
         !diffBytes.toString('utf8').startsWith(`diff --git a/${targetPath} b/${targetPath}\n`) ||
