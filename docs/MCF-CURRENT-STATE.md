@@ -135,7 +135,7 @@ Aplicação hospedeira:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - External Action Dispatcher e adapters com evidência;
-- 20 skills executáveis no `main` após merge da PR #579 (`80ca638`); MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0 é disabled-by-default e cobre descoberta read-only; esta branch propõe a evolução 0.2.0 com template discovery e scaffold proposal isolado, sem escrita no checkout;
+- 21 skills executáveis no `main` após a reconciliação do registro; o conjunto inclui MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0 (disabled-by-default, descoberta read-only), MCF-OPERATE-DUAL-BROWSER e MCF-GOOGLE-CLOUD-READ; esta branch evolui Astryx para 0.2.0 com template discovery e scaffold proposal isolado, sem escrita no checkout;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA/readiness/version e recovery por redeploy de SHA saudável;
@@ -763,5 +763,5 @@ Runner online, workflow health aprovado, capability executável no MissionRuntim
 - A capacidade de template/scaffold e aplicação governada está implementada nesta branch; o piloto full-stack, visual regression, acessibilidade, rollback, lockfile e gates MCF qualificam a fronteira técnica. O receipt valida SHA-256 do source e do diff (incluindo o digest dentro do artefato), encoding base64 canônico e delimitadores LF reais.
 - A Skill permanece EXPERIMENTAL até uma missão autônoma MCF provar o fluxo ponta a ponta com CodeBuddy real, HDF canonicalizado, TEAM_FIRST, SCOPED_WRITE, rollback e evidências vinculadas ao SHA. Para aplicação, MissionRuntime fornece o `projectId` persistido em `mission.contract`; CodeBuddy rejeita HDF/input de outro projeto antes de executar.
 - O piloto `examples/astryx-fullstack-pilot/` usa React 19 + Astryx, API autenticada server-side, PostgreSQL com schema isolado, migration, rollback transacional, limpeza do schema, Playwright desktop/mobile, axe e pixel baselines.
-- Não contar a Skill full-stack entre as 20 Skills executáveis; produção não é afetada e merge em main não autoriza deploy.
+- Não contar a Skill full-stack nem os nove contratos MCF-WEB-* entre as 21 Skills executáveis; produção não é afetada e merge em main não autoriza deploy.
 - Fonte técnica do provider: https://github.com/meta/astryx e https://github.com/meta/astryx/wiki/System-Architecture.
