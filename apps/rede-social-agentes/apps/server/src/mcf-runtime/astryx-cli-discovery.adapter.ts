@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFile as nodeExecFile } from 'node:child_process';
-import { readFile, realpath, stat } from 'node:fs/promises';
+import { mkdir, readFile, realpath, stat } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 
 import type { McfToolReceipt } from '@rsa/contracts';
@@ -34,6 +34,7 @@ type ExecFile = (
     timeout: number;
     maxBuffer: number;
     windowsHide: boolean;
+    env: Record<string, string>;
   },
 ) => Promise<{ stdout: string; stderr: string }>;
 
@@ -119,7 +120,9 @@ function parseCliEnvelope(
 
   if (operation === 'list-components') {
     if (!isRecord(envelope.data.components) || envelope.data.detail !== 'names') {
-      return invalid('Astryx CLI component list must contain its catalog at the fixed names detail level');
+      return invalid(
+        'Astryx CLI component list must contain its catalog at the fixed names detail level',
+      );
     }
   } else if (envelope.data.name !== componentName) {
     return invalid('Astryx CLI documentation does not match the requested component');
