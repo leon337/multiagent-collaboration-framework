@@ -178,11 +178,17 @@ skills:
     version: 1.0.0
     purpose: Produzir alteração de código dentro do escopo aprovado.
     owner_agents: [Rafael, Eduardo, Helena, Andre, Tiago, Daniela]
-    trigger_phrases:
-      ["implementar", "corrigir", "integrar", "criar funcionalidade"]
-    required_inputs:
-      [approved_scope, acceptance_criteria, repository, allowed_paths]
-    optional_inputs: [branch, issue, design_reference, scaffoldProposalReceipt, v11AuthorizationContext, authorizedScope]
+    trigger_phrases: ["implementar", "corrigir", "integrar", "criar funcionalidade"]
+    required_inputs: [approved_scope, acceptance_criteria, repository, allowed_paths]
+    optional_inputs:
+      [
+        branch,
+        issue,
+        design_reference,
+        scaffoldProposalReceipt,
+        v11AuthorizationContext,
+        authorizedScope,
+      ]
     allowed_tools:
       [
         GitHub,
@@ -200,20 +206,29 @@ skills:
     permission_profile: SCOPED_WRITE
     execution_steps:
       [
-        preparar_workspace,
-        implementar,
+        validar_escopo_e_HDF,
+        verificar_receipt_astryx_se_presente,
+        preparar_workspace_git_descartavel,
+        implementar_com_CodeBuddy,
         coletar_diff,
+        validar_paths_e_base_sha,
+        rollback_transacional_em_falha,
         registrar_handoff_de_testes,
         passar_para_revisao,
       ]
-    required_evidence:
-      [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
+    required_evidence: [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
     expected_outputs: [implementation, technical_notes]
-    acceptance_criteria: [scope_respected, tests_or_handoff_proven, scaffold_receipt_verified_when_present, HDF_SCOPED_WRITE_and_leandro_gate_when_applying_astryx, transactional_rollback_on_failure]
+    acceptance_criteria:
+      [
+        scope_respected,
+        tests_or_handoff_proven,
+        scaffold_receipt_verified_when_present,
+        HDF_SCOPED_WRITE_and_leandro_gate_when_applying_astryx,
+        transactional_rollback_on_failure,
+      ]
     failure_modes: [scope_creep, unsafe_write, missing_tests]
     fallback: Produzir patch ou plano executável sem alegar aplicação.
     handoff_to: Vinicius
-
   - skill_id: MCF-DEBUG-INCIDENT
     name: Diagnosticar incidente
     version: 1.0.0
