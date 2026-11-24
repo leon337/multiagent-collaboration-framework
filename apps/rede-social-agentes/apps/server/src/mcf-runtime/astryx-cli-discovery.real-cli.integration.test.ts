@@ -66,6 +66,10 @@ describe('Astryx pinned CLI real integration', () => {
     const receipt = await adapter.execute(request);
     evidence.verifyForSkill(receipt, request.tool, skill, request.inputs);
 
+    expect(receipt.metadata.outputDigest).toMatch(/^[a-f0-9]{64}$/u);
+    expect(Number(receipt.metadata.outputBytes)).toBeGreaterThan(0);
+    expect(receipt.metadata.workspace).toBe(workspace);
+
     expect(receipt).toMatchObject({
       provider: ASTRYX_PROVIDER,
       operation: 'list-components',
