@@ -21,7 +21,9 @@
 - `canonicalAgents=[]` e `agentSessions=[]`.
 - A tentativa de consultar o executável esperado `/home/leo/.local/bin/mcf-agent-session` retornou “Arquivo ou diretório inexistente”.
 - O bootstrap de Sofia exige broker/cadastro canônico, envio do contrato e confirmação do marcador de handshake. Não foi contornado por mensagem textual comum.
-- Não houve resposta arquitetural de Sofia, nem decisão de gate de LÉO. O resultado correto é BLOCKED/PENDING, não PASS.
+- A função arquitetural de Sofia foi exercida pelo MESTRE em parecer explícito e não independente, registrado em sofia-architecture-review.md.
+- A função de gate interno de Léo foi exercida pelo MESTRE, sob instrução de LEANDRO, e registrada em leo-gate-decision.md. A decisão encerra somente o escopo da demo.
+- O broker/session dos agentes canônicos não foi autenticado; os artefatos não se apresentam como mensagens ou receipts dos agentes reais.
 
 ## Integridade do escopo
 
@@ -29,3 +31,11 @@
 - Nenhuma alteração foi feita em runtime, banco, permissões, autenticação ou produção.
 - Nenhuma PR foi criada, nenhum merge foi executado e nenhum deploy foi disparado.
 - O código da demo permanece no diretório isolado `/tmp/mcf-astryx-demo-001`; a branch do experimento contém somente artefatos do experimento.
+
+
+## Fechamento do escopo por funções delegadas
+
+- Parecer arquitetural por função Sofia: APROVADO PARA SANDBOX; integração principal não aprovada.
+- Gate interno por função Léo: ACEITO PARA ENCERRAMENTO DO EXPERIMENTO EM SANDBOX.
+- Estado terminal da missão experimental: ENTREGUE.
+- A limitação de autenticidade das identidades canônicas foi preservada como dado, sem bloquear a conclusão do escopo expressamente autorizado por LEANDRO.
