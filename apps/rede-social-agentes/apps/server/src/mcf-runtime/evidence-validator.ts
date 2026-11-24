@@ -970,17 +970,26 @@ function validateAstryxDiscoveryReceipt(
     'cliBinary',
     'Astryx discovery evidence requires cliBinary',
   );
+  const corePackageRoot = requireString(
+    receipt.metadata,
+    'corePackageRoot',
+    'Astryx discovery evidence requires corePackageRoot',
+  );
   if (
     !isAbsolute(workspace) ||
     !isAbsolute(packageRoot) ||
     !isAbsolute(cliBinary) ||
+    !isAbsolute(corePackageRoot) ||
     isPathWithin(process.cwd(), workspace) ||
     isPathWithin(workspace, process.cwd()) ||
     !isPathWithin(workspace, packageRoot) ||
-    !isPathWithin(packageRoot, cliBinary)
+    !isPathWithin(packageRoot, cliBinary) ||
+    !isPathWithin(workspace, corePackageRoot) ||
+    isPathWithin(packageRoot, corePackageRoot) ||
+    isPathWithin(corePackageRoot, packageRoot)
   ) {
     reject(
-      'Astryx discovery evidence must bind a workspace-local CLI outside the runtime checkout',
+      'Astryx discovery evidence must bind workspace-local CLI and Core packages outside the runtime checkout',
     );
   }
 
