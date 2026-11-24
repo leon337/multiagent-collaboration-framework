@@ -760,7 +760,8 @@ Runner online, workflow health aprovado, capability executável no MissionRuntim
 - Astryx (Meta) é provider visual opcional; não é backend, framework full-stack nem agente orquestrador.
 - A arquitetura preserva contratos independentes de API/domínio/dados, autorização server-side e validação MCF.
 - A Skill continua contrato de orquestração experimental, **não executável pelo runtime atual**.
-- A capacidade de template/scaffold e aplicação governada está implementada nesta branch, mas precisa passar no piloto full-stack, visual regression, acessibilidade e gates MCF antes de promoção.
+- A capacidade de template/scaffold e aplicação governada está implementada nesta branch; o piloto full-stack, visual regression, acessibilidade, rollback, lockfile e gates MCF qualificam a fronteira técnica.
+- A Skill permanece EXPERIMENTAL até uma missão autônoma MCF provar o fluxo ponta a ponta com CodeBuddy real, HDF canonicalizado, TEAM_FIRST, SCOPED_WRITE, rollback e evidências vinculadas ao SHA.
 - O piloto `examples/astryx-fullstack-pilot/` usa React 19 + Astryx, API autenticada server-side, PostgreSQL com schema isolado, migration, rollback transacional, limpeza do schema, Playwright desktop/mobile, axe e pixel baselines.
 - Não contar a Skill full-stack entre as 19 Skills executáveis; produção não é afetada e merge em main não autoriza deploy.
 - Fonte técnica do provider: https://github.com/meta/astryx e https://github.com/meta/astryx/wiki/System-Architecture.
