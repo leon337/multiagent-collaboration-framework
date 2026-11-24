@@ -80,7 +80,7 @@ A capability deve classificar operações pelo efeito real, não pelo nome do co
 
 | Classe | Operações | Política MCF |
 |---|---|---|
-| READ_ONLY implementado na PR #579 | `component --list`; `component <Name> --detail compact` | Allowlist fechada, argv fixo, workspace isolado, CLI/Core locais verificados e receipt validado |
+| READ_ONLY integrado ao `main` pela PR #579 | `component --list`; `component <Name> --detail compact` | Allowlist fechada, argv fixo, workspace isolado, CLI/Core locais verificados e receipt validado |
 | READ_ONLY futuro | `docs`, `search`, `template --list`, `template <id>`, `template <id> --skeleton`, `build`, `doctor` | Só habilitar após adapter específico, schema semântico, limites de saída e testes |
 | Escrita governada | `template copy`, `swizzle`, `init`, `theme add/use/build`, `upgrade --apply` e subcomandos experimentais que geram/alteram arquivos | Nunca executar diretamente no checkout; gerar proposta/diff em workspace descartável e exigir HDF + SCOPED_WRITE, paths permitidos, receipt, testes e rollback |
 
@@ -88,7 +88,7 @@ Regras adicionais:
 
 1. Não aceitar comandos, flags ou argumentos arbitrários enviados pelo agente; cada operação tem allowlist e argv canônico.
 2. Não herdar variáveis secretas do processo MCF para o CLI; usar ambiente mínimo e diretórios HOME/config/cache/temp dentro do workspace isolado.
-3. A descoberta atual da PR #579 é somente leitura; não habilita template copy, swizzle, init, theme writes, codemods ou deploy.
+3. A descoberta integrada pela PR #579 é somente leitura; não habilita template copy, swizzle, init, theme writes, codemods ou deploy.
 4. O CLI nunca recebe autorização para shell arbitrário, escrita fora do workspace aprovado ou deploy.
 
 ## 5. Fluxo operacional
@@ -136,11 +136,11 @@ Regras adicionais:
 
 ## 8. Estado de implementação e próximos limites
 
-Esta PR registra a Skill experimental e a arquitetura. **A Skill full-stack não é executável pelo runtime.** A descoberta Astryx read-only está isolada na PR #579 e ainda não deve ser considerada disponível no `main` até concluir CI, revisão e merge.
+Esta PR registra a Skill experimental e a arquitetura. **A Skill full-stack continua não executável pelo runtime.** A primeira capability visual read-only já está integrada ao `main` pela PR #579, merge squash `80ca638`.
 
-### Proposta separada na PR #579
+### Capability atualmente disponível no main
 
-A PR #579 contém a implementação candidata da descoberta de componentes: allowlist de operações read-only, workspace isolado, resolução do pacote/binário local, execução por Node/execFile sem shell ou PATH fallback, receipt assinado e validação semântica. O PR também inclui testes unitários, integração com CLI real e E2E do MissionRuntime. Esses itens só passam a integrar a capacidade disponível no `main` após os gates e o merge da PR #579.
+`MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0` é `CURRENT_IMPLEMENTED`, disabled-by-default e limitada a `component --list` e `component <Name> --detail compact`. O adapter verifica CLI/Core locais e versões, usa workspace isolado e ambiente filho allowlisted, executa sem shell/PATH fallback e emite receipt assinado validado pelo EvidenceValidator. Não escreve no checkout, não faz scaffolding e não faz deploy.
 
 ### Pendências para desenvolvimento visual/full-stack completo
 
@@ -150,7 +150,15 @@ A PR #579 contém a implementação candidata da descoberta de componentes: allo
 4. Benchmark visual e projeto-piloto full-stack não produtivo cobrindo frontend, API, banco isolado, autorização server-side, acessibilidade, visual regression e rollback.
 5. Evidências E2E de uma aplicação completa antes de promover a Skill de EXPERIMENTAL para CURRENT_IMPLEMENTED.
 
-Não habilitar execução arbitrária de shell nem expor o CLI a produção. A descoberta proposta em PR #579 permanece read-only e disabled-by-default. Nenhuma escrita ou deploy é permitido nesta capability.
+### Pendências para desenvolvimento visual/full-stack completo
+
+1. Adapter para template source/skeleton e scaffolding em diff-proposal, sujeito a HDF, paths permitidos e diff review.
+2. Receipts e Evidence Validator para propostas de escrita, com proveniência e diff digest.
+3. Aplicação de diffs somente por SCOPED_WRITE, com aprovação explícita e rollback.
+4. Benchmark visual e projeto-piloto full-stack não produtivo cobrindo frontend, API, banco isolado, autorização server-side, acessibilidade, visual regression e rollback.
+5. Evidências E2E de uma aplicação completa antes de promover a Skill de EXPERIMENTAL para CURRENT_IMPLEMENTED.
+
+Não habilitar execução arbitrária de shell nem expor o CLI a produção. A descoberta integrada pela PR #579 permanece read-only e disabled-by-default. Nenhuma escrita ou deploy é permitido nesta capability.
 
 ## 9. Projeto-piloto recomendado
 
