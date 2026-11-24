@@ -204,8 +204,11 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         windowsHide: true,
       });
     } catch (error) {
-      const code =
-        isRecord(error) && error.code === 'ETIMEDOUT' ? 'ADAPTER_TIMEOUT' : 'ADAPTER_FAILURE';
+      const isTimeout =
+        isRecord(error) &&
+        (error.code === 'ETIMEDOUT' ||
+          (error.killed === true && error.signal === 'SIGTERM'));
+      const code = isTimeout ? 'ADAPTER_TIMEOUT' : 'ADAPTER_FAILURE';
       throw new ExternalActionAdapterError(
         code,
         'Astryx CLI discovery failed; command output was not exposed',
