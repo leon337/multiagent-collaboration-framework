@@ -666,21 +666,21 @@ skills:
     handoff_to: Mestre
 
   - skill_id: MCF-ASTRYX-COMPONENT-DISCOVERY
-    name: Descoberta de componentes e documentação Astryx
-    version: 0.1.0
-    purpose: Coordenar desenvolvimento full-stack com Astryx como provider visual opcional; esta execução inicial permite apenas descobrir componentes e documentação em modo leitura.
+    name: Descoberta visual e proposta de scaffolding Astryx
+    version: 0.2.0
+    purpose: Descobrir componentes, templates, fontes e esqueletos Astryx; gerar proposta de scaffold somente em workspace descartável, sem alterar checkout ou projeto alvo.
     owner_agents: [Mestre]
-    trigger_phrases: ["descobrir componentes Astryx", "consultar documentação Astryx", "desenvolvimento visual full-stack"]
+    trigger_phrases: ["descobrir componentes Astryx", "consultar templates Astryx", "propor scaffolding Astryx", "desenvolvimento visual full-stack"]
     required_inputs: []
-    optional_inputs: [componentName]
+    optional_inputs: [componentName, templateId, targetPath, baseCommitSha, repository, allowed_paths]
     allowed_tools: [mcf-astryx-cli]
-    forbidden_tools: [write, delete, publish, deploy, shell, arbitrary_command, production]
-    permission_profile: READ_ONLY
-    execution_steps: [validar_skill_e_provider, consultar_cli_allowlisted, validar_output_limitado, emitir_receipt_assinado]
-    required_evidence: [provider, operation, adapterId, readOnly, command, workspace, cliPackageRoot, corePackageRoot, cliBinary, cliVersion, coreVersion, cliCopy, exitCode, outputBytes, outputDigest]
-    acceptance_criteria: [provider_and_resource_allowlisted, workspace_isolated, local_cli_binary_resolved, local_core_package_resolved, cli_and_core_versions_match_installed_packages, command_fixed_and_no_shell, child_environment_sanitized, component_list_names_detail_fixed, project_package_provenance_verified, output_bounded_and_digest_valid, receipt_signed_and_semantically_valid, disabled_by_default]
-    failure_modes: [adapter_disabled, workspace_unavailable, cli_missing, core_missing, package_version_mismatch, timeout, invalid_component_name, invalid_output]
-    fallback: Se o adapter estiver desabilitado ou o CLI indisponível, parar e registrar a dependência; nunca executar comandos alternativos ou shell arbitrário.
+    forbidden_tools: [apply, write_to_checkout, delete, publish, deploy, shell, arbitrary_command, production]
+    permission_profile: READ_AND_PROPOSE
+    execution_steps: [validar_skill_e_provider, consultar_cli_allowlisted, validar_template_e_workspace, gerar_proposta_em_workspace_descartavel, calcular_diff_digest, validar_paths_aprovados, limpar_workspace, emitir_receipt_assinado]
+    required_evidence: [provider, operation, adapterId, readOnly, proposalOnly, writeMode, command, workspace, proposalWorkspace, proposalWorkspaceCleaned, cliPackageRoot, corePackageRoot, cliBinary, cliVersion, coreVersion, cliCopy, templateId, targetPath, baseCommitSha, approvedPaths, sourceArtifact, diffArtifact, diffDigest, exitCode, outputBytes, outputDigest]
+    acceptance_criteria: [provider_and_resource_allowlisted, workspace_isolated, local_cli_binary_resolved, local_core_package_resolved, cli_and_core_versions_match_installed_packages, command_fixed_and_no_shell, child_environment_sanitized, component_and_template_responses_semantically_valid, scaffold_created_only_in_disposable_workspace, only_one_regular_source_file_captured, diff_and_source_sha256_match, target_path_inside_approved_paths, proposal_workspace_cleaned, receipt_signed_and_semantically_valid, disabled_by_default]
+    failure_modes: [adapter_disabled, workspace_unavailable, cli_missing, core_missing, package_version_mismatch, timeout, invalid_component_name, invalid_template_id, invalid_target_path, path_not_approved, oversized_template, invalid_output, scratch_cleanup_failed]
+    fallback: Se o adapter estiver desabilitado, CLI indisponível ou qualquer validação falhar, parar sem gravar no projeto alvo; nunca usar shell arbitrário nem fallback global.
     handoff_to: Mestre
 
   # Full-stack orchestration contract only; not executable by the runtime.
