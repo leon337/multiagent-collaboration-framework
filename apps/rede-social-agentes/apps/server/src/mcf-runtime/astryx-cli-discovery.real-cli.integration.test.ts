@@ -20,7 +20,7 @@ beforeEach(() => {
 const skill: McfSkillDefinition = {
   skillId: ASTRYX_SKILL,
   name: 'Astryx visual discovery and scaffold proposal',
-  version: '0.1.0',
+  version: '0.2.0',
   purpose:
     'Discover components and templates and propose scaffolds in disposable workspaces through the pinned project-local Astryx CLI.',
   ownerAgents: ['Mestre'],
