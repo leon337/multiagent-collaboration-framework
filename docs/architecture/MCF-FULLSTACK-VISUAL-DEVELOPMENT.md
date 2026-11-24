@@ -140,7 +140,7 @@ Regras adicionais:
 
 ## 8. Estado de implementação e próximos limites
 
-A descoberta read-only inicial foi integrada ao `main` pela PR #579, merge squash `80ca638`. Esta branch amplia a capability com templates e propostas de scaffold, e integra o caminho de aplicação governada ao adapter CodeBuddy. O contrato full-stack fica fora de `skills/registry.yaml`, pois o `SkillRegistryLoader` carrega todas as entradas desse arquivo; permanece `EXPERIMENTAL` até uma missão autônoma MCF ponta a ponta passar no SHA exato.
+A descoberta read-only inicial foi integrada ao `main` pela PR #579, merge squash `80ca638`. Esta branch amplia a capability com templates e propostas de scaffold, e integra o caminho de aplicação governada ao adapter CodeBuddy. O contrato full-stack permanece em `skills/registry.yaml` com `status: EXPERIMENTAL`; o `SkillRegistryLoader` agora exclui explicitamente entradas experimentais do mapa executável. A promoção depende de missão autônoma MCF ponta a ponta aprovada no SHA exato.
 
 ### Capability visual/template disponível nesta branch
 
