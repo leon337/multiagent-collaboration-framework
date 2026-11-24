@@ -280,7 +280,7 @@ describe('MCF Astryx component discovery canonical runtime E2E', () => {
 
   it('executes a scaffold proposal through MissionRuntime and validates its disposable diff receipt', async () => {
     workspace = await createWorkspace();
-    const source = 'export function Pilot() { return <main>pilot</main>; }\\n';
+    const source = 'export function Pilot() { return <main>pilot</main>; }\n';
     const runner = vi.fn(async (binary: string, args: string[], options: unknown) => {
       const cwd = (options as { cwd: string }).cwd;
       expect(binary).toBe(process.execPath);
