@@ -298,8 +298,10 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
     const configDir = resolve(cwd, '.config');
     const cacheDir = resolve(cwd, '.cache');
     const tempDir = resolve(cwd, '.tmp');
+    const appDataDir = resolve(cwd, '.appdata');
+    const localAppDataDir = resolve(cwd, '.localappdata');
     await Promise.all(
-      [configDir, cacheDir, tempDir].map((directory) =>
+      [configDir, cacheDir, tempDir, appDataDir, localAppDataDir].map((directory) =>
         mkdir(directory, { recursive: true }),
       ),
     );
@@ -309,8 +311,8 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       NODE_ENV: 'production',
       HOME: cwd,
       USERPROFILE: cwd,
-      APPDATA: resolve(cwd, '.appdata'),
-      LOCALAPPDATA: resolve(cwd, '.localappdata'),
+      APPDATA: appDataDir,
+      LOCALAPPDATA: localAppDataDir,
       XDG_CONFIG_HOME: configDir,
       XDG_CACHE_HOME: cacheDir,
       TMPDIR: tempDir,
