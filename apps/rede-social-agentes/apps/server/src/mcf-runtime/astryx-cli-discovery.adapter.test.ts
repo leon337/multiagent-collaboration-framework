@@ -70,7 +70,7 @@ function jsonResponse(
 
 async function createWorkspace(): Promise<string> {
   const workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
-  const packageRoot = join(workspace, 'node_modules', '@astryxdesign', 'cli');
+  const packageRoot = join(workspace!, 'node_modules', '@astryxdesign', 'cli');
   const binaryDirectory = join(packageRoot, 'clients', 'cli', 'bin');
   await mkdir(binaryDirectory, { recursive: true });
   await writeFile(
@@ -82,7 +82,7 @@ async function createWorkspace(): Promise<string> {
     }),
   );
   await writeFile(join(binaryDirectory, 'astryx.mjs'), '#!/usr/bin/env node\n');
-  const corePackageRoot = join(workspace, 'node_modules', '@astryxdesign', 'core');
+  const corePackageRoot = join(workspace!, 'node_modules', '@astryxdesign', 'core');
   await mkdir(corePackageRoot, { recursive: true });
   await writeFile(
     join(corePackageRoot, 'package.json'),
@@ -190,7 +190,7 @@ describe('Astryx CLI discovery adapter', () => {
 
   it('fails closed when the project-local Core package is missing', async () => {
     workspace = await createWorkspace();
-    await rm(join(workspace, 'node_modules', '@astryxdesign', 'core'), {
+    await rm(join(workspace!, 'node_modules', '@astryxdesign', 'core'), {
       recursive: true,
       force: true,
     });
@@ -229,13 +229,13 @@ describe('Astryx CLI discovery adapter', () => {
           NODE_ENV: 'production',
           HOME: workspace,
           USERPROFILE: workspace,
-          APPDATA: join(workspace, '.appdata'),
-          LOCALAPPDATA: join(workspace, '.localappdata'),
-          XDG_CONFIG_HOME: join(workspace, '.config'),
-          XDG_CACHE_HOME: join(workspace, '.cache'),
-          TMPDIR: join(workspace, '.tmp'),
-          TEMP: join(workspace, '.tmp'),
-          TMP: join(workspace, '.tmp'),
+          APPDATA: join(workspace!, '.appdata'),
+          LOCALAPPDATA: join(workspace!, '.localappdata'),
+          XDG_CONFIG_HOME: join(workspace!, '.config'),
+          XDG_CACHE_HOME: join(workspace!, '.cache'),
+          TMPDIR: join(workspace!, '.tmp'),
+          TEMP: join(workspace!, '.tmp'),
+          TMP: join(workspace!, '.tmp'),
         },
         maxBuffer: 32_768,
         windowsHide: true,
@@ -265,8 +265,8 @@ describe('Astryx CLI discovery adapter', () => {
         cliVersion: '0.7.2',
         coreVersion: '0.7.2',
         cliCopy: 'project',
-        cliPackageRoot: join(workspace, 'node_modules', '@astryxdesign', 'cli'),
-        corePackageRoot: join(workspace, 'node_modules', '@astryxdesign', 'core'),
+        cliPackageRoot: join(workspace!, 'node_modules', '@astryxdesign', 'cli'),
+        corePackageRoot: join(workspace!, 'node_modules', '@astryxdesign', 'core'),
         cliBinary: localCliBinary(workspace),
         stdout: jsonResponse('component.list', { components: { actions: [] } }),
       },
