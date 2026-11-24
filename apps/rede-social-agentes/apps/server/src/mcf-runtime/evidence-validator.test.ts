@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+
+import type { McfSkillDefinition } from '@rsa/contracts';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { EvidenceValidator } from './evidence-validator.js';
@@ -6,6 +9,49 @@ beforeEach(() => {
   process.env.DATABASE_URL = 'postgresql://rsa:rsa@127.0.0.1:5432/rsa';
   process.env.MCF_RECEIPT_SECRET = 'test-only-mcf-receipt-secret-0000000001';
 });
+
+const astryxSkill: McfSkillDefinition = {
+  skillId: 'MCF-ASTRYX-COMPONENT-DISCOVERY',
+  name: 'Astryx component discovery',
+  version: '0.1.0',
+  purpose: 'Read the official Astryx component catalog and documentation.',
+  ownerAgents: ['Mestre'],
+  requiredInputs: [],
+  allowedTools: ['mcf-astryx-cli'],
+  forbiddenTools: ['write', 'delete', 'publish', 'deploy'],
+  permissionProfile: 'READ_ONLY',
+  executionSteps: ['list_or_read_components'],
+  requiredEvidence: ['signed_json_output', 'package_versions', 'read_only_provenance'],
+  acceptanceCriteria: ['receipt_semantically_valid'],
+  failureModes: ['invalid_cli_output'],
+  fallback: 'Return to the approved design workflow.',
+  handoffTo: 'Mestre',
+};
+
+function astryxReceiptMetadata(cliCopy = 'project') {
+  const stdout = JSON.stringify({
+    apiVersion: 1,
+    type: 'component.list',
+    data: { components: { actions: [] } },
+    meta: { answeredBy: { cli: '0.7.2', core: '0.7.2', copy: cliCopy } },
+  });
+  return {
+    adapterId: 'mcf-astryx-cli-readonly-v1',
+    cliPackage: '@astryxdesign/cli',
+    corePackage: '@astryxdesign/core',
+    cliVersion: '0.7.2',
+    coreVersion: '0.7.2',
+    cliCopy,
+    readOnly: true,
+    command: ['pnpm', 'exec', 'astryx', '--json', 'component', '--list'],
+    workspace: '/tmp/astryx-workspace',
+    stdout,
+    stderr: '',
+    exitCode: 0,
+    outputBytes: Buffer.byteLength(stdout, 'utf8'),
+    outputDigest: createHash('sha256').update(stdout).digest('hex'),
+  };
+}
 
 describe('EvidenceValidator', () => {
   it('accepts an untampered signed receipt', () => {
@@ -31,6 +77,46 @@ describe('EvidenceValidator', () => {
     const forged = { ...receipt, metadata: { missionId: 'mission-forged' } };
 
     expect(() => validator.verify(forged, request)).toThrow(/signature is invalid/u);
+  });
+
+  it('validates Astryx CLI package provenance and the signed JSON output', () => {
+    const validator = new EvidenceValidator();
+    const expected = {
+      provider: 'mcf-astryx-cli',
+      operation: 'list-components',
+      resource: 'astryx-design-system',
+    };
+    const receipt = validator.createTrustedReceipt({
+      ...expected,
+      externalId: null,
+      commitSha: null,
+      status: 'SUCCEEDED',
+      observedAt: new Date().toISOString(),
+      metadata: astryxReceiptMetadata(),
+    });
+
+    expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).not.toThrow();
+  });
+
+  it('rejects Astryx receipts answered by a global or fallback CLI copy', () => {
+    const validator = new EvidenceValidator();
+    const expected = {
+      provider: 'mcf-astryx-cli',
+      operation: 'list-components',
+      resource: 'astryx-design-system',
+    };
+    const receipt = validator.createTrustedReceipt({
+      ...expected,
+      externalId: null,
+      commitSha: null,
+      status: 'SUCCEEDED',
+      observedAt: new Date().toISOString(),
+      metadata: astryxReceiptMetadata('global'),
+    });
+
+    expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).toThrow(
+      /project-local CLI and Core versions/u,
+    );
   });
 
   it('requires GitHub Actions workflow and commit identifiers', () => {
