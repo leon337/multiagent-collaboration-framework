@@ -678,8 +678,8 @@ skills:
     forbidden_tools: [write, delete, publish, deploy, shell, arbitrary_command, production]
     permission_profile: READ_ONLY
     execution_steps: [validar_skill_e_provider, consultar_cli_allowlisted, validar_output_limitado, emitir_receipt_assinado]
-    required_evidence: [provider, operation, adapterId, readOnly, outputDigest, cliVersion, coreVersion, cliCopy, workspace]
-    acceptance_criteria: [provider_and_resource_allowlisted, command_fixed_and_no_shell, project_package_provenance_verified, output_bounded_and_digest_valid, receipt_signed_and_semantically_valid, disabled_by_default]
+    required_evidence: [provider, operation, adapterId, readOnly, command, workspace, cliPackageRoot, cliBinary, cliVersion, coreVersion, cliCopy, exitCode, outputBytes, outputDigest]
+    acceptance_criteria: [provider_and_resource_allowlisted, workspace_isolated, local_cli_binary_resolved, command_fixed_and_no_shell, project_package_provenance_verified, output_bounded_and_digest_valid, receipt_signed_and_semantically_valid, disabled_by_default]
     failure_modes: [adapter_disabled, workspace_unavailable, cli_missing, timeout, invalid_component_name, invalid_output]
     fallback: Se o adapter estiver desabilitado ou o CLI indisponível, parar e registrar a dependência; nunca executar comandos alternativos ou shell arbitrário.
     handoff_to: Mestre
