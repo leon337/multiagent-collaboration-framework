@@ -1644,7 +1644,7 @@ skills:
   - skill_id: MCF-FULLSTACK-VISUAL-DEVELOPMENT
     status: EXPERIMENTAL
     name: Desenvolver aplicações full-stack com desenvolvimento visual assistido
-    version: 0.1.0
+    version: 0.2.0
     purpose: Orquestrar a construção de aplicações completas, usando Astryx como provider visual opcional e as capacidades MCF existentes para arquitetura, frontend, backend, dados, integrações, testes e governança.
     owner_agents: [Mestre, Sofia, Rafael]
     supporting_agents:
