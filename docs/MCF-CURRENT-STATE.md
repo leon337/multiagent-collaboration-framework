@@ -744,24 +744,23 @@ Limites observados:
 Runner online, workflow health aprovado, capability executável no MissionRuntime e produção são estados distintos. Consultar GitHub, o repositório privado e o host ao vivo antes de qualquer operação. Não inferir acesso privado ou disponibilidade do host em novas sessões.
 
 
-## MCF Astryx Component Discovery — CURRENT_IMPLEMENTED / READ_ONLY
+## MCF Astryx Component/Template Discovery — CURRENT_IMPLEMENTED
 
-- Skill `MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0` integrada ao `main` pela PR #579, merge squash `80ca638`.
-- Executável pelo SkillExecutor, mas disabled-by-default; exige `MCF_ASTRYX_CLI_ENABLED=true` e `MCF_ASTRYX_WORKSPACE_ROOT` absoluto e isolado.
-- Allowlist fechada: `component --list` e `component <Name> --detail compact`; não permite escrita, scaffolding, shell ou deploy.
-- Resolve e verifica os pacotes locais `@astryxdesign/cli` e `@astryxdesign/core`, raízes, nomes e versões; o CLI reportado deve corresponder ao Core instalado.
-- Execução via `process.execPath` + `execFile`, sem shell/PATH fallback e com ambiente filho allowlisted; receipts assinados validam provenance, workspace, saída, digest e operação.
-- Foundation: 1.160 testes aprovados, 5 skipped; integração com CLI/Core 0.7.17 aprovada; MCF Qualification, Container Smoke, Production Readiness e Documentation validation aprovados.
-- A capability é somente descoberta visual read-only; não equivale a scaffolding ou desenvolvimento full-stack completo.
+- Skill `MCF-ASTRYX-COMPONENT-DISCOVERY@0.2.0` mantém o ID executável já integrado pela PR #579; esta branch amplia a definição para READ_ONLY + READ_AND_PROPOSE.
+- Continua disabled-by-default; exige `MCF_ASTRYX_CLI_ENABLED=true` e `MCF_ASTRYX_WORKSPACE_ROOT` absoluto e isolado.
+- READ_ONLY: componentes, documentação compacta, catálogo de templates, fonte e skeleton.
+- READ_AND_PROPOSE: `draft-template-scaffold` copia um único arquivo somente para scratch descartável, valida path aprovado, source/diff SHA-256 e remove o workspace antes do receipt.
+- O adapter Astryx nunca aplica diffs no checkout. Aplicação é delegada a `MCF-IMPLEMENT-CHANGE` / CodeBuddy com `SCOPED_WRITE`, `authorizedScope=true`, HDF v1.1 aprovado por LEANDRO, TEAM_FIRST, base SHA exato, paths aprovados e rollback.
+- Resolve e verifica os pacotes locais `@astryxdesign/cli` e `@astryxdesign/core`; execução via `process.execPath` + `execFile`, sem shell/PATH fallback e com ambiente filho allowlisted.
+- A feature branch `feat/mcf-astryx-governed-scaffolding` adiciona unit tests, MissionRuntime E2E, real CLI integration e o piloto não produtivo; ainda não equivale a estado do `main` até merge e CI verde.
 
 ## MCF Full-Stack Visual Development — EXPERIMENTAL
 
 - Skill registrada: `MCF-FULLSTACK-VISUAL-DEVELOPMENT@0.1.0`.
 - Astryx (Meta) é provider visual opcional; não é backend, framework full-stack nem agente orquestrador.
 - A arquitetura preserva contratos independentes de API/domínio/dados, autorização server-side e validação MCF.
-- A Skill é contrato de orquestração experimental, **não executável pelo runtime atual**.
-- A descoberta visual read-only está integrada e é contabilizada entre as 19 Skills executáveis; continua limitada às duas operações allowlisted e disabled-by-default.
-- Scaffolding em diff-proposal, escrita governada por HDF/SCOPED_WRITE, geração backend/full-stack, benchmark visual e piloto não produtivo permanecem PENDING.
-- Não contar a Skill full-stack entre as executáveis; a descoberta Astryx é executável apenas em modo read-only.
-- Produção não é afetada; merge em main não autoriza deploy.
+- A Skill continua contrato de orquestração experimental, **não executável pelo runtime atual**.
+- A capacidade de template/scaffold e aplicação governada está implementada nesta branch, mas precisa passar no piloto full-stack, visual regression, acessibilidade e gates MCF antes de promoção.
+- O piloto `examples/astryx-fullstack-pilot/` usa React 19 + Astryx, API autenticada server-side, PostgreSQL com schema isolado, migration, Playwright desktop/mobile, axe e pixel baselines.
+- Não contar a Skill full-stack entre as 19 Skills executáveis; produção não é afetada e merge em main não autoriza deploy.
 - Fonte técnica do provider: https://github.com/meta/astryx e https://github.com/meta/astryx/wiki/System-Architecture.
