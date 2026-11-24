@@ -1,6 +1,6 @@
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -25,7 +25,7 @@ const skill: McfSkillDefinition = {
   requiredInputs: [],
   allowedTools: [ASTRYX_PROVIDER],
   forbiddenTools: ['write', 'delete', 'publish', 'deploy'],
-  permissionProfile: 'READ_ONLY',
+  permissionProfile: 'READ_AND_PROPOSE',
   executionSteps: [],
   requiredEvidence: [],
   acceptanceCriteria: [],
@@ -124,13 +124,17 @@ describe('Astryx CLI discovery adapter', () => {
     workspace = undefined;
   });
 
-  it('supports only the exact skill/provider/resource/read operations', () => {
+  it('supports only the exact skill/provider/resource and allowlisted discovery/proposal operations', () => {
     const subject = new AstryxCliDiscoveryAdapter(evidence(), true, '/tmp');
 
     expect(subject.supports(request())).toBe(true);
     expect(subject.supports(request('read-component-docs', { componentName: 'Button' }))).toBe(
       true,
     );
+    expect(subject.supports(request('list-templates'))).toBe(true);
+    expect(subject.supports(request('read-template-source', { templateId: 'Dashboard' }))).toBe(true);
+    expect(subject.supports(request('read-template-skeleton', { templateId: 'Dashboard' }))).toBe(true);
+    expect(subject.supports(request('draft-template-scaffold'))).toBe(true);
     expect(subject.supports(request('publish'))).toBe(false);
     expect(
       subject.supports({
@@ -361,6 +365,98 @@ describe('Astryx CLI discovery adapter', () => {
     await expect(
       subject.execute(request('read-component-docs', { componentName: 'Button; rm -rf /' })),
     ).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
+    expect(runner).not.toHaveBeenCalled();
+  });
+
+  it('reads template catalog, source and skeleton with fixed argv and bounded receipts', async () => {
+    workspace = await createWorkspace();
+    const runner = vi.fn(async (_binary: string, args: string[]) => {
+      if (args.includes('--list')) {
+        expect(args).toEqual([localCliBinary(workspace!), '--json', 'template', '--list']);
+        return { stdout: jsonResponse('template.list', { templates: [{ id: 'Dashboard' }] }), stderr: '' };
+      }
+      if (args.includes('--skeleton')) {
+        expect(args).toEqual([localCliBinary(workspace!), '--json', 'template', 'Dashboard', '--skeleton']);
+        return { stdout: jsonResponse('template.skeleton', { skeleton: { rows: [] } }), stderr: '' };
+      }
+      expect(args).toEqual([localCliBinary(workspace!), '--json', 'template', 'Dashboard']);
+      return { stdout: jsonResponse('template.show', { source: 'export default function Dashboard() {}' }), stderr: '' };
+    });
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner);
+
+    const list = await subject.execute(request('list-templates'));
+    const source = await subject.execute(request('read-template-source', { templateId: 'Dashboard' }));
+    const skeleton = await subject.execute(request('read-template-skeleton', { templateId: 'Dashboard' }));
+
+    expect(list.metadata).toMatchObject({ readOnly: true, outputDigest: expect.stringMatching(/^[a-f0-9]{64}$/u) });
+    expect(source.metadata).toMatchObject({ readOnly: true, templateId: 'Dashboard' });
+    expect(skeleton.metadata).toMatchObject({ readOnly: true, templateId: 'Dashboard' });
+    expect(runner).toHaveBeenCalledTimes(3);
+  });
+
+  it('creates a signed scaffold proposal only inside a disposable workspace', async () => {
+    workspace = await createWorkspace();
+    const source = 'export function PilotCard() { return <section>pilot</section>; }\\n';
+    const runner = vi.fn(async (_binary: string, args: string[], options: unknown) => {
+      const cwd = (options as { cwd: string }).cwd;
+      expect(args).toEqual([
+        localCliBinary(workspace!), '--json', 'template', 'Dashboard', 'src/components/PilotCard.tsx',
+      ]);
+      const target = join(cwd, 'src/components/PilotCard.tsx');
+      await mkdir(dirname(target), { recursive: true });
+      await writeFile(target, source);
+      return {
+        stdout: jsonResponse('template.copy', {
+          filesCopied: 1,
+          fileName: 'PilotCard.tsx',
+          outputDir: dirname(target),
+        }),
+        stderr: '',
+      };
+    });
+    const inputs = {
+      templateId: 'Dashboard',
+      targetPath: 'src/components/PilotCard.tsx',
+      baseCommitSha: 'a'.repeat(40),
+      repository: 'leon337/multiagent-collaboration-framework',
+      allowed_paths: ['src/components'],
+    };
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner);
+    const receipt = await subject.execute(request('draft-template-scaffold', inputs));
+
+    expect(receipt).toMatchObject({
+      operation: 'draft-template-scaffold',
+      commitSha: 'a'.repeat(40),
+      metadata: {
+        readOnly: false,
+        proposalOnly: true,
+        writeMode: 'DISPOSABLE_PROPOSAL_ONLY',
+        proposalWorkspaceCleaned: true,
+        templateId: 'Dashboard',
+        targetPath: 'src/components/PilotCard.tsx',
+        approvedPaths: ['src/components'],
+        diffDigest: expect.stringMatching(/^[a-f0-9]{64}$/u),
+      },
+    });
+    const scratch = String(receipt.metadata.proposalWorkspace);
+    await expect(import('node:fs/promises').then(({ stat }) => stat(scratch))).rejects.toThrow();
+    expect(Buffer.from(String((receipt.metadata.sourceArtifact as { data: string }).data), 'base64').toString('utf8')).toBe(source);
+    expect(runner).toHaveBeenCalledTimes(1);
+    expect(() => new PermissionEngine().assertAllowed(skill, 'Mestre', request('draft-template-scaffold', inputs).tool, inputs)).not.toThrow();
+  });
+
+  it('rejects scaffold path traversal and unapproved paths before invoking the CLI', async () => {
+    workspace = await createWorkspace();
+    const runner = vi.fn();
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner as never);
+    const inputs = {
+      templateId: 'Dashboard',
+      targetPath: '../outside/Pilot.tsx',
+      baseCommitSha: 'a'.repeat(40),
+      repository: 'leon337/multiagent-collaboration-framework',
+      allowed_paths: ['src/components'],
+    };
+    await expect(subject.execute(request('draft-template-scaffold', inputs))).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
     expect(runner).not.toHaveBeenCalled();
   });
 
