@@ -938,7 +938,7 @@ function validateAstryxDiscoveryReceipt(
     'coreVersion',
     'Astryx discovery evidence requires coreVersion',
   );
-  const semver = /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$/u;
+  const semver = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
   if (
     !semver.test(cliVersion) ||
     !semver.test(coreVersion) ||
@@ -962,7 +962,7 @@ function validateAstryxDiscoveryReceipt(
     'Astryx discovery evidence requires command',
   );
   const executable = command[0];
-  if (typeof executable !== 'string' || !/(?:^|[\\/])pnpm(?:\\.cmd)?$/iu.test(executable)) {
+  if (typeof executable !== 'string' || !/(?:^|[\\/])pnpm(?:\.cmd)?$/iu.test(executable)) {
     reject('Astryx discovery evidence must use the pnpm project runner');
   }
 
