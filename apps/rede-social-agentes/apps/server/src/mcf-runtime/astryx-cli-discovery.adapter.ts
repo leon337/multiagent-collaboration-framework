@@ -344,7 +344,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
           return invalidContext('targetPath must be a safe repository-relative file path');
         }
         const segments = rawPath.split('/');
-        if (segments.some((segment) => !segment || segment === '.' || segment === '..') || !/\\.(?:tsx|jsx|ts|js)$/u.test(rawPath)) {
+        if (segments.some((segment) => !segment || segment === '.' || segment === '..') || !/\.(?:tsx|jsx|ts|js)$/u.test(rawPath)) {
           return invalidContext('targetPath must be a safe TypeScript or JavaScript source file');
         }
         targetPath = rawPath;
@@ -354,7 +354,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         }
         baseCommitSha = rawSha.toLowerCase();
         const repository = request.inputs.repository;
-        if (typeof repository !== 'string' || !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\\/[A-Za-z0-9._-]{1,100}$/u.test(repository)) {
+        if (typeof repository !== 'string' || !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/[A-Za-z0-9._-]{1,100}$/u.test(repository)) {
           return invalidContext('repository must be a canonical owner/repository identifier');
         }
         if (!Array.isArray(request.inputs.allowed_paths) || request.inputs.allowed_paths.length === 0) {
@@ -444,13 +444,13 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         if (typeof data.outputDir === 'string' && (!isAbsolute(data.outputDir) || resolve(data.outputDir) !== dirname(destination))) {
           return invalid('Astryx template copy outputDir does not match the disposable proposal path');
         }
-        const normalizedContent = sourceContent.replace(/\\r\\n/gu, '\\n');
-        const lines = normalizedContent.endsWith('\\n') ? normalizedContent.slice(0, -1).split('\\n') : normalizedContent.split('\\n');
+        const normalizedContent = sourceContent.replace(/\r\n/gu, '\n');
+        const lines = normalizedContent.endsWith('\n') ? normalizedContent.slice(0, -1).split('\n') : normalizedContent.split('\n');
         diff = [
           `diff --git a/${targetPath} b/${targetPath}`,
           'new file mode 100644', '--- /dev/null', `+++ b/${targetPath}`,
           `@@ -0,0 +1,${lines.length} @@`, ...lines.map((line) => `+${line}`), '',
-        ].join('\\n');
+        ].join('\n');
         diffDigest = createHash('sha256').update(diff).digest('hex');
       } finally {
         await rm(proposalWorkspace, { recursive: true, force: true });
