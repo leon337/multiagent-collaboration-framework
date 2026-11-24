@@ -2,7 +2,7 @@
 
 **ID:** MCF-FULLSTACK-VISUAL-DEVELOPMENT  
 **Versão:** 0.1.0  
-**Classificação:** EXPERIMENTAL — contrato de orquestração registrado; a descoberta de componentes tem adapter read-only separado; executor full-stack e escrita/scaffolding continuam pendentes.  
+**Classificação:** EXPERIMENTAL — contrato de orquestração registrado; descoberta de componentes/templates e proposta de scaffold em workspace descartável implementadas; aplicação governada via CodeBuddy e piloto full-stack em qualificação.  
 **Autoridade:** LEANDRO  
 **Coordenação:** MESTRE
 
@@ -45,8 +45,9 @@ MCF Product + UX + Architecture
 MCF Full-Stack Visual Development (orchestration contract)
           |
           +--> Visual Provider Adapter (Astryx first; alternatives later)
-          |       +-- read-only component discovery / docs
-          |       +-- template source/skeleton and scaffold (future gated capability)
+          |       +-- component/template source and skeleton discovery (READ_ONLY)
+          |       +-- disposable template scaffold proposal (READ_AND_PROPOSE)
+          |       +-- apply proposal via CodeBuddy only after HDF + SCOPED_WRITE
           |       +-- theme and token guidance
           |
           +--> Frontend implementation
@@ -80,15 +81,16 @@ A capability deve classificar operações pelo efeito real, não pelo nome do co
 
 | Classe | Operações | Política MCF |
 |---|---|---|
-| READ_ONLY integrado ao `main` pela PR #579 | `component --list`; `component <Name> --detail compact` | Allowlist fechada, argv fixo, workspace isolado, CLI/Core locais verificados e receipt validado |
-| READ_ONLY futuro | `docs`, `search`, `template --list`, `template <id>`, `template <id> --skeleton`, `build`, `doctor` | Só habilitar após adapter específico, schema semântico, limites de saída e testes |
-| Escrita governada | `template copy`, `swizzle`, `init`, `theme add/use/build`, `upgrade --apply` e subcomandos experimentais que geram/alteram arquivos | Nunca executar diretamente no checkout; gerar proposta/diff em workspace descartável e exigir HDF + SCOPED_WRITE, paths permitidos, receipt, testes e rollback |
+| READ_ONLY integrado | `component --list`; `component <Name> --detail compact`; `template --list`; `template <id>`; `template <id> --skeleton` | Allowlist fechada, argv fixo, CLI/Core locais verificados, limites de saída e receipt semântico |
+| READ_AND_PROPOSE integrado | `template <id> <path>` para um único arquivo de scaffold | Executar apenas em workspace descartável; gerar source + diff + digest assinado; limpar scratch; sem checkout write |
+| SCOPED_WRITE governado | Aplicação do receipt via `MCF-IMPLEMENT-CHANGE` / CodeBuddy | Exigir HDF v1.1 aprovado por LEANDRO, TEAM_FIRST, `authorizedScope`, base SHA exato, paths permitidos, receipt, rollback e handoff de testes |
+| Futuro / não habilitado | `swizzle`, `init`, `theme add/use/build`, `upgrade --apply`, deploy e outras operações de escrita Astryx | Não allowlistar até adapter, schema semântico, rollback e testes específicos; nunca executar diretamente no checkout |
 
 Regras adicionais:
 
 1. Não aceitar comandos, flags ou argumentos arbitrários enviados pelo agente; cada operação tem allowlist e argv canônico.
 2. Não herdar variáveis secretas do processo MCF para o CLI; usar ambiente mínimo e diretórios HOME/config/cache/temp dentro do workspace isolado.
-3. A descoberta integrada pela PR #579 é somente leitura; não habilita template copy, swizzle, init, theme writes, codemods ou deploy.
+3. A capability de template copy integrada nesta branch escreve apenas em scratch; a aplicação no checkout é responsabilidade do CodeBuddy sob HDF + SCOPED_WRITE. Swizzle, init, theme writes, codemods e deploy continuam fora da allowlist.
 4. O CLI nunca recebe autorização para shell arbitrário, escrita fora do workspace aprovado ou deploy.
 
 ## 5. Fluxo operacional
@@ -97,13 +99,15 @@ Regras adicionais:
 2. Definir requisitos, jornadas, critérios de aceite e classificação de risco.
 3. Projetar arquitetura frontend/backend/dados/integrações e contratos.
 4. Selecionar provider visual. Astryx só é selecionado após verificação de compatibilidade.
-5. Consultar CLI para documentação, componentes e templates; registrar versão e comandos executados.
-6. Implementar UI isolada e integração com APIs tipadas.
-7. Implementar backend, autorização server-side, persistência e migrações.
-8. Validar fluxos críticos em viewport desktop/mobile, teclado, foco, contraste e leitor de tela conforme risco.
-9. Executar testes de unidade, API, integração, E2E, segurança e performance pertinentes.
-10. Produzir PRF, review, CI e PR; merge somente após gates vigentes.
-11. Produção permanece separada de merge em main; promoção exige autorização de produção específica e SHA exato.
+5. Consultar CLI para documentação, componentes, templates, fontes e esqueletos; registrar versão e comandos executados.
+6. Gerar proposta de scaffold em workspace descartável; validar source/diff/digest e paths aprovados.
+7. Aplicar a proposta somente via CodeBuddy em SCOPED_WRITE, após HDF aprovado por LEANDRO, em workspace Git limpo e com rollback.
+8. Implementar UI isolada e integração com APIs tipadas.
+9. Implementar backend, autorização server-side, persistência e migrações.
+10. Validar fluxos críticos em viewport desktop/mobile, teclado, foco, contraste e leitor de tela conforme risco.
+11. Executar testes de unidade, API, integração, E2E, segurança, acessibilidade e regressão visual pertinentes.
+12. Produzir PRF, review, CI e PR; merge somente após gates vigentes.
+13. Produção permanece separada de merge em main; promoção exige autorização de produção específica e SHA exato.
 
 ## 6. Matriz de responsabilidade
 
@@ -136,31 +140,25 @@ Regras adicionais:
 
 ## 8. Estado de implementação e próximos limites
 
-Esta PR registra a Skill experimental e a arquitetura. **A Skill full-stack continua não executável pelo runtime.** A primeira capability visual read-only já está integrada ao `main` pela PR #579, merge squash `80ca638`.
+A descoberta read-only inicial foi integrada ao `main` pela PR #579, merge squash `80ca638`. Esta branch amplia a capability com templates e propostas de scaffold, e integra o caminho de aplicação governada ao adapter CodeBuddy. A Skill full-stack permanece `EXPERIMENTAL` até o piloto e todos os gates passarem no SHA exato.
 
-### Capability atualmente disponível no main
+### Capability visual/template disponível nesta branch
 
-`MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0` é `CURRENT_IMPLEMENTED`, disabled-by-default e limitada a `component --list` e `component <Name> --detail compact`. O adapter verifica CLI/Core locais e versões, usa workspace isolado e ambiente filho allowlisted, executa sem shell/PATH fallback e emite receipt assinado validado pelo EvidenceValidator. Não escreve no checkout, não faz scaffolding e não faz deploy.
+`MCF-ASTRYX-COMPONENT-DISCOVERY@0.2.0` permanece disabled-by-default e oferece component list/docs, template list/source/skeleton e `draft-template-scaffold`. A última operação copia exatamente um arquivo para workspace descartável, gera source + diff + SHA-256, valida paths aprovados e limpa o scratch. Não grava no checkout.
 
-### Pendências para desenvolvimento visual/full-stack completo
+### Aplicação governada
 
-1. Adapter para template source/skeleton e scaffolding em diff-proposal, sujeito a HDF, paths permitidos e diff review.
-2. Receipts e Evidence Validator para propostas de escrita, com proveniência e diff digest.
-3. Aplicação de diffs somente por SCOPED_WRITE, com aprovação explícita e rollback.
-4. Benchmark visual e projeto-piloto full-stack não produtivo cobrindo frontend, API, banco isolado, autorização server-side, acessibilidade, visual regression e rollback.
-5. Evidências E2E de uma aplicação completa antes de promover a Skill de EXPERIMENTAL para CURRENT_IMPLEMENTED.
+A aplicação ocorre separadamente por `MCF-IMPLEMENT-CHANGE` / CodeBuddy. Quando um receipt de scaffold é fornecido, o adapter exige `authorizedScope=true`, `SCOPED_WRITE`, HDF v1.1 com `actionClass=SCOPED_WRITE`, TEAM_FIRST, referência ao receipt exato e aprovação explícita de LEANDRO. O SHA base e o repositório precisam corresponder ao workspace Git limpo; somente paths aprovados podem mudar. A execução ocorre em Git worktree descartável + Bubblewrap; publicação não comita e rollback transacional é verificado.
 
-Não habilitar execução arbitrária de shell nem expor o CLI a produção. A descoberta integrada pela PR #579 permanece read-only e disabled-by-default. Nenhuma escrita ou deploy é permitido nesta capability.
+### Projeto-piloto não produtivo
 
-## 9. Projeto-piloto recomendado
+`examples/astryx-fullstack-pilot/` demonstra React 19 + Astryx, Vite, API autenticada server-side, PostgreSQL com schema isolado por execução, migration SQL, Playwright desktop/mobile, axe accessibility e pixel baselines. O workflow separado não acessa banco Potiguar nem executa deploy.
 
-Usar uma aplicação interna não produtiva com:
-- dashboard responsivo;
-- autenticação de teste;
-- CRUD com API;
-- banco isolado e migração reversível;
-- estados loading/empty/error/success;
-- auditoria visual e E2E;
-- deploy de preview, nunca produção.
+### Critérios restantes antes de promover a Skill
 
-O piloto deve comparar Astryx com a implementação visual existente em esforço, consistência, acessibilidade, regressões, bundle e manutenção. A adoção será decidida por evidência, não por preferência de ferramenta.
+1. Gerar e revisar lockfile do piloto e baselines visuais do primeiro run.
+2. Obter aprovação do workflow full-stack pilot e dos workflows MCF no head final.
+3. Confirmar review técnico e ausência de threads abertas.
+4. Promover a Skill de EXPERIMENTAL somente depois de todos os critérios anteriores.
+
+Não habilitar shell arbitrário nem expor o CLI a produção. Astryx não faz backend, domínio, autenticação, deploy ou governança. Nenhuma escrita ou deploy em produção é autorizado por esta integração.
