@@ -35,6 +35,7 @@ const skill: McfSkillDefinition = {
   handoffTo: 'Mestre',
 };
 
+// The Foundation workflow installs the pinned CLI/Core packages in RUNNER_TEMP.
 const realCliTest = process.env.MCF_ASTRYX_REAL_CLI_WORKSPACE ? it : it.skip;
 
 describe('Astryx pinned CLI real integration', () => {
