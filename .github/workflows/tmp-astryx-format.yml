@@ -35,6 +35,7 @@ jobs:
             ../../docs/MCF-CURRENT-STATE.md \
             ../../docs/architecture/MCF-FULLSTACK-VISUAL-DEVELOPMENT.md \
             ../../docs/operations/MCF-ASTRYX-CLI-ADAPTER.md \
+            ../../examples/astryx-fullstack-pilot/README.md \
             ../../examples/astryx-fullstack-pilot/src/styles.css \
             ../../examples/astryx-fullstack-pilot/tests/e2e.mjs \
             ../../.github/workflows/mcf-astryx-fullstack-pilot.yml
