@@ -28,7 +28,9 @@ const phaseBody = {
   expectedMissionVersion: 1,
 };
 describe('MissionRuntimeController authority provenance', () => {
-  it('passes authenticated human identity separately from caller-controlled phase inputs', async () => {
+  it(
+    'passes authenticated human identity separately from caller-controlled phase inputs',
+    async () => {
     const executePhase = vi.fn(async () => ({ ok: true }));
     const runtime = { executePhase } as unknown as MissionRuntimeService;
     const controller = new MissionRuntimeController(runtime);
@@ -56,7 +58,9 @@ describe('MissionRuntimeController authority provenance', () => {
     );
   });
 
-  it('generates authority sourceRef entirely server-side without session or correlation identifiers', async () => {
+  it(
+    'generates authority sourceRef entirely server-side without session or correlation identifiers',
+    async () => {
     const executePhase = vi.fn(async () => ({ ok: true }));
     const runtime = { executePhase } as unknown as MissionRuntimeService;
     const controller = new MissionRuntimeController(runtime);
@@ -140,7 +144,9 @@ describe('MissionRuntimeController authority provenance', () => {
     expect(executor.execute).not.toHaveBeenCalled();
   });
 
-  it('binds CodeBuddy execution context to the persisted mission project, not caller HDF inputs', async () => {
+  it(
+    'binds CodeBuddy execution context to the persisted mission project, not caller HDF inputs',
+    async () => {
     const persistedProjectId = 'project-from-persisted-mission';
     const executor = {
       execute: vi.fn(async () => {
@@ -153,7 +159,8 @@ describe('MissionRuntimeController authority provenance', () => {
         contract: {
           title: 'Persisted project binding mission',
           objective: 'Bind external scoped writes to the project stored on the mission.',
-          expectedOutcome: 'Caller-controlled project identifiers cannot replace persisted mission identity.',
+          expectedOutcome:
+            'Caller-controlled project identifiers cannot replace persisted mission identity.',
           projectId: persistedProjectId,
           scope: ['src/components'],
           outOfScope: ['production'],
