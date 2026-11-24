@@ -178,8 +178,10 @@ skills:
     version: 1.0.0
     purpose: Produzir alteração de código dentro do escopo aprovado.
     owner_agents: [Rafael, Eduardo, Helena, Andre, Tiago, Daniela]
-    trigger_phrases: ["implementar", "corrigir", "integrar", "criar funcionalidade"]
-    required_inputs: [approved_scope, acceptance_criteria, repository, allowed_paths]
+    trigger_phrases:
+      ["implementar", "corrigir", "integrar", "criar funcionalidade"]
+    required_inputs:
+      [approved_scope, acceptance_criteria, repository, allowed_paths]
     optional_inputs:
       [
         branch,
@@ -216,7 +218,8 @@ skills:
         registrar_handoff_de_testes,
         passar_para_revisao,
       ]
-    required_evidence: [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
+    required_evidence:
+      [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
     expected_outputs: [implementation, technical_notes]
     acceptance_criteria:
       [

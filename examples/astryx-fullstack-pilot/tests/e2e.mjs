@@ -133,7 +133,9 @@ try {
     .getByLabel("Título da tarefa")
     .evaluate((element) => element.getBoundingClientRect().height);
   if (desktopInputHeight < 40)
-    throw new Error("Desktop task input is shorter than the 40px usability minimum.");
+    throw new Error(
+      "Desktop task input is shorter than the 40px usability minimum.",
+    );
   await page.getByLabel("Título da tarefa").fill("MCF Astryx Pilot");
   await page.getByRole("button", { name: "Adicionar tarefa" }).click();
   await page
@@ -186,7 +188,9 @@ try {
     .getByLabel("Título da tarefa")
     .evaluate((element) => element.getBoundingClientRect().height);
   if (mobileInputHeight < 40)
-    throw new Error("Mobile task input is shorter than the 40px usability minimum.");
+    throw new Error(
+      "Mobile task input is shorter than the 40px usability minimum.",
+    );
   const mobileOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );
