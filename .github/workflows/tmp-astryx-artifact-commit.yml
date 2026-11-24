@@ -41,8 +41,8 @@ jobs:
           path = Path(".github/workflows/mcf-astryx-fullstack-pilot.yml")
           content = path.read_text()
           content, install_count = re.subn(
-              r"      - name: Install pinned pilot dependencies and create lockfile if absent\\n        run: \\|\\n.*?          fi\\n",
-              "      - name: Install pinned pilot dependencies from committed lockfile\\n        run: npm ci --no-audit --no-fund\\n",
+              r"      - name: Install pinned pilot dependencies and create lockfile if absent\n        run: \|\n.*?          fi\n",
+              "      - name: Install pinned pilot dependencies from committed lockfile\n        run: npm ci --no-audit --no-fund\n",
               content,
               count=1,
               flags=re.S,
@@ -50,8 +50,8 @@ jobs:
           if install_count != 1:
               raise SystemExit("Could not replace the first-run npm install block.")
           content, baseline_count = re.subn(
-              r'      - name: Run API, database, browser, accessibility and visual checks\\n        env:\\n          UPDATE_VISUAL_BASELINES: "1"\\n        run: npm run test:e2e\\n',
-              "      - name: Run API, database, browser, accessibility and visual checks\\n        run: npm run test:e2e\\n",
+              r'      - name: Run API, database, browser, accessibility and visual checks\n        env:\n          UPDATE_VISUAL_BASELINES: "1"\n        run: npm run test:e2e\n',
+              "      - name: Run API, database, browser, accessibility and visual checks\n        run: npm run test:e2e\n",
               content,
               count=1,
           )
