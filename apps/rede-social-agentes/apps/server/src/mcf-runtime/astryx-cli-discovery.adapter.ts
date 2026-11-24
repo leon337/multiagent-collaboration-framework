@@ -631,7 +631,10 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         outputDigest,
       },
     });
-    if (isProposal && Buffer.byteLength(JSON.stringify(receipt), 'utf8') > MAX_SIGNED_PROPOSAL_RECEIPT_BYTES) {
+    if (
+      isProposal &&
+      Buffer.byteLength(JSON.stringify(receipt), 'utf8') > MAX_SIGNED_PROPOSAL_RECEIPT_BYTES
+    ) {
       return invalid('Astryx signed proposal receipt exceeds the request-safe size limit');
     }
     return receipt;
