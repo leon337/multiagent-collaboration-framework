@@ -90,6 +90,8 @@ acceptance:
   - hdf_scoped_write_and_rollback_proven
   - pilot_fullstack_e2e_pass
   - visual_baselines_committed_and_verified
+  - autonomous_mcf_mission_e2e_pass
+  - real_codebuddy_host_scoped_write_pass
   - no_secrets
   - ci_green
   - no_unapproved_production_effect
