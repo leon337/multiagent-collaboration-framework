@@ -51,7 +51,7 @@ Capacidades comprovadas incluem:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - dispatcher de ações externas e adapters com evidência verificável;
-- **19 skills executáveis no servidor atual** após a integração do adapter Astryx de descoberta em modo leitura; esta branch candidata adiciona **7 Skills web EXPERIMENTAL/orchestration-ready** e uma Skill full-stack experimental de orquestração (27 registradas no total), sem contar a Skill full-stack como executável;
+- **19 skills executáveis no servidor atual** após a integração do adapter Astryx de descoberta em modo leitura; esta branch candidata mantém **7 Skills web EXPERIMENTAL/orchestration-ready** e uma Skill full-stack experimental de orquestração, não contadas como executáveis;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA, readiness/version e recovery por redeploy;
