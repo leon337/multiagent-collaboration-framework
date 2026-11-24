@@ -756,7 +756,7 @@ Runner online, workflow health aprovado, capability executável no MissionRuntim
 
 ## MCF Full-Stack Visual Development — EXPERIMENTAL
 
-- Skill registrada: `MCF-FULLSTACK-VISUAL-DEVELOPMENT@0.2.0`.
+- Contrato de orquestração documentado em `skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml@0.2.0`; deliberadamente fora de `skills/registry.yaml`, que alimenta o runtime executável.
 - Astryx (Meta) é provider visual opcional; não é backend, framework full-stack nem agente orquestrador.
 - A arquitetura preserva contratos independentes de API/domínio/dados, autorização server-side e validação MCF.
 - A Skill continua contrato de orquestração experimental, **não executável pelo runtime atual**.
