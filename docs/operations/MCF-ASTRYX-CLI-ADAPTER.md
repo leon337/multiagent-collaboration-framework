@@ -1,6 +1,6 @@
 # MCF Astryx CLI Discovery and Scaffold Proposal Adapter
 
-**Status:** implemented in this branch; disabled by default.  
+**Status:** integrated into `main` by PR #581 (`5d64ffcd`); disabled by default.  
 **Skill:** `MCF-ASTRYX-COMPONENT-DISCOVERY@0.2.0`  
 **Provider:** `mcf-astryx-cli`  
 **Permission profile:** `READ_AND_PROPOSE`

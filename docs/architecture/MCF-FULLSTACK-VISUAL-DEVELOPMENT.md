@@ -90,7 +90,7 @@ Regras adicionais:
 
 1. Não aceitar comandos, flags ou argumentos arbitrários enviados pelo agente; cada operação tem allowlist e argv canônico.
 2. Não herdar variáveis secretas do processo MCF para o CLI; usar ambiente mínimo e diretórios HOME/config/cache/temp dentro do workspace isolado.
-3. A capability de template copy integrada nesta branch escreve apenas em scratch; a aplicação no checkout é responsabilidade do CodeBuddy sob HDF + SCOPED_WRITE. Swizzle, init, theme writes, codemods e deploy continuam fora da allowlist.
+3. A capability de template copy integrada pela PR #581 escreve apenas em scratch; a aplicação no checkout é responsabilidade do CodeBuddy sob HDF + SCOPED_WRITE. Swizzle, init, theme writes, codemods e deploy continuam fora da allowlist.
 4. O CLI nunca recebe autorização para shell arbitrário, escrita fora do workspace aprovado ou deploy.
 
 ## 5. Fluxo operacional
@@ -140,9 +140,9 @@ Regras adicionais:
 
 ## 8. Estado de implementação e próximos limites
 
-A descoberta read-only inicial foi integrada ao `main` pela PR #579, merge squash `80ca638`. Esta branch amplia a capability com templates e propostas de scaffold, e integra o caminho de aplicação governada ao adapter CodeBuddy. O contrato full-stack permanece em `skills/registry.yaml` com `status: EXPERIMENTAL`; o `SkillRegistryLoader` agora exclui explicitamente entradas experimentais do mapa executável. A promoção depende de missão autônoma MCF ponta a ponta aprovada no SHA exato.
+A descoberta read-only inicial foi integrada ao `main` pela PR #579, merge squash `80ca638`. A PR #581 (`5d64ffcd`) ampliou a capability com templates e propostas de scaffold, e integrou o caminho de aplicação governada ao adapter CodeBuddy. O contrato full-stack permanece em `skills/registry.yaml` com `status: EXPERIMENTAL`; o `SkillRegistryLoader` agora exclui explicitamente entradas experimentais do mapa executável. A promoção depende de missão autônoma MCF ponta a ponta aprovada no SHA exato.
 
-### Capability visual/template disponível nesta branch
+### Capability visual/template disponível na main
 
 `MCF-ASTRYX-COMPONENT-DISCOVERY@0.2.0` permanece disabled-by-default e oferece component list/docs, template list/source/skeleton e `draft-template-scaffold`. A última operação copia exatamente um arquivo para workspace descartável, gera source + diff + SHA-256, valida paths aprovados e limpa o scratch. Não grava no checkout.
 
