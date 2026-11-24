@@ -105,6 +105,37 @@ describe('EvidenceValidator', () => {
     expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).not.toThrow();
   });
 
+  it('accepts the bounded full template catalog output from the pinned CLI', () => {
+    const validator = new EvidenceValidator();
+    const expected = {
+      provider: 'mcf-astryx-cli',
+      operation: 'list-templates',
+      resource: 'astryx-design-system',
+    };
+    const metadata = astryxReceiptMetadata();
+    const stdout =
+      JSON.stringify({
+        apiVersion: 1,
+        type: 'template.list',
+        data: { templates: [] },
+        meta: { answeredBy: { cli: '0.7.2', core: '0.7.2', copy: 'project' } },
+      }) + ' '.repeat(300_000);
+    metadata.command = [process.execPath, metadata.cliBinary, '--json', 'template', '--list'];
+    metadata.stdout = stdout;
+    metadata.outputBytes = Buffer.byteLength(stdout, 'utf8');
+    metadata.outputDigest = createHash('sha256').update(stdout).digest('hex');
+    const receipt = validator.createTrustedReceipt({
+      ...expected,
+      externalId: null,
+      commitSha: null,
+      status: 'SUCCEEDED',
+      observedAt: new Date().toISOString(),
+      metadata,
+    });
+
+    expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).not.toThrow();
+  });
+
   it('rejects a component catalog with a non-default detail level', () => {
     const validator = new EvidenceValidator();
     const expected = {
