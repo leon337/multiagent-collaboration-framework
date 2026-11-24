@@ -27,6 +27,7 @@ Fontes primárias consultadas em 2026-11-24:
 - https://github.com/meta/astryx/wiki/System-Architecture
 - https://github.com/meta/astryx/wiki/Distribution
 - https://github.com/meta/astryx/wiki/Contributing-Templates
+- https://astryx.atmeta.com/docs/cli
 
 Astryx é um design system open source em Beta, baseado em React 19+ e StyleX internamente. O projeto publica `@astryxdesign/core`, CLI, build tooling e temas. Oferece componentes tipados, CSS pré-compilado, theming e templates. StyleX é detalhe de autoria: aplicações consumidoras usam o CSS pré-compilado e podem customizar com CSS comum ou `className`. A CLI é a interface de descoberta para agentes (por exemplo, listagem de componentes, documentação compacta, fonte e scaffolding).
 
@@ -72,6 +73,23 @@ MCF HDF + Permission Engine + Evidence Validator + Receipt + PR gates
 8. Não inventar API de componente. Consultar CLI/documentação da versão instalada.
 9. Se Astryx não servir à stack, usar outro provider ou design system existente sem bloquear backend.
 10. Nenhum deploy/ação destrutiva decorre desta Skill sem autorização e gate apropriados.
+
+### 4.1 Política de comandos e fronteira de escrita Astryx
+
+A capability deve classificar operações pelo efeito real, não pelo nome do comando:
+
+| Classe | Operações | Política MCF |
+|---|---|---|
+| READ_ONLY implementado na PR #579 | `component --list`; `component <Name> --detail compact` | Allowlist fechada, argv fixo, workspace isolado, CLI/Core locais verificados e receipt validado |
+| READ_ONLY futuro | `docs`, `search`, `template --list`, `template <id>`, `template <id> --skeleton`, `build`, `doctor` | Só habilitar após adapter específico, schema semântico, limites de saída e testes |
+| Escrita governada | `template copy`, `swizzle`, `init`, `theme add/use/build`, `upgrade --apply` e subcomandos experimentais que geram/alteram arquivos | Nunca executar diretamente no checkout; gerar proposta/diff em workspace descartável e exigir HDF + SCOPED_WRITE, paths permitidos, receipt, testes e rollback |
+
+Regras adicionais:
+
+1. Não aceitar comandos, flags ou argumentos arbitrários enviados pelo agente; cada operação tem allowlist e argv canônico.
+2. Não herdar variáveis secretas do processo MCF para o CLI; usar ambiente mínimo e diretórios HOME/config/cache/temp dentro do workspace isolado.
+3. A descoberta atual da PR #579 é somente leitura; não habilita template copy, swizzle, init, theme writes, codemods ou deploy.
+4. O CLI nunca recebe autorização para shell arbitrário, escrita fora do workspace aprovado ou deploy.
 
 ## 5. Fluxo operacional
 
