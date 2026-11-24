@@ -915,16 +915,15 @@ function validateAstryxDiscoveryReceipt(
   }
 
   if (
-    requireString(
-      receipt.metadata,
-      'adapterId',
-      'Astryx discovery evidence requires adapterId',
-    ) !== 'mcf-astryx-cli-readonly-v1'
+    requireString(receipt.metadata, 'adapterId', 'Astryx discovery evidence requires adapterId') !==
+    'mcf-astryx-cli-readonly-v1'
   ) {
     reject('Astryx discovery evidence was not produced by the approved adapter');
   }
 
-  if (!requireBoolean(receipt.metadata, 'readOnly', 'Astryx discovery evidence requires readOnly')) {
+  if (
+    !requireBoolean(receipt.metadata, 'readOnly', 'Astryx discovery evidence requires readOnly')
+  ) {
     reject('Astryx discovery evidence must be read-only');
   }
 
@@ -980,7 +979,9 @@ function validateAstryxDiscoveryReceipt(
     !isPathWithin(workspace, packageRoot) ||
     !isPathWithin(packageRoot, cliBinary)
   ) {
-    reject('Astryx discovery evidence must bind a workspace-local CLI outside the runtime checkout');
+    reject(
+      'Astryx discovery evidence must bind a workspace-local CLI outside the runtime checkout',
+    );
   }
 
   const command = requireNonEmptyArray(
