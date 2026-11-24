@@ -936,6 +936,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
       receiptId: string;
       templateId: string;
       targetPath: string;
+      approvedPaths: string[];
       diffDigest: string;
       sourceDigest: string;
       baseCommitSha: string;
@@ -1035,6 +1036,17 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         proposalMetadata.targetPath,
         'scaffold proposal targetPath',
       );
+      const proposalApprovedPaths = approvedPaths(proposalMetadata.approvedPaths);
+      if (
+        !pathIsAllowed(proposalTargetPath, proposalApprovedPaths) ||
+        allowedPaths.some((path) => !pathIsAllowed(path, proposalApprovedPaths))
+      ) {
+        throw new ExternalActionAdapterError(
+          'INVALID_CONTEXT',
+          'CodeBuddy apply scope must be contained in the signed Astryx proposal approvedPaths',
+          false,
+        );
+      }
       const proposalTemplateId = requireNonEmptyString(
         proposalMetadata.templateId,
         'scaffold proposal templateId',
@@ -1073,6 +1085,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         receiptId: requireNonEmptyString(proposalReceipt.receiptId, 'scaffold proposal receiptId'),
         templateId: proposalTemplateId,
         targetPath: proposalTargetPath,
+        approvedPaths: proposalApprovedPaths,
         diffDigest: proposalDiffDigest,
         sourceDigest: requireNonEmptyString(
           sourceArtifact.digest,
@@ -1140,6 +1153,8 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
       ...acceptance.map((item) => `- ${item}`),
       ...(scaffoldProposal
         ? [
+            'Proposal-signed allowed repository paths:',
+            ...scaffoldProposal.approvedPaths.map((path) => `- ${path}`),
             `Verified Astryx template: ${scaffoldProposal.templateId}`,
             `Required scaffold target: ${scaffoldProposal.targetPath}`,
             `Proposal receipt: ${scaffoldProposal.receiptId}`,
@@ -1204,7 +1219,13 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
           'CodeBuddy reported duplicate changed files',
           false,
         );
-      if (normalizedChangedFiles.some((path) => !pathIsAllowed(path, allowedPaths)))
+      if (
+        normalizedChangedFiles.some(
+          (path) =>
+            !pathIsAllowed(path, allowedPaths) ||
+            (scaffoldProposal !== null && !pathIsAllowed(path, scaffoldProposal.approvedPaths)),
+        )
+      )
         throw new ExternalActionAdapterError(
           'INVALID_RESPONSE',
           'CodeBuddy changed files outside allowed_paths',
