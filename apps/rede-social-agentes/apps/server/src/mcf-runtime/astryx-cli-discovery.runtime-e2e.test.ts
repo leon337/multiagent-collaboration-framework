@@ -171,7 +171,7 @@ function runtime(
   }>,
 ) {
   const evidence = new EvidenceValidator();
-  const adapter = new AstryxCliDiscoveryAdapter(evidence, enabled, workspace, 'pnpm', runner);
+  const adapter = new AstryxCliDiscoveryAdapter(evidence, enabled, workspace, runner);
   const adapters = new AdapterRegistry([adapter]);
   const ledger = new InMemoryExternalLedger();
   const dispatcher = new ExternalActionDispatcher(
