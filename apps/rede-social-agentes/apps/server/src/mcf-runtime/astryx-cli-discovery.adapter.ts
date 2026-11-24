@@ -397,7 +397,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       ...(process.env.SystemRoot ? { SystemRoot: process.env.SystemRoot } : {}),
       ...(process.env.WINDIR ? { WINDIR: process.env.WINDIR } : {}),
     };
-    const maxOutputBytes = isProposal || operation.startsWith('read-template') ? MAX_TEMPLATE_OUTPUT_BYTES : MAX_OUTPUT_BYTES;
+    const maxOutputBytes = operation.includes('template') ? MAX_TEMPLATE_OUTPUT_BYTES : MAX_OUTPUT_BYTES;
     let result: { stdout: string; stderr: string };
 
     try {
