@@ -123,7 +123,7 @@ function createAstryxProposalReceipt(evidence: EvidenceValidator): McfToolReceip
   const targetPath = 'src/Pilot.tsx';
   const source = 'export function Pilot() { return <main>pilot</main>; }';
   const sourceBytes = Buffer.from(source, 'utf8');
-  const lines = source.split('\\n');
+  const lines = source.split('\n');
   const diff = [
     `diff --git a/${targetPath} b/${targetPath}`,
     'new file mode 100644',
@@ -132,7 +132,7 @@ function createAstryxProposalReceipt(evidence: EvidenceValidator): McfToolReceip
     `@@ -0,0 +1,${lines.length} @@`,
     ...lines.map((line) => `+${line}`),
     '',
-  ].join('\\n');
+  ].join('\n');
   const diffBytes = Buffer.from(diff, 'utf8');
   const stdout = JSON.stringify({
     apiVersion: 1,
@@ -394,7 +394,7 @@ describe('CodeBuddyExecutorAdapter', () => {
     const host = new FakeHost();
     host.changes = {
       changedFiles: ['src/Pilot.tsx'],
-      diff: 'diff --git a/src/Pilot.tsx b/src/Pilot.tsx\\n+export function Pilot() {}\\n',
+      diff: 'diff --git a/src/Pilot.tsx b/src/Pilot.tsx\n+export function Pilot() {}\n',
       headSha: host.snapshot.headSha,
     };
     const subject = new CodeBuddyExecutorAdapter(
