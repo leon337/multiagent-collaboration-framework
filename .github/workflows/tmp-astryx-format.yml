@@ -24,9 +24,11 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.17.0 --activate
       - name: Install dependencies
+        working-directory: apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
       - name: Format authority provenance test
-        run: pnpm exec prettier --write apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-runtime.authority-provenance.test.ts
+        working-directory: apps/rede-social-agentes
+        run: pnpm exec prettier --write apps/server/src/mcf-runtime/mission-runtime.authority-provenance.test.ts
       - name: Commit formatting
         run: |
           git config user.name "github-actions[bot]"
