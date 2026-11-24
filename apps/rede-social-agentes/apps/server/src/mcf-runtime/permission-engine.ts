@@ -157,11 +157,21 @@ function assertStagingDeployInputs(
   }
 }
 
-function assertAstryxDiscoveryBoundary(skillId: string, provider: string, operation: string, resource: string): void {
+function assertAstryxDiscoveryBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
   if (provider !== 'mcf-astryx-cli') return;
-  if (skillId !== 'MCF-ASTRYX-COMPONENT-DISCOVERY' || resource !== 'astryx-design-system' ||
-      !['list-components', 'read-component-docs'].includes(operation)) {
-    throw new McfPermissionDeniedError('Astryx CLI is restricted to readonly component discovery for MCF-ASTRYX-COMPONENT-DISCOVERY');
+  if (
+    skillId !== 'MCF-ASTRYX-COMPONENT-DISCOVERY' ||
+    resource !== 'astryx-design-system' ||
+    !['list-components', 'read-component-docs'].includes(operation)
+  ) {
+    throw new McfPermissionDeniedError(
+      'Astryx CLI is restricted to readonly component discovery for MCF-ASTRYX-COMPONENT-DISCOVERY',
+    );
   }
 }
 
