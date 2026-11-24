@@ -129,11 +129,11 @@ describe('parseMcfSkillRegistry', () => {
     const content = await readFile(registryPath, 'utf8');
     const skills = parseMcfSkillRegistry(content);
     const webBlocks = content
-      .split(/(?=^  - skill_id: MCF-WEB-)/mu)
-      .filter((block) => /^  - skill_id: MCF-WEB-/u.test(block));
+      .split(/(?=^ {2}- skill_id: MCF-WEB-)/mu)
+      .filter((block) => /^ {2}- skill_id: MCF-WEB-/u.test(block));
 
     expect(webBlocks).toHaveLength(9);
-    expect(webBlocks.every((block) => /^    status: EXPERIMENTAL$/mu.test(block))).toBe(true);
+    expect(webBlocks.every((block) => /^ {4}status: EXPERIMENTAL$/mu.test(block))).toBe(true);
     expect(skills.some((skill) => skill.skillId.startsWith('MCF-WEB-'))).toBe(false);
   });
 
