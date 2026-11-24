@@ -51,7 +51,7 @@ Capacidades comprovadas incluem:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - dispatcher de ações externas e adapters com evidência verificável;
-- **18 skills executáveis no servidor atual**; esta branch candidata adiciona **7 Skills web EXPERIMENTAL/orchestration-ready** (25 registradas no total), sem alegar adapter web no runtime;
+- **19 skills executáveis no servidor atual** após a integração do adapter Astryx de descoberta em modo leitura; esta branch candidata adiciona **7 Skills web EXPERIMENTAL/orchestration-ready** e uma Skill full-stack experimental de orquestração (27 registradas no total), sem contar a Skill full-stack como executável;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA, readiness/version e recovery por redeploy;
@@ -162,7 +162,7 @@ Princípios centrais:
 
 ## Desenvolvimento visual e full-stack (experimental)
 
-A Skill `MCF-FULLSTACK-VISUAL-DEVELOPMENT` foi registrada como `EXPERIMENTAL` para coordenar aplicações completas. Astryx é o primeiro provider visual opcional (React 19+, componentes, temas, templates e CLI; StyleX é detalhe interno de autoria, não requisito de consumo); backend, APIs, banco, autenticação, integrações e governança continuam sob competências MCF independentes. O contrato ainda não possui adapter de CLI, executor ou receipt validator no runtime e não deve ser contado como Skill executável. Consulte [arquitetura MCF Full-Stack Visual Development](docs/architecture/MCF-FULLSTACK-VISUAL-DEVELOPMENT.md) e [contrato da Skill](skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml).
+A Skill `MCF-FULLSTACK-VISUAL-DEVELOPMENT` permanece `EXPERIMENTAL` e é um contrato de orquestração, não uma Skill executável. A Skill separada `MCF-ASTRYX-COMPONENT-DISCOVERY` fornece descoberta de componentes por CLI em modo somente leitura, com versão do CLI/Core, receipt assinado e validação semântica no MCF Runtime; o adapter é disabled-by-default e não grava arquivos. Astryx é o provider visual opcional (React 19+, componentes, temas, templates e CLI; StyleX é detalhe interno de autoria, não requisito de consumo); backend, APIs, banco, autenticação, integrações e governança continuam sob competências MCF independentes. Scaffolding, aplicação de diffs e piloto full-stack ainda não estão implementados. Consulte [arquitetura MCF Full-Stack Visual Development](docs/architecture/MCF-FULLSTACK-VISUAL-DEVELOPMENT.md) e [contrato da Skill](skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml).
 
 ## Skills
 
