@@ -160,6 +160,10 @@ Princípios centrais:
 - LEANDRO não é operador técnico rotineiro;
 - ação externa irreversível ou publicação relevante exige autoridade compatível com o boundary.
 
+## Desenvolvimento visual e full-stack (experimental)
+
+A Skill `MCF-FULLSTACK-VISUAL-DEVELOPMENT` foi registrada como `EXPERIMENTAL` para coordenar aplicações completas. Astryx é o primeiro provider visual opcional (React 19+/StyleX, componentes, temas, templates e CLI); backend, APIs, banco, autenticação, integrações e governança continuam sob competências MCF independentes. O contrato ainda não possui adapter de CLI, executor ou receipt validator no runtime e não deve ser contado como Skill executável. Consulte [arquitetura MCF Full-Stack Visual Development](docs/architecture/MCF-FULLSTACK-VISUAL-DEVELOPMENT.md) e [contrato da Skill](skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml).
+
 ## Skills
 
 O registro canônico está em [`skills/registry.yaml`](skills/registry.yaml).
