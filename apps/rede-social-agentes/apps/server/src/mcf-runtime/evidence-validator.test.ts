@@ -1,3 +1,4 @@
+
 import { createHash } from 'node:crypto';
 
 import type { McfSkillDefinition } from '@rsa/contracts';
@@ -6,7 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { EvidenceValidator } from './evidence-validator.js';
 
 beforeEach(() => {
-  process.env.DATABASE_URL = 'postgresql://rsa:rsa@127.0.0.1:5432/rsa';
+  process.env.DATABASE_URL = '***127.0.0.1:5432/rsa';
   process.env.MCF_RECEIPT_SECRET = 'test-only-mcf-receipt-secret-0000000001';
 });
 
