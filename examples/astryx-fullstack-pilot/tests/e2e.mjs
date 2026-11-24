@@ -129,6 +129,11 @@ try {
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:4173", { waitUntil: "networkidle" });
   await page.getByRole("heading", { name: "Projeto-piloto Astryx" }).waitFor();
+  const desktopInputHeight = await page
+    .getByLabel("Título da tarefa")
+    .evaluate((element) => element.getBoundingClientRect().height);
+  if (desktopInputHeight < 40)
+    throw new Error("Desktop task input is shorter than the 40px usability minimum.");
   await page.getByLabel("Título da tarefa").fill("MCF Astryx Pilot");
   await page.getByRole("button", { name: "Adicionar tarefa" }).click();
   await page
@@ -177,6 +182,11 @@ try {
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(150);
+  const mobileInputHeight = await page
+    .getByLabel("Título da tarefa")
+    .evaluate((element) => element.getBoundingClientRect().height);
+  if (mobileInputHeight < 40)
+    throw new Error("Mobile task input is shorter than the 40px usability minimum.");
   const mobileOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );
