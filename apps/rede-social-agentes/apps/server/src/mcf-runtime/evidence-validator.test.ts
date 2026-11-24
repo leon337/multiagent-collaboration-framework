@@ -35,6 +35,9 @@ function astryxReceiptMetadata(cliCopy = 'project') {
     data: { components: { actions: [] } },
     meta: { answeredBy: { cli: '0.7.2', core: '0.7.2', copy: cliCopy } },
   });
+  const workspace = '/tmp/astryx-workspace';
+  const cliPackageRoot = `${workspace}/node_modules/@astryxdesign/cli`;
+  const cliBinary = `${cliPackageRoot}/clients/cli/bin/astryx.mjs`;
   return {
     adapterId: 'mcf-astryx-cli-readonly-v1',
     cliPackage: '@astryxdesign/cli',
@@ -42,9 +45,11 @@ function astryxReceiptMetadata(cliCopy = 'project') {
     cliVersion: '0.7.2',
     coreVersion: '0.7.2',
     cliCopy,
+    cliPackageRoot,
+    cliBinary,
     readOnly: true,
-    command: ['pnpm', 'exec', 'astryx', '--json', 'component', '--list'],
-    workspace: '/tmp/astryx-workspace',
+    command: [process.execPath, cliBinary, '--json', 'component', '--list'],
+    workspace,
     stdout,
     stderr: '',
     exitCode: 0,
@@ -96,6 +101,30 @@ describe('EvidenceValidator', () => {
     });
 
     expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).not.toThrow();
+  });
+
+  it('rejects a CLI binary outside the project-local package', () => {
+    const validator = new EvidenceValidator();
+    const expected = {
+      provider: 'mcf-astryx-cli',
+      operation: 'list-components',
+      resource: 'astryx-design-system',
+    };
+    const metadata = astryxReceiptMetadata();
+    metadata.cliBinary = '/usr/local/bin/astryx';
+    metadata.command[1] = metadata.cliBinary;
+    const receipt = validator.createTrustedReceipt({
+      ...expected,
+      externalId: null,
+      commitSha: null,
+      status: 'SUCCEEDED',
+      observedAt: new Date().toISOString(),
+      metadata,
+    });
+
+    expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).toThrow(
+      /workspace-local CLI outside the runtime checkout/u,
+    );
   });
 
   it('rejects Astryx receipts answered by a global or fallback CLI copy', () => {
