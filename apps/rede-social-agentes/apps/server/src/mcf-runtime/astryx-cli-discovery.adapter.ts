@@ -118,8 +118,8 @@ function parseCliEnvelope(
   }
 
   if (operation === 'list-components') {
-    if (!isRecord(envelope.data.components)) {
-      return invalid('Astryx CLI component list is missing its component catalog');
+    if (!isRecord(envelope.data.components) || envelope.data.detail !== 'names') {
+      return invalid('Astryx CLI component list must contain its catalog at the fixed names detail level');
     }
   } else if (envelope.data.name !== componentName) {
     return invalid('Astryx CLI documentation does not match the requested component');
