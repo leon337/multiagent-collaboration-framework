@@ -128,9 +128,9 @@ describe('parseMcfSkillRegistry', () => {
     const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
     const content = await readFile(registryPath, 'utf8');
     const skills = parseMcfSkillRegistry(content);
-    const webBlocks = content.split(/(?=^  - skill_id: MCF-WEB-)/mu).filter((block) =>
-      /^  - skill_id: MCF-WEB-/u.test(block),
-    );
+    const webBlocks = content
+      .split(/(?=^  - skill_id: MCF-WEB-)/mu)
+      .filter((block) => /^  - skill_id: MCF-WEB-/u.test(block));
 
     expect(webBlocks).toHaveLength(9);
     expect(webBlocks.every((block) => /^    status: EXPERIMENTAL$/mu.test(block))).toBe(true);
