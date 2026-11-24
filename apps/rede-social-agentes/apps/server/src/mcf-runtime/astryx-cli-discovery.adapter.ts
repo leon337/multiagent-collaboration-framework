@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { execFile as nodeExecFile } from 'node:child_process';
 import { realpath, stat } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
@@ -19,6 +20,8 @@ export const ASTRYX_OPERATIONS = ['list-components', 'read-component-docs'] as c
 
 const MAX_OUTPUT_BYTES = 32_768;
 const DEFAULT_TIMEOUT_MS = 10_000;
+const ASTRYX_CLI_PACKAGE = '@astryxdesign/cli';
+const ASTRYX_CORE_PACKAGE = '@astryxdesign/core';
 
 type AstryxOperation = (typeof ASTRYX_OPERATIONS)[number];
 type ExecFile = (
@@ -45,6 +48,59 @@ const execFile: ExecFile = (file, args, options) =>
       });
     });
   });
+
+function parseCliEnvelope(
+  stdout: string,
+  operation: AstryxOperation,
+  componentName?: string,
+): { cliVersion: string; coreVersion: string; cliCopy: string } {
+  let envelope: unknown;
+
+  try {
+    envelope = JSON.parse(stdout);
+  } catch {
+    return invalid('Astryx CLI returned invalid JSON');
+  }
+
+  if (!isRecord(envelope) || envelope.apiVersion !== 1) {
+    return invalid('Astryx CLI returned an unsupported JSON envelope');
+  }
+
+  const expectedType = operation === 'list-components' ? 'component.list' : 'component.detail';
+  if (envelope.type !== expectedType || !isRecord(envelope.data)) {
+    return invalid('Astryx CLI returned an unexpected component response');
+  }
+
+  if (operation === 'list-components') {
+    if (!isRecord(envelope.data.components)) {
+      return invalid('Astryx CLI component list is missing its component catalog');
+    }
+  } else if (envelope.data.name !== componentName) {
+    return invalid('Astryx CLI documentation does not match the requested component');
+  }
+
+  if (!isRecord(envelope.meta) || !isRecord(envelope.meta.answeredBy)) {
+    return invalid('Astryx CLI response is missing package provenance');
+  }
+
+  const answeredBy = envelope.meta.answeredBy;
+  const cliVersion = answeredBy.cli;
+  const coreVersion = answeredBy.core;
+  const cliCopy = answeredBy.copy;
+  const semver = /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$/u;
+
+  if (
+    typeof cliVersion !== 'string' ||
+    !semver.test(cliVersion) ||
+    typeof coreVersion !== 'string' ||
+    !semver.test(coreVersion) ||
+    cliCopy !== 'project'
+  ) {
+    return invalid('Astryx CLI must report pinned project CLI and Core versions');
+  }
+
+  return { cliVersion, coreVersion, cliCopy };
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -123,7 +179,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
     let args: string[];
 
     if (operation === 'list-components') {
-      args = ['exec', 'astryx', 'component', '--list'];
+      args = ['exec', 'astryx', '--json', 'component', '--list'];
     } else {
       const name = request.inputs.componentName;
       if (typeof name !== 'string' || !/^[A-Z][A-Za-z0-9]{0,63}$/u.test(name)) {
@@ -133,7 +189,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
           false,
         );
       }
-      args = ['exec', 'astryx', 'component', name, '--detail', 'compact'];
+      args = ['exec', 'astryx', '--json', 'component', name, '--detail', 'compact'];
     }
 
     const cwd = await this.resolveWorkspace();
@@ -161,6 +217,13 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       return invalid('Astryx CLI returned empty or oversized discovery output');
     }
 
+    const componentName =
+      operation === 'read-component-docs' && typeof request.inputs.componentName === 'string'
+        ? request.inputs.componentName
+        : undefined;
+    const provenance = parseCliEnvelope(stdout, operation, componentName);
+    const outputDigest = createHash('sha256').update(stdout).digest('hex');
+
     return this.evidence.createTrustedReceipt({
       provider: ASTRYX_PROVIDER,
       operation,
@@ -171,12 +234,19 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       observedAt: new Date().toISOString(),
       metadata: {
         adapterId: this.adapterId,
+        cliPackage: ASTRYX_CLI_PACKAGE,
+        corePackage: ASTRYX_CORE_PACKAGE,
+        cliVersion: provenance.cliVersion,
+        coreVersion: provenance.coreVersion,
+        cliCopy: provenance.cliCopy,
         readOnly: true,
         command: [this.binary, ...args],
         workspace: cwd,
         stdout,
         stderr: result.stderr.slice(0, 2_048),
+        exitCode: 0,
         outputBytes: Buffer.byteLength(stdout, 'utf8'),
+        outputDigest,
       },
     });
   }
