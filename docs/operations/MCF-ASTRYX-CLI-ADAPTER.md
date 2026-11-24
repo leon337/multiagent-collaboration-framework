@@ -32,7 +32,7 @@ pnpm add -D @astryxdesign/cli@<pinned-version>
 pnpm exec astryx --help
 ```
 
-Do not point the workspace at a production checkout. Do not set the enable flag in production without a separate authorization and deployment gate. This adapter never writes files, scaffolds projects, or deploys.
+Do not point the workspace at a production checkout. Do not set the enable flag in production without a separate authorization and deployment gate. This adapter exposes only component catalog and component documentation reads in this increment; it never writes files, scaffolds projects, or deploys.
 
 ## Security boundary
 
