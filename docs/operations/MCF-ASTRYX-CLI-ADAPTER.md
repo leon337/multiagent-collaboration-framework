@@ -1,7 +1,7 @@
 # MCF Astryx CLI Discovery Adapter
 
 **Status:** implemented, read-only, disabled by default.  
-**Skill:** `MCF-FULLSTACK-VISUAL-DEVELOPMENT`  
+**Skill:** `MCF-ASTRYX-COMPONENT-DISCOVERY`  
 **Provider:** `mcf-astryx-cli`
 
 ## Scope in this increment
