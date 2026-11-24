@@ -975,7 +975,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
           .trim()
           .toLowerCase() !== 'leandro' ||
         typeof gate.accountId !== 'string' ||
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(
           gate.accountId,
         ) ||
         typeof gate.sourceRef !== 'string' ||
