@@ -1,0 +1,57 @@
+name: Temporary Astryx Formatting
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  format-branch:
+    if: github.head_ref == 'feat/mcf-astryx-governed-scaffolding'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: \${{ github.head_ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.17.0
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Format changed source, docs and pilot files
+        run: |
+          pnpm exec prettier --write \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/astryx-cli-discovery.runtime-e2e.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/codebuddy-executor.adapter.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/codebuddy-executor.adapter.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/evidence-validator.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/permission-engine.ts \
+            skills/registry.yaml \
+            skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml \
+            README.md \
+            docs/MCF-CURRENT-STATE.md \
+            docs/architecture/MCF-FULLSTACK-VISUAL-DEVELOPMENT.md \
+            docs/operations/MCF-ASTRYX-CLI-ADAPTER.md \
+            examples/astryx-fullstack-pilot \
+            .github/workflows/mcf-astryx-fullstack-pilot.yml
+      - name: Commit formatting changes to this feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No formatting changes."
+          else
+            git add -A
+            git commit -m "style(astryx): apply Prettier formatting"
+            git push origin "HEAD:\${GITHUB_HEAD_REF}"
+          fi
