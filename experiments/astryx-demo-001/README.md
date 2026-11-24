@@ -2,7 +2,7 @@
 
 **Missão:** MCF-ASTRYX-EXPERIMENT-001  
 **Status técnico:** demo construída e smoke test aprovado.  
-**Status de governança:** revisão de Sofia e gate de LÉO pendentes.  
+**Status de governança:** missão demo encerrada; parecer arquitetural por função Sofia e decisão de gate interno por função Léo executados pelo MESTRE, conforme solicitação explícita de LEANDRO. Não são mensagens ou receipts autenticados dos agentes canônicos.  
 **Ambiente:** sandbox fora de produção.
 
 ## Objetivo
@@ -42,14 +42,14 @@ Os eventos exibidos são estado local React. Não são persistidos e não são r
 
 ## Resultado
 
-Build, instalação limpa, CLI e smoke test de browser foram aprovados. Os números e os limites dos ensaios estão em [benchmark.md](./benchmark.md); os estados e evidências estão em [evidence.md](./evidence.md).
+Build, instalação limpa, CLI e smoke test de browser foram aprovados. Os números e limites estão em [benchmark.md](./benchmark.md); evidências em [evidence.md](./evidence.md); revisão arquitetural em [sofia-architecture-review.md](./sofia-architecture-review.md); decisão de gate interno em [leo-gate-decision.md](./leo-gate-decision.md).
 
 ## Limitações e gates
 
 - `mcf-gpu-x99` estava offline quando a missão foi executada. O sandbox foi construído em `leo-N43SM`, sob `/tmp/mcf-astryx-demo-001`. Não houve uso de GPU nem alterações em outros projetos.
 - O Agent Bridge `mestre-conversas-teste-001` respondeu HTTP 200, mas Sofia apareceu como `UNBOUND`, sem handshake verificado e sem sessão canônica.
 - O binário `~/.local/bin/mcf-agent-session`, exigido pelo cockpit para listar agentes canônicos e executar bootstrap, não foi encontrado no host. O registry devolveu `canonicalAgents=[]` e `agentSessions=[]`.
-- Não foi recebido parecer de Sofia nem gate de LÉO por canal MCF verificável. Esses itens permanecem pendentes; não podem ser inferidos dos testes de UI.
+- A função de arquitetura de Sofia e a função de gate interno de Léo foram exercidas pelo MESTRE por solicitação de LEANDRO e registradas em documentos separados. A identidade canônica/assinatura dos agentes não foi simulada. A missão demo foi encerrada dentro do escopo autorizado.
 - A compatibilidade React/Vite é estrutural. Não foi feita integração no frontend MCF, build comparativo baseline, auditoria WCAG completa ou teste de performance em produção.
 - Não foi criado PR nem realizada integração na branch principal.
 
