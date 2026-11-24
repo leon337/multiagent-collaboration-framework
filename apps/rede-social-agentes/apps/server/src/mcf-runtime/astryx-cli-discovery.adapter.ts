@@ -23,7 +23,7 @@ const MAX_STDERR_BYTES = 2_048;
 const DEFAULT_TIMEOUT_MS = 10_000;
 const ASTRYX_CLI_PACKAGE = '@astryxdesign/cli';
 const ASTRYX_CORE_PACKAGE = '@astryxdesign/core';
-const SEMVER_PATTERN = /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$/u;
+const SEMVER_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
 
 type AstryxOperation = (typeof ASTRYX_OPERATIONS)[number];
 type ExecFile = (
