@@ -32,7 +32,7 @@ describe('Astryx CLI discovery adapter', () => {
   it('supports only the exact skill/provider/resource/read operations', () => {
     const subject = new AstryxCliDiscoveryAdapter(evidence(), true, '/tmp');
     expect(subject.supports(request())).toBe(true);
-    expect(subject.supports(request('component-docs', { componentName: 'Button' }))).toBe(true);
+    expect(subject.supports(request('read-component-docs', { componentName: 'Button' }))).toBe(true);
     expect(subject.supports(request('publish'))).toBe(false);
     expect(subject.supports({ ...request(), skill: { ...skill, skillId: 'MCF-START-MISSION' } })).toBe(false);
     expect(subject.supports({ ...request(), tool: { ...request().tool, provider: 'shell' } })).toBe(false);
@@ -64,7 +64,7 @@ describe('Astryx CLI discovery adapter', () => {
     workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
     const runner = vi.fn();
     const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, 'astryx', runner as never);
-    await expect(subject.execute(request('component-docs', { componentName: 'Button; rm -rf /' }))).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
+    await expect(subject.execute(request('read-component-docs', { componentName: 'Button; rm -rf /' }))).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
     expect(runner).not.toHaveBeenCalled();
   });
 
