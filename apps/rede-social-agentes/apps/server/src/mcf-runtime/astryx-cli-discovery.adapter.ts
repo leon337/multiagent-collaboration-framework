@@ -1,4 +1,3 @@
-
 import { createHash } from 'node:crypto';
 import { execFile as nodeExecFile } from 'node:child_process';
 import { realpath, stat } from 'node:fs/promises';
@@ -206,8 +205,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
     } catch (error) {
       const isTimeout =
         isRecord(error) &&
-        (error.code === 'ETIMEDOUT' ||
-          (error.killed === true && error.signal === 'SIGTERM'));
+        (error.code === 'ETIMEDOUT' || (error.killed === true && error.signal === 'SIGTERM'));
       const code = isTimeout ? 'ADAPTER_TIMEOUT' : 'ADAPTER_FAILURE';
       throw new ExternalActionAdapterError(
         code,
