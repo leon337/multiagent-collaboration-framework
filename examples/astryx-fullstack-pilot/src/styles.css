@@ -1,0 +1,37 @@
+* { box-sizing: border-box; }
+
+:root {
+  font-family: var(--font-family-body, system-ui, sans-serif);
+  color: var(--color-text-primary, #20242b);
+  background: var(--color-background-body, #f7f8fa);
+}
+
+body { margin: 0; min-width: 320px; background: var(--color-background-body, #f7f8fa); }
+button, input { font: inherit; }
+
+.page { width: min(100% - 40px, 820px); margin: 0 auto; padding: 56px 0 40px; }
+.page-header { margin-bottom: 4px; }
+.eyebrow { margin: 0 0 12px; color: var(--color-text-secondary, #626b78); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+h1 { margin: 0; font-size: clamp(30px, 5vw, 42px); line-height: 1.12; letter-spacing: -.035em; }
+.subtitle { max-width: 650px; margin: 14px 0 0; color: var(--color-text-secondary, #626b78); line-height: 1.6; }
+.panel { padding: 8px; }
+h2 { margin: 0 0 18px; font-size: 18px; }
+label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.form-row { display: flex; align-items: center; gap: 12px; }
+input { min-width: 0; flex: 1; height: 44px; padding: 0 13px; border: 1px solid var(--color-border, #d8dde5); border-radius: var(--radius-element, 8px); background: var(--color-background-surface, #fff); color: var(--color-text-primary, #20242b); }
+input:focus-visible { outline: 3px solid var(--color-border-focus, #4778d8); outline-offset: 2px; }
+.status { min-height: 22px; margin: 12px 0 0; color: var(--color-text-secondary, #626b78); font-size: 13px; }
+.section-heading { display: flex; justify-content: space-between; align-items: center; }
+.section-heading h2 { margin-bottom: 0; }
+.count { display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 999px; background: var(--color-background-muted, #eef1f5); font-size: 13px; font-weight: 700; }
+.empty-state { margin: 18px 0 4px; color: var(--color-text-secondary, #626b78); }
+.task-list { display: grid; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+.task-list li { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 8px 10px; border: 1px solid var(--color-border, #e0e4ea); border-radius: 8px; background: var(--color-background-surface, #fff); overflow-wrap: anywhere; }
+.task-dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: var(--color-icon-success, #27845a); }
+footer { padding-top: 8px; color: var(--color-text-secondary, #707987); font-size: 12px; text-align: center; }
+
+@media (max-width: 560px) {
+  .page { width: min(100% - 28px, 820px); padding-top: 32px; }
+  .form-row { align-items: stretch; flex-direction: column; }
+  .form-row button { width: 100%; }
+}
