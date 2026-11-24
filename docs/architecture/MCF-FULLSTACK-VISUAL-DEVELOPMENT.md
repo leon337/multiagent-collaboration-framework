@@ -2,7 +2,7 @@
 
 **ID:** MCF-FULLSTACK-VISUAL-DEVELOPMENT  
 **Versão:** 0.1.0  
-**Classificação:** EXPERIMENTAL — contrato de orquestração registrado; adapter server-side, executor e receipt validator ainda não implementados.  
+**Classificação:** EXPERIMENTAL — contrato de orquestração registrado; a descoberta de componentes tem adapter read-only separado; executor full-stack e escrita/scaffolding continuam pendentes.  
 **Autoridade:** LEANDRO  
 **Coordenação:** MESTRE
 
@@ -121,11 +121,11 @@ MCF HDF + Permission Engine + Evidence Validator + Receipt + PR gates
 Esta alteração registra a Skill experimental e a arquitetura no repositório. **Não declara integração executável no runtime.** Permanecem necessários:
 
 1. Skill definition/schema compatível com o loader runtime atual.
-2. Adapter de descoberta Astryx CLI com allowlist de comandos, timeout, cwd isolado e captura estruturada.
+2. Adapter read-only de descoberta de componentes Astryx CLI implementado na PR #579, com allowlist, timeout, workspace absoluto, versões CLI/Core, receipt assinado e validação semântica.
 3. Adapter de scaffolding/alteração de arquivos sujeito a HDF, paths permitidos e diff review.
-4. Receipt schema + Evidence Validator sem aceitar texto livre como prova.
-5. Testes unitários, integração e E2E do fluxo MissionRuntime → SkillExecutor → Dispatcher → Adapter → EvidenceValidator.
-6. Benchmark visual e projeto-piloto full-stack antes de promover de EXPERIMENTAL para CURRENT_IMPLEMENTED.
+4. Evidence Validator e receipt semântico implementados para descoberta de componentes; receipts de scaffolding/escrita continuam pendentes.
+5. Testes unitários e E2E do fluxo MissionRuntime → SkillExecutor → Dispatcher → Adapter → EvidenceValidator implementados para descoberta read-only.
+6. Adapter de scaffolding em diff-proposal com HDF/SCOPED_WRITE, benchmark visual e projeto-piloto full-stack não produtivo ainda são gates futuros antes de promover de EXPERIMENTAL para CURRENT_IMPLEMENTED.
 
 Não habilitar execução arbitrária de shell nem expor o CLI a produção. O adapter inicial deve operar em workspace isolado e disabled-by-default até concluir os gates de segurança.
 
