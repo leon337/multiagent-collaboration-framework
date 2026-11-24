@@ -1190,7 +1190,7 @@ function validateAstryxDiscoveryReceipt(
     'outputDigest',
     'Astryx evidence requires outputDigest',
   );
-  const outputLimit = operation.includes('template') ? 262_144 : 32_768;
+  const outputLimit = operation.includes('template') ? 2_097_152 : 32_768;
   if (
     outputBytes !== Buffer.byteLength(stdout, 'utf8') ||
     outputBytes > outputLimit ||
