@@ -1072,7 +1072,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         source.toString('base64') !== sourceData ||
         source.byteLength !== sourceArtifact.byteLength ||
         source.byteLength === 0 ||
-        source.byteLength > 262_144 ||
+        source.byteLength > 49_152 ||
         !pathIsAllowed(proposalTargetPath, allowedPaths)
       ) {
         throw new ExternalActionAdapterError(
