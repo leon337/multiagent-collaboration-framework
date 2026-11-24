@@ -665,8 +665,8 @@ skills:
     fallback: Reportar bloqueio sem tentar qualquer operacao de escrita.
     handoff_to: Mestre
 
-  - skill_id: MCF-FULLSTACK-VISUAL-DEVELOPMENT
-    name: Desenvolvimento full-stack com descoberta visual Astryx
+  - skill_id: MCF-ASTRYX-COMPONENT-DISCOVERY
+    name: Descoberta de componentes e documentação Astryx
     version: 0.1.0
     purpose: Coordenar desenvolvimento full-stack com Astryx como provider visual opcional; esta execução inicial permite apenas descobrir componentes e documentação em modo leitura.
     owner_agents: [Mestre]
