@@ -37,26 +37,45 @@ jobs:
           cp /tmp/astryx-pilot-artifacts/visual-baselines.json examples/astryx-fullstack-pilot/visual-baselines.json
           python - <<'PY'
           from pathlib import Path
-          import re
 
           path = Path(".github/workflows/mcf-astryx-fullstack-pilot.yml")
-          content = path.read_text()
-          content, install_count = re.subn(
-              r"      - name: Install pinned pilot dependencies and create lockfile if absent\n        run: \|\n.*?          fi\n",
-              "      - name: Install pinned pilot dependencies from committed lockfile\n        run: npm ci --no-audit --no-fund\n",
-              content,
-              count=1,
-              flags=re.S,
-          )
-          if install_count != 1:
+          lines = path.read_text().splitlines()
+          updated = []
+          index = 0
+          install_replaced = False
+          baseline_replaced = False
+
+          while index < len(lines):
+              stripped = lines[index].strip()
+              if stripped == "- name: Install pinned pilot dependencies and create lockfile if absent":
+                  updated.append("      - name: Install pinned pilot dependencies from committed lockfile")
+                  index += 1
+                  while index < len(lines) and not lines[index].startswith("      - "):
+                      index += 1
+                  updated.append("        run: npm ci --no-audit --no-fund")
+                  install_replaced = True
+                  continue
+
+              if stripped == "- name: Run API, database, browser, accessibility and visual checks":
+                  updated.append(lines[index])
+                  index += 1
+                  if index < len(lines) and lines[index].strip() == "env:":
+                      index += 1
+                      while index < len(lines) and lines[index].startswith("          "):
+                          index += 1
+                  if index < len(lines) and lines[index].strip() == "run: npm run test:e2e":
+                      updated.append("        run: npm run test:e2e")
+                      index += 1
+                  baseline_replaced = True
+                  continue
+
+              updated.append(lines[index])
+              index += 1
+
+          content = "\n".join(updated) + "\n"
+          if not install_replaced and "npm install --no-audit" in content:
               raise SystemExit("Could not replace the first-run npm install block.")
-          content, baseline_count = re.subn(
-              r'      - name: Run API, database, browser, accessibility and visual checks\n        env:\n          UPDATE_VISUAL_BASELINES: "1"\n        run: npm run test:e2e\n',
-              "      - name: Run API, database, browser, accessibility and visual checks\n        run: npm run test:e2e\n",
-              content,
-              count=1,
-          )
-          if baseline_count != 1:
+          if not baseline_replaced and "UPDATE_VISUAL_BASELINES" in content:
               raise SystemExit("Could not disable visual-baseline update mode.")
           if "UPDATE_VISUAL_BASELINES" in content or "npm install --no-audit" in content:
               raise SystemExit("Pilot workflow still contains bootstrap-only dependency or baseline mode.")
