@@ -180,8 +180,7 @@ skills:
     owner_agents: [Rafael, Eduardo, Helena, Andre, Tiago, Daniela]
     trigger_phrases:
       ["implementar", "corrigir", "integrar", "criar funcionalidade"]
-    required_inputs:
-      [approved_scope, acceptance_criteria, repository, allowed_paths]
+    required_inputs: [approved_scope, acceptance_criteria, repository, allowed_paths]
     optional_inputs:
       [
         branch,
@@ -192,44 +191,13 @@ skills:
         v11AuthorizationContext,
         authorizedScope,
       ]
-    allowed_tools:
-      [
-        GitHub,
-        Linear,
-        Supabase,
-        Neon_Postgres,
-        Render,
-        Vercel,
-        Cloudflare,
-        OpenAI_Developers,
-        Figma,
-        CodeBuddy,
-      ]
+    allowed_tools: [GitHub, Linear, Supabase, Neon_Postgres, Render, Vercel, Cloudflare, OpenAI_Developers, Figma, CodeBuddy]
     forbidden_tools: [direct_main_write, public_release_without_gate]
     permission_profile: SCOPED_WRITE
-    execution_steps:
-      [
-        validar_escopo_e_HDF,
-        verificar_receipt_astryx_se_presente,
-        preparar_workspace_git_descartavel,
-        implementar_com_CodeBuddy,
-        coletar_diff,
-        validar_paths_e_base_sha,
-        rollback_transacional_em_falha,
-        registrar_handoff_de_testes,
-        passar_para_revisao,
-      ]
-    required_evidence:
-      [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
+    execution_steps: [validar_escopo_e_HDF, verificar_receipt_astryx_se_presente, preparar_workspace_git_descartavel, implementar_com_CodeBuddy, coletar_diff, validar_paths_e_base_sha, rollback_transacional_em_falha, registrar_handoff_de_testes, passar_para_revisao]
+    required_evidence: [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
     expected_outputs: [implementation, technical_notes]
-    acceptance_criteria:
-      [
-        scope_respected,
-        tests_or_handoff_proven,
-        scaffold_receipt_verified_when_present,
-        HDF_SCOPED_WRITE_and_leandro_gate_when_applying_astryx,
-        transactional_rollback_on_failure,
-      ]
+    acceptance_criteria: [scope_respected, tests_or_handoff_proven, scaffold_receipt_verified_when_present, HDF_SCOPED_WRITE_and_leandro_gate_when_applying_astryx, transactional_rollback_on_failure]
     failure_modes: [scope_creep, unsafe_write, missing_tests]
     fallback: Produzir patch ou plano executável sem alegar aplicação.
     handoff_to: Vinicius
@@ -1562,81 +1530,12 @@ skills:
         allowed_paths,
       ]
     allowed_tools: [mcf-astryx-cli]
-    forbidden_tools:
-      [
-        apply,
-        write_to_checkout,
-        delete,
-        publish,
-        deploy,
-        shell,
-        arbitrary_command,
-        production,
-      ]
+    forbidden_tools: [shell, arbitrary_cli, write_to_checkout, apply, commit, merge, deploy]
     permission_profile: READ_AND_PROPOSE
-    execution_steps:
-      [
-        validar_skill_e_provider,
-        consultar_cli_allowlisted,
-        validar_template_e_workspace,
-        gerar_proposta_em_workspace_descartavel,
-        calcular_diff_digest,
-        validar_paths_aprovados,
-        limpar_workspace,
-        emitir_receipt_assinado,
-      ]
-    required_evidence:
-      [
-        provider,
-        operation,
-        adapterId,
-        readOnly,
-        command,
-        workspace,
-        cliPackageRoot,
-        corePackageRoot,
-        cliBinary,
-        cliVersion,
-        coreVersion,
-        cliCopy,
-        exitCode,
-        outputBytes,
-        outputDigest,
-      ]
-    acceptance_criteria:
-      [
-        provider_and_resource_allowlisted,
-        workspace_isolated,
-        local_cli_binary_resolved,
-        local_core_package_resolved,
-        cli_and_core_versions_match_installed_packages,
-        command_fixed_and_no_shell,
-        child_environment_sanitized,
-        component_and_template_responses_semantically_valid,
-        scaffold_created_only_in_disposable_workspace,
-        only_one_regular_source_file_captured,
-        diff_and_source_sha256_match,
-        target_path_inside_approved_paths,
-        proposal_workspace_cleaned,
-        receipt_signed_and_semantically_valid,
-        disabled_by_default,
-      ]
-    failure_modes:
-      [
-        adapter_disabled,
-        workspace_unavailable,
-        cli_missing,
-        core_missing,
-        package_version_mismatch,
-        timeout,
-        invalid_component_name,
-        invalid_template_id,
-        invalid_target_path,
-        path_not_approved,
-        oversized_template,
-        invalid_output,
-        scratch_cleanup_failed,
-      ]
+    execution_steps: [validate_workspace, verify_cli_core, run_fixed_argv, validate_receipt, discover_components_and_templates, propose_single_file_scaffold, clean_scratch, handoff]
+    required_evidence: [provider, operation, adapterId, readOnly, command, workspace, cliPackageRoot, corePackageRoot, cliBinary, cliVersion, coreVersion, cliCopy, exitCode, outputBytes, outputDigest]
+    acceptance_criteria: [component_and_template_responses_semantically_valid, proposal_diff_digest_matches_source, proposal_paths_inside_allowed_scope, no_checkout_write, scratch_removed, evidence_signed]
+    failure_modes: [cli_missing, cli_version_mismatch, invalid_receipt, invalid_target_path, path_not_approved, oversized_template, scratch_cleanup_failed]
     fallback: Se o adapter estiver desabilitado, CLI indisponível ou qualquer validação falhar, parar sem gravar no projeto alvo; nunca usar shell arbitrário nem fallback global.
     handoff_to: Mestre
 
