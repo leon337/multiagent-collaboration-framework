@@ -4,7 +4,6 @@ O **MCF** é um framework para coordenação governada de agentes de IA, com pap
 
 > **Estado documental:** o mapa canônico está em [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md). Branch heads, `latest`, estados de PR/Issue, workflows, metadados mutáveis de Release e SHAs/status reportados por providers são valores voláteis e devem ser lidos no GitHub/provider live.
 
-
 ## Modelos Google: memória reutilizável do MESTRE
 
 A seleção inicial de modelos para novos projetos e agentes está documentada em [MCF-GOOGLE-MODEL-ROUTING](docs/operations/MCF-GOOGLE-MODEL-ROUTING.md). O arquivo [AGENTS.md](AGENTS.md) orienta novas sessões que carreguem as instruções do repositório a consultar essa política antes de escolher o provedor.
@@ -51,7 +50,7 @@ Capacidades comprovadas incluem:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - dispatcher de ações externas e adapters com evidência verificável;
-- **19 skills executáveis no servidor atual** após a integração da descoberta Astryx read-only pela PR #579 (`80ca638`); esta branch adiciona uma Skill full-stack experimental de orquestração, não executável;
+- **21 skills executáveis no servidor atual**; a Skill Astryx existente foi ampliada nesta branch para descoberta de templates e propostas de scaffold somente em scratch; aplicação separada via CodeBuddy exige HDF + SCOPED_WRITE; a Skill full-stack permanece experimental até uma missão autônoma MCF ponta a ponta;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA, readiness/version e recovery por redeploy;
@@ -162,7 +161,7 @@ Princípios centrais:
 
 ## Desenvolvimento visual e full-stack (experimental)
 
-A Skill `MCF-FULLSTACK-VISUAL-DEVELOPMENT` permanece `EXPERIMENTAL` e é um contrato de orquestração, não uma Skill executável. A Skill `MCF-ASTRYX-COMPONENT-DISCOVERY` foi integrada ao `main` pela PR #579 (`80ca638`): descoberta read-only com CLI/Core locais verificados, workspace e ambiente de subprocesso isolados, receipt semântico assinado e duas operações allowlisted (`component --list` e documentação compacta). O adapter continua disabled-by-default e não grava arquivos. A validação Foundation executou 1.160 testes aprovados e a integração com CLI/Core 0.7.17 passou; Qualification, Container Smoke, Production Readiness e Documentation validation também passaram. Astryx é o provider visual opcional (React 19+, componentes, temas, templates e CLI; StyleX é detalhe interno de autoria, não requisito de consumo); backend, APIs, banco, autenticação, integrações e governança continuam sob competências MCF independentes. Scaffolding, aplicação de diffs e piloto full-stack ainda não estão implementados. Consulte [arquitetura MCF Full-Stack Visual Development](docs/architecture/MCF-FULLSTACK-VISUAL-DEVELOPMENT.md) e [contrato da Skill](skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml).
+A Skill `MCF-FULLSTACK-VISUAL-DEVELOPMENT` permanece `EXPERIMENTAL` e é um contrato de orquestração, não uma Skill executável. A Skill `MCF-ASTRYX-COMPONENT-DISCOVERY` foi integrada ao `main` pela PR #579 (`80ca638`) e esta branch amplia seu adapter: além da descoberta de componentes, permite catálogo/fonte/skeleton de templates e proposta de um único arquivo em workspace descartável, com diff e digest assinados. A proposta não grava no checkout; a aplicação usa `MCF-IMPLEMENT-CHANGE` / CodeBuddy com HDF aprovado por LEANDRO, `SCOPED_WRITE`, paths aprovados, base SHA e rollback. O HDF de projeto é comparado ao `projectId` persistido em `mission.contract`, e o receipt valida os digests do source e do diff, inclusive o digest do artefato. Tudo continua disabled-by-default. O piloto não produtivo em `examples/astryx-fullstack-pilot/` cobre React 19 + Astryx, API autenticada, PostgreSQL isolado, rollback transacional, Playwright desktop/mobile, axe e regressão visual. O piloto, lockfile, baselines e CI qualificam a stack e os adapters; a Skill full-stack continua EXPERIMENTAL até uma missão autônoma MCF provar o fluxo completo MissionRuntime → Astryx proposal → HDF/TEAM_FIRST → CodeBuddy SCOPED_WRITE → testes/rollback → handoff, com evidências ligadas ao SHA. Consulte [arquitetura MCF Full-Stack Visual Development](docs/architecture/MCF-FULLSTACK-VISUAL-DEVELOPMENT.md), [adapter Astryx](docs/operations/MCF-ASTRYX-CLI-ADAPTER.md) e [contrato da Skill](skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml).
 
 ## Skills
 
@@ -171,13 +170,13 @@ O registro canônico está em [`skills/registry.yaml`](skills/registry.yaml).
 ```yaml
 registered_in_candidate_branch: 25
 server_runtime_executable: 18
-experimental_web_orchestration_ready: 7
+experimental_web_orchestration_ready: 9
 runtime_adapter_pending: 7
 ```
 
 Skills atuais:
 
-`MCF-START-MISSION`, `MCF-SELECT-AGENTS`, `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE`, `MCF-DESIGN-ARCHITECTURE`, `MCF-IMPLEMENT-CHANGE`, `MCF-REVIEW-CODE`, `MCF-RUN-TESTS`, `MCF-GIT-PR-RELEASE`, `MCF-DEPLOY-VALIDATE`, `MCF-TRACE-MISSION`, `MCF-EVALUATE-AGENTS`, `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT`, `MCF-CLOSE-PHASE`, `MCF-AUDIT-VISUAL-DESKTOP` e `MCF-EXECUTE-LOCAL-TEAM` são executáveis no servidor atual. A branch candidata acrescenta `MCF-WEB-SEARCH`, `MCF-WEB-FETCH`, `MCF-WEB-MAP`, `MCF-WEB-COLLECT`, `MCF-WEB-RESEARCH`, `MCF-WEB-INTERACT` e `MCF-WEB-MONITOR` como contratos EXPERIMENTAL/orchestration-ready; o adapter server-side permanece pendente.
+`MCF-START-MISSION`, `MCF-SELECT-AGENTS`, `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE`, `MCF-DESIGN-ARCHITECTURE`, `MCF-IMPLEMENT-CHANGE`, `MCF-REVIEW-CODE`, `MCF-RUN-TESTS`, `MCF-GIT-PR-RELEASE`, `MCF-DEPLOY-VALIDATE`, `MCF-TRACE-MISSION`, `MCF-EVALUATE-AGENTS`, `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT`, `MCF-CLOSE-PHASE`, `MCF-AUDIT-VISUAL-DESKTOP` e `MCF-EXECUTE-LOCAL-TEAM` são parte do conjunto executável. Também estão no conjunto `MCF-OPERATE-DUAL-BROWSER`, `MCF-GOOGLE-CLOUD-READ` e `MCF-ASTRYX-COMPONENT-DISCOVERY`, totalizando 21 skills executáveis. Os nove contratos `MCF-WEB-*` permanecem `EXPERIMENTAL`/orchestration-ready e são excluídos do mapa executável pelo `SkillRegistryLoader` até qualificação de adapters.
 
 ## Releases e marcos
 

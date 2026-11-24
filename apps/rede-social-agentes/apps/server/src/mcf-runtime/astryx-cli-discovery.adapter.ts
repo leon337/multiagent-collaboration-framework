@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { execFile as nodeExecFile } from 'node:child_process';
-import { mkdir, readFile, realpath, stat } from 'node:fs/promises';
-import { isAbsolute, relative, resolve, sep } from 'node:path';
+import { lstat, mkdir, mkdtemp, readFile, realpath, rm, stat } from 'node:fs/promises';
+import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 
 import type { McfToolReceipt } from '@rsa/contracts';
 
@@ -16,9 +16,20 @@ import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine
 export const ASTRYX_PROVIDER = 'mcf-astryx-cli';
 export const ASTRYX_RESOURCE = 'astryx-design-system';
 export const ASTRYX_SKILL = 'MCF-ASTRYX-COMPONENT-DISCOVERY';
-export const ASTRYX_OPERATIONS = ['list-components', 'read-component-docs'] as const;
+export const ASTRYX_OPERATIONS = [
+  'list-components',
+  'read-component-docs',
+  'list-templates',
+  'read-template-source',
+  'read-template-skeleton',
+  'draft-template-scaffold',
+] as const;
 
 const MAX_OUTPUT_BYTES = 32_768;
+const MAX_TEMPLATE_OUTPUT_BYTES = 2_097_152;
+const MAX_TEMPLATE_SOURCE_BYTES = 49_152;
+const MAX_TEMPLATE_DIFF_BYTES = 65_536;
+const MAX_SIGNED_PROPOSAL_RECEIPT_BYTES = 180_000;
 const MAX_STDERR_BYTES = 2_048;
 const DEFAULT_TIMEOUT_MS = 10_000;
 const ASTRYX_CLI_PACKAGE = '@astryxdesign/cli';
@@ -98,6 +109,7 @@ function parseCliEnvelope(
   stdout: string,
   operation: AstryxOperation,
   componentName: string | undefined,
+  templateId: string | undefined,
   installedCliVersion: string,
   installedCoreVersion: string,
 ): { cliVersion: string; coreVersion: string; cliCopy: string } {
@@ -113,19 +125,57 @@ function parseCliEnvelope(
     return invalid('Astryx CLI returned an unsupported JSON envelope');
   }
 
-  const expectedType = operation === 'list-components' ? 'component.list' : 'component.detail';
-  if (envelope.type !== expectedType || !isRecord(envelope.data)) {
-    return invalid('Astryx CLI returned an unexpected component response');
+  const expectedTypes: Record<AstryxOperation, string> = {
+    'list-components': 'component.list',
+    'read-component-docs': 'component.detail',
+    'list-templates': 'template.list',
+    'read-template-source': 'template.show',
+    'read-template-skeleton': 'template.skeleton',
+    'draft-template-scaffold': 'template.copy',
+  };
+  if (envelope.type !== expectedTypes[operation]) {
+    return invalid('Astryx CLI returned an unexpected response type');
   }
-
+  const data = envelope.data;
   if (operation === 'list-components') {
-    if (!isRecord(envelope.data.components) || envelope.data.detail !== 'names') {
+    if (!isRecord(data) || !isRecord(data.components) || data.detail !== 'names') {
       return invalid(
         'Astryx CLI component list must contain its catalog at the fixed names detail level',
       );
     }
-  } else if (envelope.data.name !== componentName) {
-    return invalid('Astryx CLI documentation does not match the requested component');
+  } else if (operation === 'read-component-docs') {
+    if (!isRecord(data) || data.name !== componentName) {
+      return invalid('Astryx CLI documentation does not match the requested component');
+    }
+  } else if (operation === 'list-templates') {
+    if (!Array.isArray(data) && (!isRecord(data) || !Array.isArray(data.templates))) {
+      return invalid('Astryx CLI template list must contain a typed template catalog');
+    }
+  } else if (operation === 'read-template-source') {
+    const identity = isRecord(data) ? (data.id ?? data.name ?? data.templateId) : undefined;
+    if (
+      !isRecord(data) ||
+      typeof data.source !== 'string' ||
+      data.source.length === 0 ||
+      (typeof identity === 'string' && identity !== templateId)
+    ) {
+      return invalid(
+        'Astryx CLI template source is missing or does not match the requested template',
+      );
+    }
+  } else if (operation === 'read-template-skeleton') {
+    const identity = isRecord(data) ? (data.id ?? data.name ?? data.templateId) : undefined;
+    if (
+      !isRecord(data) ||
+      Object.keys(data).length === 0 ||
+      (typeof identity === 'string' && identity !== templateId)
+    ) {
+      return invalid(
+        'Astryx CLI template skeleton is empty or does not match the requested template',
+      );
+    }
+  } else if (!isRecord(data) || data.filesCopied !== 1) {
+    return invalid('Astryx CLI scaffold must copy exactly one template file into scratch space');
   }
 
   if (!isRecord(envelope.meta) || !isRecord(envelope.meta.answeredBy)) {
@@ -153,7 +203,7 @@ function parseCliEnvelope(
 }
 
 export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
-  readonly adapterId = 'mcf-astryx-cli-readonly-v1';
+  readonly adapterId = 'mcf-astryx-cli-governed-v2';
 
   constructor(
     private readonly evidence: EvidenceValidator,
@@ -281,28 +331,114 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
     }
 
     const operation = canonicalizeToolValue(request.tool.operation) as AstryxOperation;
-    let args: string[];
+    const cwd = await this.resolveWorkspace();
+    const packages = await this.resolveCliPackages(cwd);
+    const isProposal = operation === 'draft-template-scaffold';
     let componentName: string | undefined;
+    let templateId: string | undefined;
+    let targetPath: string | undefined;
+    let baseCommitSha: string | undefined;
+    let allowedPaths: string[] = [];
+    let proposalWorkspace: string | undefined;
+    let executionCwd = cwd;
+    let args: string[];
 
     if (operation === 'list-components') {
       args = ['--json', 'component', '--list'];
-    } else {
+    } else if (operation === 'read-component-docs') {
       const name = request.inputs.componentName;
       if (typeof name !== 'string' || !/^[A-Z][A-Za-z0-9]{0,63}$/u.test(name)) {
         return invalidContext('componentName must be a valid Astryx component identifier');
       }
       componentName = name;
       args = ['--json', 'component', name, '--detail', 'compact'];
+    } else if (operation === 'list-templates') {
+      args = ['--json', 'template', '--list'];
+    } else {
+      const id = request.inputs.templateId;
+      if (typeof id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/u.test(id)) {
+        return invalidContext('templateId must be a valid Astryx template identifier');
+      }
+      templateId = id;
+      if (operation === 'read-template-source') {
+        args = ['--json', 'template', id];
+      } else if (operation === 'read-template-skeleton') {
+        args = ['--json', 'template', id, '--skeleton'];
+      } else {
+        const rawPath = request.inputs.targetPath;
+        if (
+          typeof rawPath !== 'string' ||
+          rawPath !== rawPath.trim() ||
+          rawPath.startsWith('/') ||
+          rawPath.includes('\\') ||
+          rawPath.includes('\0')
+        ) {
+          return invalidContext('targetPath must be a safe repository-relative file path');
+        }
+        const segments = rawPath.split('/');
+        if (
+          segments.some((segment) => !segment || segment === '.' || segment === '..') ||
+          !/^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*\.(?:tsx|jsx|ts|js)$/u.test(rawPath)
+        ) {
+          return invalidContext('targetPath must be a safe TypeScript or JavaScript source file');
+        }
+        targetPath = rawPath;
+        const rawSha = request.inputs.baseCommitSha;
+        if (typeof rawSha !== 'string' || !/^[a-f0-9]{40}$/iu.test(rawSha)) {
+          return invalidContext('baseCommitSha must be an exact 40-character Git SHA');
+        }
+        baseCommitSha = rawSha.toLowerCase();
+        const repository = request.inputs.repository;
+        if (
+          typeof repository !== 'string' ||
+          !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/[A-Za-z0-9._-]{1,100}$/u.test(
+            repository,
+          )
+        ) {
+          return invalidContext('repository must be a canonical owner/repository identifier');
+        }
+        if (
+          !Array.isArray(request.inputs.allowed_paths) ||
+          request.inputs.allowed_paths.length === 0
+        ) {
+          return invalidContext('allowed_paths must contain at least one approved repository path');
+        }
+        allowedPaths = request.inputs.allowed_paths.map((value) => {
+          if (
+            typeof value !== 'string' ||
+            value !== value.trim() ||
+            value.startsWith('/') ||
+            value.includes('\\') ||
+            !/^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/u.test(value) ||
+            value.split('/').some((segment) => segment === '.' || segment === '..')
+          ) {
+            return invalidContext('allowed_paths contains an unsafe repository-relative path');
+          }
+          return value;
+        });
+        if (!allowedPaths.some((scope) => rawPath === scope || rawPath.startsWith(`${scope}/`))) {
+          return invalidContext(
+            'targetPath must remain inside an explicitly approved allowed_paths entry',
+          );
+        }
+        proposalWorkspace = await mkdtemp(resolve(cwd, '.mcf-astryx-proposal-'));
+        executionCwd = proposalWorkspace;
+        const destination = resolve(proposalWorkspace, targetPath);
+        if (!isWithin(proposalWorkspace, destination)) {
+          await rm(proposalWorkspace, { recursive: true, force: true });
+          return invalidContext('Astryx proposal destination escaped its disposable workspace');
+        }
+        await mkdir(dirname(destination), { recursive: true });
+        args = ['--json', 'template', id, targetPath];
+      }
     }
 
-    const cwd = await this.resolveWorkspace();
-    const packages = await this.resolveCliPackages(cwd);
     const command = [process.execPath, packages.cliBinary, ...args];
-    const configDir = resolve(cwd, '.config');
-    const cacheDir = resolve(cwd, '.cache');
-    const tempDir = resolve(cwd, '.tmp');
-    const appDataDir = resolve(cwd, '.appdata');
-    const localAppDataDir = resolve(cwd, '.localappdata');
+    const configDir = resolve(executionCwd, '.config');
+    const cacheDir = resolve(executionCwd, '.cache');
+    const tempDir = resolve(executionCwd, '.tmp');
+    const appDataDir = resolve(executionCwd, '.appdata');
+    const localAppDataDir = resolve(executionCwd, '.localappdata');
     await Promise.all(
       [configDir, cacheDir, tempDir, appDataDir, localAppDataDir].map((directory) =>
         mkdir(directory, { recursive: true }),
@@ -312,8 +448,8 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       CI: 'true',
       NO_COLOR: '1',
       NODE_ENV: 'production',
-      HOME: cwd,
-      USERPROFILE: cwd,
+      HOME: executionCwd,
+      USERPROFILE: executionCwd,
       APPDATA: appDataDir,
       LOCALAPPDATA: localAppDataDir,
       XDG_CONFIG_HOME: configDir,
@@ -324,48 +460,124 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       ...(process.env.SystemRoot ? { SystemRoot: process.env.SystemRoot } : {}),
       ...(process.env.WINDIR ? { WINDIR: process.env.WINDIR } : {}),
     };
+    const maxOutputBytes = operation.includes('template')
+      ? MAX_TEMPLATE_OUTPUT_BYTES
+      : MAX_OUTPUT_BYTES;
     let result: { stdout: string; stderr: string };
 
     try {
       result = await this.runner(process.execPath, [packages.cliBinary, ...args], {
-        cwd,
+        cwd: executionCwd,
         env: childEnv,
         timeout: Math.min(Math.max(this.timeoutMs, 1_000), 30_000),
-        maxBuffer: MAX_OUTPUT_BYTES,
+        maxBuffer: maxOutputBytes,
         windowsHide: true,
       });
     } catch (error) {
+      if (proposalWorkspace) await rm(proposalWorkspace, { recursive: true, force: true });
       const isTimeout =
         isRecord(error) &&
         (error.code === 'ETIMEDOUT' || (error.killed === true && error.signal === 'SIGTERM'));
       const code = isTimeout ? 'ADAPTER_TIMEOUT' : 'ADAPTER_FAILURE';
+      const failureCode =
+        isRecord(error) && typeof error.code === 'string' ? error.code : 'UNKNOWN';
+      const exitCode =
+        isRecord(error) && typeof error.exitCode === 'number' ? error.exitCode : 'unknown';
       throw new ExternalActionAdapterError(
         code,
-        'Astryx CLI discovery failed; command output was not exposed',
+        `Astryx CLI operation "${operation}" failed (${failureCode}; exit ${exitCode}); command output was redacted`,
         code === 'ADAPTER_TIMEOUT',
       );
     }
 
     const stdout = result.stdout.trim();
-    if (!stdout || Buffer.byteLength(stdout, 'utf8') > MAX_OUTPUT_BYTES) {
-      return invalid('Astryx CLI returned empty or oversized discovery output');
+    if (!stdout || Buffer.byteLength(stdout, 'utf8') > maxOutputBytes) {
+      if (proposalWorkspace) await rm(proposalWorkspace, { recursive: true, force: true });
+      return invalid('Astryx CLI returned empty or oversized output');
+    }
+
+    let sourceContent: string | undefined;
+    let diff: string | undefined;
+    let diffDigest: string | undefined;
+    if (isProposal && targetPath && templateId && baseCommitSha && proposalWorkspace) {
+      const destination = resolve(proposalWorkspace, targetPath);
+      try {
+        const fileInfo = await lstat(destination);
+        const resolvedFile = await realpath(destination);
+        if (
+          !fileInfo.isFile() ||
+          fileInfo.isSymbolicLink() ||
+          !isWithin(proposalWorkspace, resolvedFile)
+        ) {
+          return invalid(
+            'Astryx scaffold proposal must produce one regular file inside scratch space',
+          );
+        }
+        if (fileInfo.size < 1 || fileInfo.size > MAX_TEMPLATE_SOURCE_BYTES) {
+          return invalid(
+            'Astryx scaffold proposal source is empty or exceeds the bounded file size',
+          );
+        }
+        sourceContent = await readFile(resolvedFile, 'utf8');
+        const envelope = JSON.parse(stdout) as unknown;
+        const data = isRecord(envelope) && isRecord(envelope.data) ? envelope.data : null;
+        if (!data || data.filesCopied !== 1 || data.fileName !== basename(targetPath)) {
+          return invalid('Astryx template copy receipt does not match the exact proposed file');
+        }
+        if (typeof data.outputDir === 'string') {
+          const reportedOutputDir = isAbsolute(data.outputDir)
+            ? resolve(data.outputDir)
+            : resolve(proposalWorkspace, data.outputDir);
+          if (
+            !isWithin(proposalWorkspace, reportedOutputDir) ||
+            reportedOutputDir !== dirname(destination)
+          ) {
+            return invalid(
+              'Astryx template copy outputDir does not match the disposable proposal path',
+            );
+          }
+        }
+        const normalizedContent = sourceContent.replace(/\r\n/gu, '\n');
+        const lines = normalizedContent.endsWith('\n')
+          ? normalizedContent.slice(0, -1).split('\n')
+          : normalizedContent.split('\n');
+        diff = [
+          `diff --git a/${targetPath} b/${targetPath}`,
+          'new file mode 100644',
+          '--- /dev/null',
+          `+++ b/${targetPath}`,
+          `@@ -0,0 +1,${lines.length} @@`,
+          ...lines.map((line) => `+${line}`),
+          '',
+        ].join('\n');
+        if (Buffer.byteLength(diff, 'utf8') > MAX_TEMPLATE_DIFF_BYTES) {
+          return invalid('Astryx scaffold proposal diff exceeds the request-safe size limit');
+        }
+        diffDigest = createHash('sha256').update(diff).digest('hex');
+      } finally {
+        await rm(proposalWorkspace, { recursive: true, force: true });
+      }
     }
 
     const provenance = parseCliEnvelope(
       stdout,
       operation,
       componentName,
+      templateId,
       packages.cliVersion,
       packages.coreVersion,
     );
     const outputDigest = createHash('sha256').update(stdout).digest('hex');
+    const sourceBytes =
+      sourceContent === undefined ? undefined : Buffer.from(sourceContent, 'utf8');
+    const diffBytes = diff === undefined ? undefined : Buffer.from(diff, 'utf8');
 
-    return this.evidence.createTrustedReceipt({
+    const receipt = this.evidence.createTrustedReceipt({
       provider: ASTRYX_PROVIDER,
       operation,
       resource: ASTRYX_RESOURCE,
       externalId: null,
-      commitSha: null,
+      commitSha: baseCommitSha ?? null,
       status: 'SUCCEEDED',
       observedAt: new Date().toISOString(),
       metadata: {
@@ -378,7 +590,38 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         cliPackageRoot: packages.cliPackageRoot,
         cliBinary: packages.cliBinary,
         corePackageRoot: packages.corePackageRoot,
-        readOnly: true,
+        readOnly: !isProposal,
+        ...(templateId ? { templateId } : {}),
+        ...(isProposal
+          ? {
+              proposalOnly: true,
+              writeMode: 'DISPOSABLE_PROPOSAL_ONLY',
+              proposalWorkspace: proposalWorkspace ?? null,
+              proposalWorkspaceCleaned: true,
+              templateId,
+              targetPath,
+              baseCommitSha,
+              repository: request.inputs.repository,
+              approvedPaths: allowedPaths,
+              sourceArtifact: {
+                encoding: 'base64',
+                data: sourceBytes?.toString('base64'),
+                byteLength: sourceBytes?.byteLength,
+                digest: createHash('sha256')
+                  .update(sourceBytes ?? Buffer.alloc(0))
+                  .digest('hex'),
+              },
+              diffArtifact: {
+                encoding: 'base64',
+                data: diffBytes?.toString('base64'),
+                byteLength: diffBytes?.byteLength,
+                digest: createHash('sha256')
+                  .update(diffBytes ?? Buffer.alloc(0))
+                  .digest('hex'),
+              },
+              diffDigest,
+            }
+          : {}),
         command,
         workspace: cwd,
         stdout,
@@ -388,5 +631,12 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         outputDigest,
       },
     });
+    if (
+      isProposal &&
+      Buffer.byteLength(JSON.stringify(receipt), 'utf8') > MAX_SIGNED_PROPOSAL_RECEIPT_BYTES
+    ) {
+      return invalid('Astryx signed proposal receipt exceeds the request-safe size limit');
+    }
+    return receipt;
   }
 }

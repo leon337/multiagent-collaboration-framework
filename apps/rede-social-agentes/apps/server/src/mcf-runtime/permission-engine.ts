@@ -167,10 +167,17 @@ function assertAstryxDiscoveryBoundary(
   if (
     skillId !== 'MCF-ASTRYX-COMPONENT-DISCOVERY' ||
     resource !== 'astryx-design-system' ||
-    !['list-components', 'read-component-docs'].includes(operation)
+    ![
+      'list-components',
+      'read-component-docs',
+      'list-templates',
+      'read-template-source',
+      'read-template-skeleton',
+      'draft-template-scaffold',
+    ].includes(operation)
   ) {
     throw new McfPermissionDeniedError(
-      'Astryx CLI is restricted to readonly component discovery for MCF-ASTRYX-COMPONENT-DISCOVERY',
+      'Astryx CLI is restricted to allowlisted component/template discovery and disposable scaffold proposals',
     );
   }
 }

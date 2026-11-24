@@ -1,0 +1,5 @@
+CREATE TABLE "__PILOT_SCHEMA__".tasks (
+  id BIGSERIAL PRIMARY KEY,
+  title TEXT NOT NULL CHECK (char_length(title) BETWEEN 1 AND 120),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

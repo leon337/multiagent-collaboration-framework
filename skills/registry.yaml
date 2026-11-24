@@ -143,11 +143,11 @@ skills:
     owner_agents: [Rafael, Eduardo, Helena, Andre, Tiago, Daniela]
     trigger_phrases: ["implementar", "corrigir", "integrar", "criar funcionalidade"]
     required_inputs: [approved_scope, acceptance_criteria, repository, allowed_paths]
-    optional_inputs: [branch, issue, design_reference]
+    optional_inputs: [branch, issue, design_reference, projectId, scaffoldProposalReceipt, v11AuthorizationContext, authorizedScope]
     allowed_tools: [GitHub, Linear, Supabase, Neon_Postgres, Render, Vercel, Cloudflare, OpenAI_Developers, Figma, CodeBuddy]
     forbidden_tools: [direct_main_write, public_release_without_gate]
     permission_profile: SCOPED_WRITE
-    execution_steps: [preparar_workspace, implementar, coletar_diff, registrar_handoff_de_testes, passar_para_revisao]
+    execution_steps: [validar_escopo_e_HDF, verificar_receipt_astryx_se_presente, preparar_workspace_git_descartavel, implementar_com_CodeBuddy, coletar_diff, validar_paths_e_base_sha, rollback_transacional_em_falha, registrar_handoff_de_testes, passar_para_revisao]
     required_evidence: [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
     expected_outputs: [implementation, technical_notes]
     acceptance_criteria: [scope_respected, tests_or_handoff_proven]
@@ -665,29 +665,11 @@ skills:
     fallback: Reportar bloqueio sem tentar qualquer operacao de escrita.
     handoff_to: Mestre
 
-  - skill_id: MCF-ASTRYX-COMPONENT-DISCOVERY
-    name: Descoberta de componentes e documentação Astryx
-    version: 0.1.0
-    purpose: Coordenar desenvolvimento full-stack com Astryx como provider visual opcional; esta execução inicial permite apenas descobrir componentes e documentação em modo leitura.
-    owner_agents: [Mestre]
-    trigger_phrases: ["descobrir componentes Astryx", "consultar documentação Astryx", "desenvolvimento visual full-stack"]
-    required_inputs: []
-    optional_inputs: [componentName]
-    allowed_tools: [mcf-astryx-cli]
-    forbidden_tools: [write, delete, publish, deploy, shell, arbitrary_command, production]
-    permission_profile: READ_ONLY
-    execution_steps: [validar_skill_e_provider, consultar_cli_allowlisted, validar_output_limitado, emitir_receipt_assinado]
-    required_evidence: [provider, operation, adapterId, readOnly, command, workspace, cliPackageRoot, corePackageRoot, cliBinary, cliVersion, coreVersion, cliCopy, exitCode, outputBytes, outputDigest]
-    acceptance_criteria: [provider_and_resource_allowlisted, workspace_isolated, local_cli_binary_resolved, local_core_package_resolved, cli_and_core_versions_match_installed_packages, command_fixed_and_no_shell, child_environment_sanitized, component_list_names_detail_fixed, project_package_provenance_verified, output_bounded_and_digest_valid, receipt_signed_and_semantically_valid, disabled_by_default]
-    failure_modes: [adapter_disabled, workspace_unavailable, cli_missing, core_missing, package_version_mismatch, timeout, invalid_component_name, invalid_output]
-    fallback: Se o adapter estiver desabilitado ou o CLI indisponível, parar e registrar a dependência; nunca executar comandos alternativos ou shell arbitrário.
-    handoff_to: Mestre
 
-  # Full-stack orchestration contract only; not executable by the runtime.
   - skill_id: MCF-FULLSTACK-VISUAL-DEVELOPMENT
     status: EXPERIMENTAL
     name: Desenvolver aplicações full-stack com desenvolvimento visual assistido
-    version: 0.1.0
+    version: 0.2.0
     purpose: Orquestrar a construção de aplicações completas, usando Astryx como provider visual opcional e as capacidades MCF existentes para arquitetura, frontend, backend, dados, integrações, testes e governança.
     owner_agents: [Mestre, Sofia, Rafael]
     supporting_agents: [Evelyn, Laura, Isabela, Marina, Eduardo, Helena, Andre, Tiago, Daniela, Vinicius, Lucas, Ricardo, Beatriz, Augusto, Julia]
@@ -704,3 +686,21 @@ skills:
     failure_modes: [astryx_incompatible_or_unavailable, unsupported_component, backend_contract_drift, schema_risk, auth_gap, visual_regression, accessibility_failure, ci_failure]
     fallback: Se Astryx não for compatível, selecionar outro design system ou componentes existentes sem bloquear backend; registrar a exceção e manter contratos de API/dados independentes da camada visual. Se faltar adapter de runtime, executar somente por ferramentas autorizadas e não declarar a Skill como runtime-executável.
     handoff_to: Beatriz
+
+  - skill_id: MCF-ASTRYX-COMPONENT-DISCOVERY
+    name: Descoberta visual e proposta de scaffolding Astryx
+    version: 0.2.0
+    purpose: Descobrir componentes, templates, fontes e esqueletos Astryx; gerar proposta de scaffold somente em workspace descartável, sem alterar checkout ou projeto alvo.
+    owner_agents: [Mestre]
+    trigger_phrases: ["descobrir componentes Astryx", "consultar templates Astryx", "propor scaffolding Astryx", "desenvolvimento visual full-stack"]
+    required_inputs: []
+    optional_inputs: [componentName, templateId, targetPath, baseCommitSha, repository, allowed_paths]
+    allowed_tools: [mcf-astryx-cli]
+    forbidden_tools: [shell, arbitrary_cli, write_to_checkout, apply, commit, merge, deploy]
+    permission_profile: READ_AND_PROPOSE
+    execution_steps: [validate_workspace, verify_cli_core, run_fixed_argv, validate_receipt, discover_components_and_templates, propose_single_file_scaffold, clean_scratch, handoff]
+    required_evidence: [provider, operation, adapterId, readOnly, command, workspace, cliPackageRoot, corePackageRoot, cliBinary, cliVersion, coreVersion, cliCopy, exitCode, outputBytes, outputDigest]
+    acceptance_criteria: [component_and_template_responses_semantically_valid, proposal_diff_digest_matches_source, proposal_paths_inside_allowed_scope, no_checkout_write, scratch_removed, evidence_signed]
+    failure_modes: [cli_missing, cli_version_mismatch, invalid_receipt, invalid_target_path, path_not_approved, oversized_template, scratch_cleanup_failed]
+    fallback: Se o adapter estiver desabilitado, CLI indisponível ou qualquer validação falhar, parar sem gravar no projeto alvo; nunca usar shell arbitrário nem fallback global.
+    handoff_to: Mestre

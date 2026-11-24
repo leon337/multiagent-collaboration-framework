@@ -1,0 +1,59 @@
+name: MCF Astryx Full-Stack Pilot
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "examples/astryx-fullstack-pilot/**"
+      - ".github/workflows/mcf-astryx-fullstack-pilot.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fullstack-pilot:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mcf_astryx_pilot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d mcf_astryx_pilot"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: examples/astryx-fullstack-pilot
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/mcf_astryx_pilot
+      MCF_PILOT_TOKEN: mcf-astryx-ci-token-2026-only-not-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install pinned pilot dependencies from committed lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build production frontend
+        run: npm run build
+      - name: Run API, database, browser, accessibility and visual checks
+        run: npm run test:e2e
+      - name: Upload lockfile, visual baselines and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcf-astryx-fullstack-pilot-baselines
+          path: |
+            examples/astryx-fullstack-pilot/package-lock.json
+            examples/astryx-fullstack-pilot/visual-baselines.json
+            examples/astryx-fullstack-pilot/artifacts/*.png
+          if-no-files-found: warn

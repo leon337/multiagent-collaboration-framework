@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -276,6 +276,97 @@ describe('MCF Astryx component discovery canonical runtime E2E', () => {
     expect(eventTypes).toContain('TOOL_RECEIPT_RECORDED');
     expect(eventTypes).toContain('EVIDENCE_VALIDATED');
     expect(eventTypes).toContain('PHASE_COMPLETED');
+  });
+
+  it('executes a scaffold proposal through MissionRuntime and validates its disposable diff receipt', async () => {
+    workspace = await createWorkspace();
+    const source = 'export function Pilot() { return <main>pilot</main>; }\n';
+    const runner = vi.fn(async (binary: string, args: string[], options: unknown) => {
+      const cwd = (options as { cwd: string }).cwd;
+      expect(binary).toBe(process.execPath);
+      expect(args).toEqual([
+        localCliBinary(workspace!),
+        '--json',
+        'template',
+        'Dashboard',
+        'src/astryx-pilot/Pilot.tsx',
+      ]);
+      const target = join(cwd, 'src/astryx-pilot/Pilot.tsx');
+      await mkdir(dirname(target), { recursive: true });
+      await writeFile(target, source);
+      return {
+        stdout: cliResponse('template.copy', {
+          filesCopied: 1,
+          fileName: 'Pilot.tsx',
+          outputDir: dirname(target),
+        }),
+        stderr: '',
+      };
+    });
+    const { service, repository, ledger } = runtime(workspace, true, runner);
+    const mission = await service.createMission({
+      contract: {
+        title: 'MCF Astryx disposable scaffold proposal E2E',
+        objective: 'Gerar proposta de scaffold Astryx sem gravar no projeto alvo.',
+        expectedOutcome: 'MissionRuntime valida receipt, digest e escopo do artefato temporário.',
+        scope: [ASTRYX_SKILL],
+        outOfScope: ['apply_scaffold', 'checkout_write', 'production_deploy'],
+        acceptanceCriteria: [
+          'proposal_only',
+          'approved_paths_bound',
+          'scratch_workspace_cleaned',
+          'signed_diff_valid',
+        ],
+        riskClass: 'B',
+        selectedAgents: ['Mestre'],
+        selectedSkills: [ASTRYX_SKILL],
+        sourceOfTruth: ['skills/registry.yaml', 'docs/operations/MCF-ASTRYX-CLI-ADAPTER.md'],
+      },
+    });
+    const inputs = {
+      templateId: 'Dashboard',
+      targetPath: 'src/astryx-pilot/Pilot.tsx',
+      baseCommitSha: 'a'.repeat(40),
+      repository: 'leon337/multiagent-collaboration-framework',
+      allowed_paths: ['src/astryx-pilot'],
+    };
+
+    const result = await service.executePhase(mission.id, {
+      phaseId: randomUUID(),
+      skillId: ASTRYX_SKILL,
+      agentId: 'Mestre',
+      expectedMissionVersion: 1,
+      inputs,
+      tool: {
+        provider: ASTRYX_PROVIDER,
+        operation: 'draft-template-scaffold',
+        resource: ASTRYX_RESOURCE,
+      },
+    });
+
+    expect(result).toMatchObject({ phaseState: 'COMPLETED', evidenceStatus: 'VALID' });
+    expect(result.receipt).toMatchObject({
+      operation: 'draft-template-scaffold',
+      commitSha: 'a'.repeat(40),
+      metadata: {
+        proposalOnly: true,
+        readOnly: false,
+        writeMode: 'DISPOSABLE_PROPOSAL_ONLY',
+        proposalWorkspaceCleaned: true,
+        targetPath: inputs.targetPath,
+        approvedPaths: inputs.allowed_paths,
+        diffDigest: expect.stringMatching(/^[a-f0-9]{64}$/u),
+      },
+    });
+    expect(
+      Buffer.from(
+        String((result.receipt?.metadata.sourceArtifact as { data: string }).data),
+        'base64',
+      ).toString('utf8'),
+    ).toBe(source);
+    expect(ledger.validatedReceiptId).toBe(result.receipt?.receiptId);
+    expect(ledger.failures).toEqual([]);
+    expect(repository.persisted?.evidenceStatus).toBe('VALID');
   });
 
   it('fails closed through MissionRuntime when the adapter is disabled', async () => {

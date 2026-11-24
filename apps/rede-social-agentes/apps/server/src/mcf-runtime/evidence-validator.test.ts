@@ -13,13 +13,13 @@ beforeEach(() => {
 const astryxSkill: McfSkillDefinition = {
   skillId: 'MCF-ASTRYX-COMPONENT-DISCOVERY',
   name: 'Astryx component discovery',
-  version: '0.1.0',
-  purpose: 'Read the official Astryx component catalog and documentation.',
+  version: '0.2.0',
+  purpose: 'Discover Astryx components and templates and validate disposable scaffold proposals.',
   ownerAgents: ['Mestre'],
   requiredInputs: [],
   allowedTools: ['mcf-astryx-cli'],
   forbiddenTools: ['write', 'delete', 'publish', 'deploy'],
-  permissionProfile: 'READ_ONLY',
+  permissionProfile: 'READ_AND_PROPOSE',
   executionSteps: ['list_or_read_components'],
   requiredEvidence: ['signed_json_output', 'package_versions', 'read_only_provenance'],
   acceptanceCriteria: ['receipt_semantically_valid'],
@@ -40,7 +40,7 @@ function astryxReceiptMetadata(cliCopy = 'project', detail = 'names') {
   const corePackageRoot = `${workspace}/node_modules/@astryxdesign/core`;
   const cliBinary = `${cliPackageRoot}/clients/cli/bin/astryx.mjs`;
   return {
-    adapterId: 'mcf-astryx-cli-readonly-v1',
+    adapterId: 'mcf-astryx-cli-governed-v2',
     cliPackage: '@astryxdesign/cli',
     corePackage: '@astryxdesign/core',
     cliVersion: '0.7.2',
@@ -100,6 +100,37 @@ describe('EvidenceValidator', () => {
       status: 'SUCCEEDED',
       observedAt: new Date().toISOString(),
       metadata: astryxReceiptMetadata(),
+    });
+
+    expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).not.toThrow();
+  });
+
+  it('accepts the bounded full template catalog output from the pinned CLI', () => {
+    const validator = new EvidenceValidator();
+    const expected = {
+      provider: 'mcf-astryx-cli',
+      operation: 'list-templates',
+      resource: 'astryx-design-system',
+    };
+    const metadata = astryxReceiptMetadata();
+    const stdout =
+      JSON.stringify({
+        apiVersion: 1,
+        type: 'template.list',
+        data: { templates: [] },
+        meta: { answeredBy: { cli: '0.7.2', core: '0.7.2', copy: 'project' } },
+      }) + ' '.repeat(300_000);
+    metadata.command = [process.execPath, metadata.cliBinary, '--json', 'template', '--list'];
+    metadata.stdout = stdout;
+    metadata.outputBytes = Buffer.byteLength(stdout, 'utf8');
+    metadata.outputDigest = createHash('sha256').update(stdout).digest('hex');
+    const receipt = validator.createTrustedReceipt({
+      ...expected,
+      externalId: null,
+      commitSha: null,
+      status: 'SUCCEEDED',
+      observedAt: new Date().toISOString(),
+      metadata,
     });
 
     expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).not.toThrow();

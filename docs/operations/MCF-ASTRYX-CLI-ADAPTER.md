@@ -1,28 +1,63 @@
-# MCF Astryx CLI Discovery Adapter
+# MCF Astryx CLI Discovery and Scaffold Proposal Adapter
 
-**Status:** implemented, read-only, disabled by default.  
-**Skill:** `MCF-ASTRYX-COMPONENT-DISCOVERY`  
-**Provider:** `mcf-astryx-cli`
+**Status:** implemented in this branch; disabled by default.  
+**Skill:** `MCF-ASTRYX-COMPONENT-DISCOVERY@0.2.0`  
+**Provider:** `mcf-astryx-cli`  
+**Permission profile:** `READ_AND_PROPOSE`
 
 ## Scope
 
-The adapter connects Astryx component discovery to the existing MCF `ExternalActionDispatcher`, `AdapterRegistry`, `PermissionEngine` and `EvidenceValidator`. It does not scaffold files, modify a project, execute generated code, or deploy applications.
+The adapter connects Astryx to the MCF `ExternalActionDispatcher`, `AdapterRegistry`, `PermissionEngine` and `EvidenceValidator`. It supports component/template discovery and one bounded scaffold proposal operation. Astryx never writes to the target checkout, applies a diff, commits, merges or deploys.
 
 Allowlisted operations:
 
-- `list-components` → fixed arguments: `--json component --list`; the response must use the CLI's default `detail: names` catalog
-- `read-component-docs` → fixed arguments: `--json component <ComponentName> --detail compact`
+| Operation                 | Fixed argv                                        | Effect                                                                                                   |
+| ------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `list-components`         | `--json component --list`                         | Read-only catalog at `detail: names`                                                                     |
+| `read-component-docs`     | `--json component <Name> --detail compact`        | Read-only component docs                                                                                 |
+| `list-templates`          | `--json template --list`                          | Read-only template catalog                                                                               |
+| `read-template-source`    | `--json template <id>`                            | Read-only template source                                                                                |
+| `read-template-skeleton`  | `--json template <id> --skeleton`                 | Read-only structural skeleton                                                                            |
+| `draft-template-scaffold` | `--json template <id> <repository-relative-file>` | Copies exactly one file into a unique disposable workspace, then returns source + add-file diff proposal |
 
-The runtime resolves both `@astryxdesign/cli` and `@astryxdesign/core` from their workspace package manifests, verifies package names, semantic versions and package-root containment, and invokes the exact CLI binary through `process.execPath` with `execFile`. It does not use a shell, PATH lookup, global CLI, or model-supplied executable. The workspace must install and pin both `@astryxdesign/cli` and `@astryxdesign/core` as project dependencies. Do not use `npx astryx`: the unscoped npm package name is unrelated. Component identifiers must match `^[A-Z][A-Za-z0-9]{0,63}$`.
+The runtime resolves `@astryxdesign/cli` and `@astryxdesign/core` from workspace package manifests, verifies package names, semantic versions and package-root containment, and invokes the exact CLI binary through `process.execPath` with `execFile`. It does not use a shell, PATH lookup, global CLI, or model-supplied executable. Do not use `npx astryx`: the unscoped npm package name is unrelated.
 
-The CLI must return the documented JSON envelope with `meta.answeredBy` reporting project-local CLI and Core versions. JSON mode and all command arguments are fixed by the adapter. The CLI-reported Core version must exactly match the installed local Core package version. The receipt binds both package roots and versions, Node executable, CLI binary, exact arguments, workspace, exit code, bounded stdout/stderr, byte count and SHA-256 digest. Stderr truncation respects UTF-8 code-point boundaries. `EvidenceValidator` checks the envelope type, fixed `names` catalog detail, component identity, package provenance, fixed command, output digest, workspace boundary and read-only status. The adapter requires the exact canonical resource identifier and binds that constant into the signed receipt; noncanonical aliases are rejected.
+For every operation, the CLI must return the JSON envelope with `meta.answeredBy` reporting project-local CLI/Core versions. The CLI-reported Core version must exactly match the installed local Core package version. The receipt binds package roots, versions, Node executable, CLI binary, exact arguments, workspace, exit code, bounded output and SHA-256 digest.
+
+## Disposable scaffold proposal
+
+`draft-template-scaffold` requires:
+
+- `templateId`: bounded Astryx template identifier;
+- `targetPath`: explicit repository-relative source file path (`.tsx`, `.jsx`, `.ts` or `.js`);
+- `repository`: canonical owner/repository;
+- `baseCommitSha`: exact 40-character SHA of the intended target workspace;
+- `allowed_paths`: non-empty explicit path scopes containing `targetPath`.
+
+The adapter creates a unique child workspace under the isolated CLI workspace and runs the fixed `template <id> <targetPath>` command there. It accepts exactly one regular file, rejects symlinks, traversal, unapproved paths, empty/oversized output and mismatched CLI copy receipts. It then emits a canonical new-file diff and source artifact, each bound by SHA-256, in a signed receipt. The temporary directory is removed before the receipt is returned. A failed cleanup means no successful receipt is emitted.
+
+The proposal receipt is not authorization to write. It is a reviewable, content-addressed input for the separate MCF implementation step.
+
+## Applying a proposal
+
+Application is delegated to `MCF-IMPLEMENT-CHANGE` using the existing CodeBuddy adapter. When `scaffoldProposalReceipt` is supplied, the adapter:
+
+1. verifies the signed Astryx proposal and its source/diff digests;
+2. binds repository, exact base SHA and target path to the current clean workspace;
+3. requires `authorizedScope=true` and the `SCOPED_WRITE` permission profile;
+4. requires a v1.1 HDF context bound to the exact `projectId` and mission execution context, with `actionClass=SCOPED_WRITE`, non-production environment, TEAM_FIRST evidence, the exact proposal receipt in evidenceRefs, and a human-gate decision approved by LEANDRO; the decision must carry a canonical account UUID and server-issued `human-authority:<uuid>` sourceRef, not caller-authored provenance;
+5. restricts changes to `allowed_paths` and requires CodeBuddy to materialize the proposed target file;
+6. executes in a disposable Git worktree and Bubblewrap filesystem/process sandbox;
+7. publishes only the validated Git-derived diff into the authorized workspace, without committing or deploying.
+
+The existing CodeBuddy host validates the published diff and performs transactional reverse-apply restoration if publication or disposable-worktree cleanup fails. The test suite explicitly verifies that rollback path. A successful implementation receipt remains local, uncommitted and pending the separate MCF test/review handoff.
 
 ## Runtime configuration
 
 All settings are opt-in and disabled by default:
 
-- `MCF_ASTRYX_CLI_ENABLED=true` — enable component discovery.
-- `MCF_ASTRYX_WORKSPACE_ROOT=/absolute/path/to/isolated/workspace` — required when enabled; must point to an existing isolated directory with pinned CLI and Core dependencies installed.
+- `MCF_ASTRYX_CLI_ENABLED=true` — enable component/template discovery and disposable proposals.
+- `MCF_ASTRYX_WORKSPACE_ROOT=/absolute/path/to/isolated/workspace` — required when enabled; must point to an isolated directory with pinned CLI and Core dependencies.
 
 Missing or relative paths fail closed. A workspace overlapping the runtime checkout or one of its parent/child directories is rejected. The runtime executable is fixed to `process.execPath`; no executable override or inherited PATH fallback is supported.
 
@@ -37,25 +72,32 @@ Do not point the workspace at a production checkout. Do not enable the adapter i
 
 ## Security boundary
 
-- Permission checks bind the exact skill/provider/resource/operation tuple.
-- The skill uses the `READ_ONLY` permission profile; writes, publish and deploy are forbidden.
-- Only the two fixed discovery operations are supported.
-- The adapter is disabled unless the explicit enable flag is true.
-- No shell, arbitrary command, arbitrary arguments, PATH lookup, global CLI fallback, file writes, scaffolding or deployment.
-- The child process receives an allowlisted environment with HOME/config/cache/temp rooted in the isolated workspace; PATH, NODE_OPTIONS, database credentials and MCF receipt secrets are not inherited.
-- Both scoped package manifests and the resolved CLI binary must remain inside the isolated workspace; CLI-reported versions must match the installed packages.
-- CLI output and stderr are bounded before receipt creation.
-- Receipts are created by the existing `EvidenceValidator`; the action is recorded by the existing external action ledger.
+- Exact skill/provider/resource/operation tuple; no arbitrary commands or flags.
+- Astryx scaffold writes only to a unique disposable workspace, never to the target checkout.
+- Explicit `allowed_paths`, canonical repository, exact base SHA and bounded source/diff artifacts.
+- `READ_AND_PROPOSE` permits the proposal but not application.
+- Application requires `SCOPED_WRITE`, explicit scope and a LEANDRO HDF approval after TEAM_FIRST; MissionRuntime canonicalizes terminal human decisions from the authenticated reserved account, and the adapter binds the proof to project, mission and exact proposal receipt.
+- The application path is a separate CodeBuddy adapter with disposable Git worktree, Bubblewrap, signed diff evidence and rollback.
+- Child CLI environment is allowlisted; database credentials and MCF receipt secrets are not inherited.
+- CLI/Core package roots and versions must match the installed local packages.
+- Receipts are signed by the existing EvidenceValidator and recorded by the external action ledger.
+- Scaffold source and diff artifacts carry canonical base64 encoding, byte length and SHA-256; the validator checks the embedded diff digest, metadata digest, target path and real LF delimiters before acceptance.
+- For CodeBuddy application, MissionRuntime passes `mission.contract.projectId` from the persisted mission record into the execution context; caller-provided `inputs.projectId` and HDF `projectId` must both match it. A mismatch is rejected before CodeBuddy execution. The requested `allowed_paths` must be a subset of the proposal receipt's signed `approvedPaths`, and every published changed file is checked against both scopes. Template catalog subprocess output is capped at 2 MiB. To stay below the API's 256 KiB request-body limit, source artifacts are capped at 48 KiB, diff artifacts at 64 KiB, and the serialized signed proposal receipt at 180 KB.
+- No commit, merge, publish, production write or deploy.
 
 ## Validation
 
-The branch includes unit tests for support boundaries, disabled-by-default behavior, workspace isolation, project-local CLI/Core package resolution, missing-Core and version-mismatch rejection, Core path containment, UTF-8 stderr bounds, timeout classification, fixed JSON arguments, package provenance, receipt semantics, output bounds, component-name validation and `PermissionEngine` rejection. It also includes runtime registry tests, a `MissionRuntime` E2E test and a real CLI integration test using pinned CLI/Core packages in an isolated CI workspace.
+The branch adds unit coverage for component/template discovery, bounded output, scratch proposal generation, path traversal rejection, proposal cleanup, semantic receipt validation, permission boundaries and CodeBuddy HDF enforcement. MissionRuntime E2E covers both read-only discovery and the signed disposable proposal. The real CLI integration test uses pinned CLI/Core 0.7.17 packages in an isolated CI workspace.
 
-Run from the server workspace:
+The non-production full-stack qualification fixture is in `examples/astryx-fullstack-pilot/`. Its separate workflow builds React 19 + Astryx, runs an authenticated API against a per-run PostgreSQL schema and migration, checks database transaction rollback and schema cleanup, desktop/mobile browser flows, axe accessibility and pixel baselines. It never uses the Potiguar production database or deploys.
+
+Run server checks from the server workspace:
 
 ```sh
 pnpm vitest run src/mcf-runtime/astryx-cli-discovery.adapter.test.ts
+pnpm vitest run src/mcf-runtime/astryx-cli-discovery.runtime-e2e.test.ts
+pnpm vitest run src/mcf-runtime/codebuddy-executor.adapter.test.ts
 pnpm typecheck
 ```
 
-This increment is not a full-stack code-generation executor. Governed diff-based scaffolding, UI generation, backend generation, visual regression, human approval and rollback require a separate implementation and security validation.
+This adapter increment and pilot do not promote the orchestration Skill to `CURRENT_IMPLEMENTED` by themselves. The pilot, committed lockfile/baselines, current CI, documentation validation and security review qualify the provider boundary. Promotion additionally requires a mission-level autonomous MCF E2E through MissionRuntime, SkillExecutor, Dispatcher, EvidenceValidator and the real CodeBuddy host, with canonical HDF approval, diff scope, tests, rollback and SHA-linked handoff. Until then the full-stack orchestration Skill remains EXPERIMENTAL and is not counted among executable Skills.

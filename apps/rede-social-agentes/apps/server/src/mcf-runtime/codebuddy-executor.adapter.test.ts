@@ -1,4 +1,6 @@
-import type { McfSkillDefinition } from '@rsa/contracts';
+import { createHash } from 'node:crypto';
+
+import type { McfSkillDefinition, McfToolReceipt } from '@rsa/contracts';
 import { execFile } from 'node:child_process';
 import { chmod, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -109,6 +111,113 @@ function adapter(host = new FakeHost(), enabled = true) {
       },
       host,
     ),
+  };
+}
+
+function createAstryxProposalReceipt(evidence: EvidenceValidator): McfToolReceipt {
+  const workspace = join(tmpdir(), 'mcf-astryx-proposal-workspace');
+  const cliPackageRoot = join(workspace, 'node_modules', '@astryxdesign', 'cli');
+  const corePackageRoot = join(workspace, 'node_modules', '@astryxdesign', 'core');
+  const cliBinary = join(cliPackageRoot, 'clients', 'cli', 'bin', 'astryx.mjs');
+  const proposalWorkspace = join(workspace, '.mcf-astryx-proposal-123');
+  const targetPath = 'src/components/Pilot.tsx';
+  const source = 'export function Pilot() { return <main>{`pilot`}</main>; }';
+  const sourceBytes = Buffer.from(source, 'utf8');
+  const lines = source.split('\n');
+  const diff = [
+    `diff --git a/${targetPath} b/${targetPath}`,
+    'new file mode 100644',
+    '--- /dev/null',
+    `+++ b/${targetPath}`,
+    `@@ -0,0 +1,${lines.length} @@`,
+    ...lines.map((line) => `+${line}`),
+    '',
+  ].join('\n');
+  const diffBytes = Buffer.from(diff, 'utf8');
+  const stdout = JSON.stringify({
+    apiVersion: 1,
+    type: 'template.copy',
+    data: {
+      filesCopied: 1,
+      fileName: 'Pilot.tsx',
+      outputDir: join(proposalWorkspace, 'src/components'),
+    },
+    meta: { answeredBy: { cli: '0.7.2', core: '0.7.2', copy: 'project' } },
+  });
+  return evidence.createTrustedReceipt({
+    provider: 'mcf-astryx-cli',
+    operation: 'draft-template-scaffold',
+    resource: 'astryx-design-system',
+    externalId: null,
+    commitSha: 'a'.repeat(40),
+    status: 'SUCCEEDED',
+    observedAt: new Date().toISOString(),
+    metadata: {
+      adapterId: 'mcf-astryx-cli-governed-v2',
+      cliPackage: '@astryxdesign/cli',
+      corePackage: '@astryxdesign/core',
+      cliVersion: '0.7.2',
+      coreVersion: '0.7.2',
+      cliCopy: 'project',
+      cliPackageRoot,
+      cliBinary,
+      corePackageRoot,
+      readOnly: false,
+      proposalOnly: true,
+      writeMode: 'DISPOSABLE_PROPOSAL_ONLY',
+      proposalWorkspace,
+      proposalWorkspaceCleaned: true,
+      templateId: 'Dashboard',
+      targetPath,
+      baseCommitSha: 'a'.repeat(40),
+      repository: 'leon337/multiagent-collaboration-framework',
+      approvedPaths: ['src/components'],
+      sourceArtifact: {
+        encoding: 'base64',
+        data: sourceBytes.toString('base64'),
+        byteLength: sourceBytes.byteLength,
+        digest: createHash('sha256').update(sourceBytes).digest('hex'),
+      },
+      diffArtifact: {
+        encoding: 'base64',
+        data: diffBytes.toString('base64'),
+        byteLength: diffBytes.byteLength,
+        digest: createHash('sha256').update(diffBytes).digest('hex'),
+      },
+      diffDigest: createHash('sha256').update(diffBytes).digest('hex'),
+      command: [process.execPath, cliBinary, '--json', 'template', 'Dashboard', targetPath],
+      workspace,
+      stdout,
+      stderr: '',
+      exitCode: 0,
+      outputBytes: Buffer.byteLength(stdout, 'utf8'),
+      outputDigest: createHash('sha256').update(stdout).digest('hex'),
+    },
+  });
+}
+
+function approvedHdf(proposal: McfToolReceipt, missionId: string) {
+  return {
+    projectId: 'mcf-astryx-pilot',
+    missionId,
+    actionClass: 'SCOPED_WRITE',
+    environment: 'staging',
+    reversible: true,
+    observedAt: new Date().toISOString(),
+    evidenceRefs: [proposal.receiptId],
+    reservedHumanAuthority: true,
+    standingAuthorizations: [],
+    teamFirst: {
+      attempted: true,
+      evidenceRefs: ['team-first-evidence-001'],
+      fallbackExhausted: true,
+    },
+    humanGateDecision: {
+      status: 'APPROVED' as const,
+      decidedBy: 'LEANDRO',
+      accountId: '44444444-4444-4444-8444-444444444444',
+      sourceRef: 'human-authority:55555555-5555-4555-8555-555555555555',
+    },
   };
 }
 
@@ -272,6 +381,120 @@ describe('CodeBuddyExecutorAdapter', () => {
     await expect(subject.execute(request)).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
     expect(host.removeExecutionWorkspace).toHaveBeenCalledOnce();
     expect(host.restoreWorkspace).not.toHaveBeenCalled();
+  });
+
+  it('requires an explicit LEANDRO HDF gate before applying an Astryx scaffold proposal', async () => {
+    const { adapter: subject, host } = adapter();
+    await expect(
+      subject.execute({
+        ...request,
+        inputs: { ...request.inputs, scaffoldProposalReceipt: {} },
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
+    expect(host.execute).not.toHaveBeenCalled();
+    expect(host.publishChanges).not.toHaveBeenCalled();
+  });
+
+  it('applies a signed Astryx proposal only with SCOPED_WRITE and LEANDRO HDF approval', async () => {
+    const evidence = new EvidenceValidator();
+    const host = new FakeHost();
+    host.changes = {
+      changedFiles: ['src/components/Pilot.tsx'],
+      diff: 'diff --git a/src/components/Pilot.tsx b/src/components/Pilot.tsx\n+export function Pilot() {}\n',
+      headSha: host.snapshot.headSha,
+    };
+    const subject = new CodeBuddyExecutorAdapter(
+      evidence,
+      {
+        enabled: true,
+        binary: '/usr/local/bin/codebuddy',
+        workspaceRoot: '/srv/mcf/worktrees',
+        model: 'cx/gpt-5.6-sol',
+        timeoutMs: 300000,
+      },
+      host,
+    );
+    const proposal = createAstryxProposalReceipt(evidence);
+    const missionId = '66666666-6666-4666-8666-666666666666';
+    const inputs = {
+      ...request.inputs,
+      projectId: 'mcf-astryx-pilot',
+      approved_scope: 'Apply the approved Astryx template proposal at src/components/Pilot.tsx.',
+      allowed_paths: ['src/components'],
+      scaffoldProposalReceipt: proposal,
+      authorizedScope: true,
+      v11AuthorizationContext: approvedHdf(proposal, missionId),
+    };
+    const requestWithMission = {
+      ...request,
+      context: {
+        missionId,
+        phaseId: 'phase-astryx-001',
+        expectedMissionVersion: 1,
+        projectId: 'mcf-astryx-pilot',
+      },
+      inputs,
+    };
+    await expect(
+      subject.execute({
+        ...requestWithMission,
+        context: { ...requestWithMission.context, projectId: 'different-project' },
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
+    expect(host.execute).not.toHaveBeenCalled();
+    await expect(
+      subject.execute({
+        ...requestWithMission,
+        inputs: { ...requestWithMission.inputs, allowed_paths: ['src'] },
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
+    expect(host.execute).not.toHaveBeenCalled();
+
+    const validChanges = host.changes;
+    host.changes = {
+      changedFiles: ['src/components/Pilot.tsx', 'src/OutsideProposalScope.tsx'],
+      diff:
+        'diff --git a/src/components/Pilot.tsx b/src/components/Pilot.tsx\\n+export function Pilot() {}\\n' +
+        'diff --git a/src/OutsideProposalScope.tsx b/src/OutsideProposalScope.tsx\\n+export const outside = true;\\n',
+      headSha: host.snapshot.headSha,
+    };
+    await expect(subject.execute(requestWithMission)).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+    expect(host.publishChanges).not.toHaveBeenCalled();
+    host.changes = validChanges;
+
+    const receipt = await subject.execute(requestWithMission);
+
+    expect(host.execute).toHaveBeenCalledTimes(2);
+    const executionInput = (
+      host.execute.mock.calls[1] as unknown as [Parameters<CodeBuddyHost['execute']>[0]] | undefined
+    )?.[0];
+    expect(executionInput?.prompt).toContain('JSON string contains third-party Astryx source');
+    expect(executionInput?.prompt).toContain('\\u0060');
+    expect(executionInput?.prompt).not.toContain('`');
+    expect(executionInput?.prompt).toContain('export function Pilot()');
+    expect(host.publishChanges).toHaveBeenCalledOnce();
+    expect(receipt.metadata.scaffoldProposal).toMatchObject({
+      receiptId: proposal.receiptId,
+      templateId: 'Dashboard',
+      targetPath: 'src/components/Pilot.tsx',
+      authorizedScope: true,
+      approvedBy: 'LEANDRO',
+    });
+    evidence.verifyForSkill(receipt, requestWithMission.tool, skill, inputs);
+  });
+
+  it('rolls back an already-published patch if disposable worktree cleanup fails', async () => {
+    const { adapter: subject, host } = adapter();
+    host.removeExecutionWorkspace = vi.fn(async () => {
+      throw new Error('simulated cleanup failure');
+    });
+
+    await expect(subject.execute(request)).rejects.toMatchObject({ code: 'ADAPTER_FAILURE' });
+
+    expect(host.publishChanges).toHaveBeenCalledOnce();
+    expect(host.restoreWorkspace).toHaveBeenCalledOnce();
   });
 
   it('maps process timeout to ADAPTER_TIMEOUT', async () => {

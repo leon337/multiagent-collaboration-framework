@@ -56,6 +56,42 @@ describe('parseMcfSkillRegistry', () => {
     expect(skills[1]?.requiredInputs).toEqual(['acceptance_criteria', 'test_target']);
   });
 
+  it('excludes explicitly experimental contracts from executable skills', async () => {
+    const experimental = `
+  - skill_id: MCF-EXPERIMENTAL-PILOT
+    status: EXPERIMENTAL
+    name: Experimental pilot
+    version: 0.1.0
+    purpose: Qualification only.
+    owner_agents: [Mestre]
+    required_inputs: []
+    allowed_tools: [GitHub]
+    forbidden_tools: [production]
+    permission_profile: READ_AND_PROPOSE
+    execution_steps: [qualify]
+    required_evidence: [qualification]
+    acceptance_criteria: [qualification_passed]
+    failure_modes: [qualification_failed]
+    fallback: Keep experimental.
+    handoff_to: Mestre
+`;
+    const skills = parseMcfSkillRegistry(`${registry}${experimental}`);
+
+    expect(skills.some((skill) => skill.skillId === 'MCF-EXPERIMENTAL-PILOT')).toBe(false);
+  });
+
+  it('does not expose the full-stack orchestration contract as an executable skill', async () => {
+    const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
+    const content = await readFile(registryPath, 'utf8');
+    const skills = parseMcfSkillRegistry(content);
+
+    expect(content).toContain('skill_id: MCF-FULLSTACK-VISUAL-DEVELOPMENT');
+    expect(content).toContain('status: EXPERIMENTAL');
+    expect(skills.some((skill) => skill.skillId === 'MCF-FULLSTACK-VISUAL-DEVELOPMENT')).toBe(
+      false,
+    );
+  });
+
   it('loads the reusable visual desktop audit skill from the canonical registry', async () => {
     const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
     const content = await readFile(registryPath, 'utf8');
@@ -88,46 +124,17 @@ describe('parseMcfSkillRegistry', () => {
     });
   });
 
-  it('loads governed web research skills from the canonical registry', async () => {
+  it('keeps experimental web orchestration contracts out of the executable registry', async () => {
     const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
     const content = await readFile(registryPath, 'utf8');
     const skills = parseMcfSkillRegistry(content);
-    const webSkills = skills.filter((skill) => skill.skillId.startsWith('MCF-WEB-'));
-    const byId = new Map(webSkills.map((skill) => [skill.skillId, skill]));
+    const webBlocks = content
+      .split(/(?=^ {2}- skill_id: MCF-WEB-)/mu)
+      .filter((block) => /^ {2}- skill_id: MCF-WEB-/u.test(block));
 
-    expect(webSkills).toHaveLength(9);
-    expect(webSkills.map((skill) => skill.skillId).sort()).toEqual([
-      'MCF-WEB-COLLECT',
-      'MCF-WEB-EVENTS',
-      'MCF-WEB-FAST-NAV',
-      'MCF-WEB-FETCH',
-      'MCF-WEB-INTERACT',
-      'MCF-WEB-MAP',
-      'MCF-WEB-MONITOR',
-      'MCF-WEB-RESEARCH',
-      'MCF-WEB-SEARCH',
-    ]);
-    // These experimental skills are part of the actual registry, not a separate permission expansion.
-    expect(byId.get('MCF-WEB-EVENTS')).toMatchObject({
-      permissionProfile: 'READ_ONLY',
-      handoffTo: 'Mestre',
-    });
-    expect(byId.get('MCF-WEB-FAST-NAV')).toMatchObject({
-      permissionProfile: 'READ_ONLY',
-      handoffTo: 'Mestre',
-    });
-    expect(byId.get('MCF-WEB-SEARCH')).toMatchObject({
-      permissionProfile: 'READ_ONLY',
-      handoffTo: 'Miriam',
-    });
-    expect(byId.get('MCF-WEB-INTERACT')).toMatchObject({
-      permissionProfile: 'SCOPED_WRITE',
-      handoffTo: 'Beatriz',
-    });
-    expect(byId.get('MCF-WEB-MONITOR')).toMatchObject({
-      permissionProfile: 'SCOPED_WRITE',
-      handoffTo: 'Augusto',
-    });
+    expect(webBlocks).toHaveLength(9);
+    expect(webBlocks.every((block) => /^ {4}status: EXPERIMENTAL$/mu.test(block))).toBe(true);
+    expect(skills.some((skill) => skill.skillId.startsWith('MCF-WEB-'))).toBe(false);
   });
 
   it('rejects duplicate skill identifiers', () => {
