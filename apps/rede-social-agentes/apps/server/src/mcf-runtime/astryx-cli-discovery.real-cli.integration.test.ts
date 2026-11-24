@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { McfSkillDefinition } from '@rsa/contracts';
 
-import { AstryxCliDiscoveryAdapter, ASTRYX_PROVIDER, ASTRYX_RESOURCE, ASTRYX_SKILL } from './astryx-cli-discovery.adapter.js';
+import {
+  AstryxCliDiscoveryAdapter,
+  ASTRYX_PROVIDER,
+  ASTRYX_RESOURCE,
+  ASTRYX_SKILL,
+} from './astryx-cli-discovery.adapter.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import type { ExternalActionRequest } from './external-action.contracts.js';
 import { PermissionEngine } from './permission-engine.js';
