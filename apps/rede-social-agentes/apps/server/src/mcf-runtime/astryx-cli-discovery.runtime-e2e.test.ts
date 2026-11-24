@@ -258,6 +258,7 @@ describe('MCF Astryx component discovery canonical runtime E2E', () => {
       readOnly: true,
       exitCode: 0,
     });
+    expect(result.selectedSkill.requiredEvidence).toContain('corePackageRoot');
     expect(ledger.receipt?.receiptId).toBe(result.receipt?.receiptId);
     expect(ledger.validatedReceiptId).toBe(result.receipt?.receiptId);
     expect(ledger.failures).toEqual([]);
