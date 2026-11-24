@@ -1758,6 +1758,9 @@ skills:
         accessibility_reviewed,
         secrets_absent,
         ci_green,
+        hdf_scoped_write_and_rollback_proven,
+        autonomous_mcf_mission_e2e_pass,
+        real_codebuddy_host_scoped_write_pass,
         no_unapproved_production_effect,
       ]
     failure_modes:
