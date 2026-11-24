@@ -120,7 +120,7 @@ function createAstryxProposalReceipt(evidence: EvidenceValidator): McfToolReceip
   const corePackageRoot = join(workspace, 'node_modules', '@astryxdesign', 'core');
   const cliBinary = join(cliPackageRoot, 'clients', 'cli', 'bin', 'astryx.mjs');
   const proposalWorkspace = join(workspace, '.mcf-astryx-proposal-123');
-  const targetPath = 'src/Pilot.tsx';
+  const targetPath = 'src/components/Pilot.tsx';
   const source = 'export function Pilot() { return <main>{`pilot`}</main>; }';
   const sourceBytes = Buffer.from(source, 'utf8');
   const lines = source.split('\n');
@@ -137,7 +137,7 @@ function createAstryxProposalReceipt(evidence: EvidenceValidator): McfToolReceip
   const stdout = JSON.stringify({
     apiVersion: 1,
     type: 'template.copy',
-    data: { filesCopied: 1, fileName: 'Pilot.tsx', outputDir: join(proposalWorkspace, 'src') },
+    data: { filesCopied: 1, fileName: 'Pilot.tsx', outputDir: join(proposalWorkspace, 'src/components') },
     meta: { answeredBy: { cli: '0.7.2', core: '0.7.2', copy: 'project' } },
   });
   return evidence.createTrustedReceipt({
@@ -167,7 +167,7 @@ function createAstryxProposalReceipt(evidence: EvidenceValidator): McfToolReceip
       targetPath,
       baseCommitSha: 'a'.repeat(40),
       repository: 'leon337/multiagent-collaboration-framework',
-      approvedPaths: ['src'],
+      approvedPaths: ['src/components'],
       sourceArtifact: {
         encoding: 'base64',
         data: sourceBytes.toString('base64'),
@@ -395,8 +395,8 @@ describe('CodeBuddyExecutorAdapter', () => {
     const evidence = new EvidenceValidator();
     const host = new FakeHost();
     host.changes = {
-      changedFiles: ['src/Pilot.tsx'],
-      diff: 'diff --git a/src/Pilot.tsx b/src/Pilot.tsx\n+export function Pilot() {}\n',
+      changedFiles: ['src/components/Pilot.tsx'],
+      diff: 'diff --git a/src/components/Pilot.tsx b/src/components/Pilot.tsx\n+export function Pilot() {}\n',
       headSha: host.snapshot.headSha,
     };
     const subject = new CodeBuddyExecutorAdapter(
@@ -415,8 +415,8 @@ describe('CodeBuddyExecutorAdapter', () => {
     const inputs = {
       ...request.inputs,
       projectId: 'mcf-astryx-pilot',
-      approved_scope: 'Apply the approved Astryx template proposal at src/Pilot.tsx.',
-      allowed_paths: ['src'],
+      approved_scope: 'Apply the approved Astryx template proposal at src/components/Pilot.tsx.',
+      allowed_paths: ['src/components'],
       scaffoldProposalReceipt: proposal,
       authorizedScope: true,
       v11AuthorizationContext: approvedHdf(proposal, missionId),
@@ -438,6 +438,13 @@ describe('CodeBuddyExecutorAdapter', () => {
       }),
     ).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
     expect(host.execute).not.toHaveBeenCalled();
+    await expect(
+      subject.execute({
+        ...requestWithMission,
+        inputs: { ...requestWithMission.inputs, allowed_paths: ['src'] },
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
+    expect(host.execute).not.toHaveBeenCalled();
 
     const receipt = await subject.execute(requestWithMission);
 
@@ -453,7 +460,7 @@ describe('CodeBuddyExecutorAdapter', () => {
     expect(receipt.metadata.scaffoldProposal).toMatchObject({
       receiptId: proposal.receiptId,
       templateId: 'Dashboard',
-      targetPath: 'src/Pilot.tsx',
+      targetPath: 'src/components/Pilot.tsx',
       authorizedScope: true,
       approvedBy: 'LEANDRO',
     });
