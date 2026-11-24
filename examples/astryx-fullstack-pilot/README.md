@@ -11,6 +11,7 @@ Disposable, non-production qualification fixture for the MCF full-stack visual-d
 - Versioned SQL migration.
 - End-to-end create/read flow.
 - Desktop and mobile Playwright screenshots compared against committed pixel baselines.
+- PostgreSQL transaction rollback and automatic per-run schema cleanup.
 - Accessibility scan with axe-core and mobile horizontal-overflow check.
 - No production credentials, deploy, or product database access.
 
@@ -21,8 +22,8 @@ Use Node 22+, PostgreSQL and the pinned dependencies:
     npm ci
     npm run build
     npx playwright install --with-deps chromium
-    DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/mcf_astryx_pilot
-    MCF_PILOT_TOKEN=local-test-token-with-at-least-24-chars
+    export DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/mcf_astryx_pilot
+    export MCF_PILOT_TOKEN=local-test-token-with-at-least-24-chars
     npm run test:e2e
 
 To intentionally regenerate visual baselines after a reviewed design change:
