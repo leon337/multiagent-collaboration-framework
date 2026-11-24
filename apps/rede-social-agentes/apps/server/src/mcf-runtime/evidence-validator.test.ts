@@ -28,11 +28,11 @@ const astryxSkill: McfSkillDefinition = {
   handoffTo: 'Mestre',
 };
 
-function astryxReceiptMetadata(cliCopy = 'project') {
+function astryxReceiptMetadata(cliCopy = 'project', detail = 'names') {
   const stdout = JSON.stringify({
     apiVersion: 1,
     type: 'component.list',
-    data: { components: { actions: [] } },
+    data: { detail, components: { actions: [] } },
     meta: { answeredBy: { cli: '0.7.2', core: '0.7.2', copy: cliCopy } },
   });
   const workspace = '/tmp/astryx-workspace';
@@ -103,6 +103,27 @@ describe('EvidenceValidator', () => {
     });
 
     expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).not.toThrow();
+  });
+
+  it('rejects a component catalog with a non-default detail level', () => {
+    const validator = new EvidenceValidator();
+    const expected = {
+      provider: 'mcf-astryx-cli',
+      operation: 'list-components',
+      resource: 'astryx-design-system',
+    };
+    const receipt = validator.createTrustedReceipt({
+      ...expected,
+      externalId: null,
+      commitSha: null,
+      status: 'SUCCEEDED',
+      observedAt: new Date().toISOString(),
+      metadata: astryxReceiptMetadata('project', 'compact'),
+    });
+
+    expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).toThrow(
+      /fixed names detail level/u,
+    );
   });
 
   it('rejects a CLI binary outside the project-local package', () => {
