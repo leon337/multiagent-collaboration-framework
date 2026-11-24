@@ -27,7 +27,9 @@ export const ASTRYX_OPERATIONS = [
 
 const MAX_OUTPUT_BYTES = 32_768;
 const MAX_TEMPLATE_OUTPUT_BYTES = 2_097_152;
-const MAX_TEMPLATE_SOURCE_BYTES = 262_144;
+const MAX_TEMPLATE_SOURCE_BYTES = 49_152;
+const MAX_TEMPLATE_DIFF_BYTES = 65_536;
+const MAX_SIGNED_PROPOSAL_RECEIPT_BYTES = 180_000;
 const MAX_STDERR_BYTES = 2_048;
 const DEFAULT_TIMEOUT_MS = 10_000;
 const ASTRYX_CLI_PACKAGE = '@astryxdesign/cli';
@@ -548,6 +550,9 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
           ...lines.map((line) => `+${line}`),
           '',
         ].join('\n');
+        if (Buffer.byteLength(diff, 'utf8') > MAX_TEMPLATE_DIFF_BYTES) {
+          return invalid('Astryx scaffold proposal diff exceeds the request-safe size limit');
+        }
         diffDigest = createHash('sha256').update(diff).digest('hex');
       } finally {
         await rm(proposalWorkspace, { recursive: true, force: true });
@@ -567,7 +572,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       sourceContent === undefined ? undefined : Buffer.from(sourceContent, 'utf8');
     const diffBytes = diff === undefined ? undefined : Buffer.from(diff, 'utf8');
 
-    return this.evidence.createTrustedReceipt({
+    const receipt = this.evidence.createTrustedReceipt({
       provider: ASTRYX_PROVIDER,
       operation,
       resource: ASTRYX_RESOURCE,
@@ -626,5 +631,9 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         outputDigest,
       },
     });
+    if (isProposal && Buffer.byteLength(JSON.stringify(receipt), 'utf8') > MAX_SIGNED_PROPOSAL_RECEIPT_BYTES) {
+      return invalid('Astryx signed proposal receipt exceeds the request-safe size limit');
+    }
+    return receipt;
   }
 }
