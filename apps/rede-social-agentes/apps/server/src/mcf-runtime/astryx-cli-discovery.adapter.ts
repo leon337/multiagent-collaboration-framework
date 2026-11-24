@@ -477,9 +477,13 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         isRecord(error) &&
         (error.code === 'ETIMEDOUT' || (error.killed === true && error.signal === 'SIGTERM'));
       const code = isTimeout ? 'ADAPTER_TIMEOUT' : 'ADAPTER_FAILURE';
+      const failureCode =
+        isRecord(error) && typeof error.code === 'string' ? error.code : 'UNKNOWN';
+      const exitCode =
+        isRecord(error) && typeof error.exitCode === 'number' ? error.exitCode : 'unknown';
       throw new ExternalActionAdapterError(
         code,
-        'Astryx CLI operation failed; command output was not exposed',
+        `Astryx CLI operation "${operation}" failed (${failureCode}; exit ${exitCode}); command output was redacted`,
         code === 'ADAPTER_TIMEOUT',
       );
     }
