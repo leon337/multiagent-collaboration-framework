@@ -421,6 +421,38 @@ describe('Astryx CLI discovery adapter', () => {
     expect(runner).toHaveBeenCalledTimes(3);
   });
 
+  it('rejects scaffold source that cannot fit safely inside the phase request body', async () => {
+    workspace = await createWorkspace();
+    const source = 'x'.repeat(49_153);
+    const runner = vi.fn(async (_binary: string, _args: string[], options: unknown) => {
+      const cwd = (options as { cwd: string }).cwd;
+      const target = join(cwd, 'src/components/PilotCard.tsx');
+      await mkdir(dirname(target), { recursive: true });
+      await writeFile(target, source);
+      return {
+        stdout: jsonResponse('template.copy', {
+          filesCopied: 1,
+          fileName: 'PilotCard.tsx',
+          outputDir: dirname(target),
+        }),
+        stderr: '',
+      };
+    });
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner);
+    await expect(
+      subject.execute(
+        request('draft-template-scaffold', {
+          templateId: 'Dashboard',
+          targetPath: 'src/components/PilotCard.tsx',
+          baseCommitSha: 'a'.repeat(40),
+          repository: 'leon337/multiagent-collaboration-framework',
+          allowed_paths: ['src/components'],
+        }),
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+    expect(runner).toHaveBeenCalledOnce();
+  });
+
   it('creates a signed scaffold proposal only inside a disposable workspace', async () => {
     workspace = await createWorkspace();
     const source = 'export function PilotCard() { return <section>pilot</section>; }\\n';
@@ -455,6 +487,7 @@ describe('Astryx CLI discovery adapter', () => {
     const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner);
     const receipt = await subject.execute(request('draft-template-scaffold', inputs));
 
+    expect(Buffer.byteLength(JSON.stringify(receipt), 'utf8')).toBeLessThanOrEqual(180_000);
     expect(receipt).toMatchObject({
       operation: 'draft-template-scaffold',
       commitSha: 'a'.repeat(40),
