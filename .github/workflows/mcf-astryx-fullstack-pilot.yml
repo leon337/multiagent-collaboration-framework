@@ -39,20 +39,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install pinned pilot dependencies and create lockfile if absent
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci --no-audit --no-fund
-          else
-            npm install --no-audit --no-fund
-          fi
+      - name: Install pinned pilot dependencies from committed lockfile
+        run: npm ci --no-audit --no-fund
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Build production frontend
         run: npm run build
       - name: Run API, database, browser, accessibility and visual checks
-        env:
-          UPDATE_VISUAL_BASELINES: "1"
         run: npm run test:e2e
       - name: Upload lockfile, visual baselines and screenshots
         if: always()
