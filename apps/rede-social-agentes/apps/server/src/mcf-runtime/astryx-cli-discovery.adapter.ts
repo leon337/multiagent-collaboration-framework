@@ -71,9 +71,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       request.skill.skillId === ASTRYX_SKILL &&
       canonicalizeProvider(request.tool.provider) === ASTRYX_PROVIDER &&
       canonicalizeToolValue(request.tool.resource) === ASTRYX_RESOURCE &&
-      ASTRYX_OPERATIONS.includes(
-        canonicalizeToolValue(request.tool.operation) as AstryxOperation,
-      )
+      ASTRYX_OPERATIONS.includes(canonicalizeToolValue(request.tool.operation) as AstryxOperation)
     );
   }
 
@@ -150,9 +148,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       });
     } catch (error) {
       const code =
-        isRecord(error) && error.code === 'ETIMEDOUT'
-          ? 'ADAPTER_TIMEOUT'
-          : 'ADAPTER_FAILURE';
+        isRecord(error) && error.code === 'ETIMEDOUT' ? 'ADAPTER_TIMEOUT' : 'ADAPTER_FAILURE';
       throw new ExternalActionAdapterError(
         code,
         'Astryx CLI discovery failed; command output was not exposed',
