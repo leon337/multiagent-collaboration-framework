@@ -66,7 +66,7 @@ jobs:
         run: |
           workspace="$RUNNER_TEMP/mcf-astryx-cli-workspace"
           mkdir -p "$workspace"
-          printf '%s\n' '{"name":"mcf-astryx-cli-workspace","version":"1.0.0","private":true}' > "$workspace/package.json"
+          printf '%s\n' '{"name":"mcf-astryx-cli-workspace","version":"1.0.0","private":true,"pnpm":{"onlyBuiltDependencies":["@astryxdesign/cli","@astryxdesign/core","esbuild"]}}' > "$workspace/package.json"
           pnpm --dir "$workspace" add --save-exact @astryxdesign/cli@0.7.17 @astryxdesign/core@0.7.17 react@19.2.0 react-dom@19.2.0
           pnpm --dir "$workspace" exec astryx --json component --list > "$RUNNER_TEMP/astryx-component-list.json"
           test -s "$RUNNER_TEMP/astryx-component-list.json"
