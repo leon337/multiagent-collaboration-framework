@@ -13,7 +13,7 @@ import type { ExternalActionRequest } from './external-action.contracts.js';
 import { PermissionEngine } from './permission-engine.js';
 
 beforeEach(() => {
-  process.env.DATABASE_URL = 'postgresql://rsa:rsa@127.0.0.1:5432/rsa';
+  process.env.DATABASE_URL = 'postgres://mcf:mcf@127.0.0.1:5432/mcf';
   process.env.MCF_RECEIPT_SECRET = 'test-only-mcf-receipt-secret-0000000001';
 });
 
@@ -48,7 +48,6 @@ describe('Astryx pinned CLI real integration', () => {
       evidence,
       true,
       workspace,
-      'pnpm',
       undefined,
       30_000,
     );
@@ -71,14 +70,11 @@ describe('Astryx pinned CLI real integration', () => {
     expect(Number(receipt.metadata.outputBytes)).toBeGreaterThan(0);
     expect(receipt.metadata.workspace).toBe(workspace);
     expect(receipt.metadata.workspace).not.toBe(process.cwd());
-    expect(receipt.metadata.command).toEqual([
-      'pnpm',
-      'exec',
-      'astryx',
-      '--json',
-      'component',
-      '--list',
-    ]);
+    const command = receipt.metadata.command as string[];
+    expect(command[0]).toBe(process.execPath);
+    expect(command[1]).toBe(receipt.metadata.cliBinary);
+    expect(command[1]).toContain('/node_modules/@astryxdesign/cli/');
+    expect(command.slice(2)).toEqual(['--json', 'component', '--list']);
 
     expect(receipt).toMatchObject({
       provider: ASTRYX_PROVIDER,
