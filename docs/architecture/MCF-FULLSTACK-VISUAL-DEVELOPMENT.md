@@ -28,7 +28,7 @@ Fontes primárias consultadas em 2026-11-24:
 - https://github.com/meta/astryx/wiki/Distribution
 - https://github.com/meta/astryx/wiki/Contributing-Templates
 
-Astryx é um design system open source em Beta, baseado em React 19+ e StyleX. O projeto publica `@astryxdesign/core`, CLI, build tooling e temas. Oferece componentes tipados, CSS pré-compilado, theming e templates. A CLI é a interface de descoberta para agentes (por exemplo, listagem de componentes, documentação compacta, fonte e scaffolding).
+Astryx é um design system open source em Beta, baseado em React 19+ e StyleX internamente. O projeto publica `@astryxdesign/core`, CLI, build tooling e temas. Oferece componentes tipados, CSS pré-compilado, theming e templates. StyleX é detalhe de autoria: aplicações consumidoras usam o CSS pré-compilado e podem customizar com CSS comum ou `className`. A CLI é a interface de descoberta para agentes (por exemplo, listagem de componentes, documentação compacta, fonte e scaffolding).
 
 **Limite explícito:** Astryx não é um framework full-stack, não cria por si só backend, banco, autenticação, regras de negócio, deployment ou governança. Essas responsabilidades permanecem com as competências e adapters do MCF.
 
