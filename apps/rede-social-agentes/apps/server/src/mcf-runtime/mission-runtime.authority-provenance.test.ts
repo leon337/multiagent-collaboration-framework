@@ -140,6 +140,75 @@ describe('MissionRuntimeController authority provenance', () => {
     expect(executor.execute).not.toHaveBeenCalled();
   });
 
+  it('binds CodeBuddy execution context to the persisted mission project, not caller HDF inputs', async () => {
+    const persistedProjectId = 'project-from-persisted-mission';
+    const executor = {
+      execute: vi.fn(async () => {
+        throw new Error('STOP_AFTER_CONTEXT_ASSERTION');
+      }),
+    };
+    const repository = {
+      findMission: vi.fn(async () => ({
+        id: missionId,
+        contract: {
+          title: 'Persisted project binding mission',
+          objective: 'Bind external scoped writes to the project stored on the mission.',
+          expectedOutcome: 'Caller-controlled project identifiers cannot replace persisted mission identity.',
+          projectId: persistedProjectId,
+          scope: ['src/components'],
+          outOfScope: ['production'],
+          acceptanceCriteria: ['executor receives persisted project identity'],
+          riskClass: 'B',
+          selectedAgents: ['Mestre'],
+          selectedSkills: ['MCF-IMPLEMENT-CHANGE'],
+          sourceOfTruth: [],
+        },
+        state: 'PLANNED',
+        currentPhaseId: null,
+        currentAgentId: null,
+        version: 1,
+        createdAt: new Date('2026-08-27T18:00:00.000Z'),
+        updatedAt: new Date('2026-08-27T18:00:00.000Z'),
+      })),
+    };
+    const runtime = new MissionRuntimeService(
+      repository as never,
+      executor as never,
+      {} as never,
+      {} as never,
+    );
+
+    await expect(
+      runtime.executePhase(missionId, {
+        skillId: 'MCF-IMPLEMENT-CHANGE',
+        agentId: 'Mestre',
+        inputs: {
+          projectId: 'attacker-controlled-project',
+          v11AuthorizationContext: { projectId: 'attacker-controlled-project' },
+        },
+        tool: {
+          provider: 'codebuddy',
+          operation: 'implement-change',
+          resource: 'leon337/multiagent-collaboration-framework',
+        },
+        expectedMissionVersion: 1,
+      }),
+    ).rejects.toThrow('STOP_AFTER_CONTEXT_ASSERTION');
+
+    expect(executor.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        executionContext: expect.objectContaining({
+          missionId,
+          projectId: persistedProjectId,
+        }),
+        inputs: expect.objectContaining({
+          projectId: 'attacker-controlled-project',
+          v11AuthorizationContext: { projectId: 'attacker-controlled-project' },
+        }),
+      }),
+    );
+  });
+
   it('canonicalizes terminal provenance for the reserved authenticated account', async () => {
     const executor = {
       execute: vi.fn(async () => {
