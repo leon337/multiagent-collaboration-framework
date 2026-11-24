@@ -311,7 +311,12 @@ describe('MCF Astryx component discovery canonical runtime E2E', () => {
         expectedOutcome: 'MissionRuntime valida receipt, digest e escopo do artefato temporário.',
         scope: [ASTRYX_SKILL],
         outOfScope: ['apply_scaffold', 'checkout_write', 'production_deploy'],
-        acceptanceCriteria: ['proposal_only', 'approved_paths_bound', 'scratch_workspace_cleaned', 'signed_diff_valid'],
+        acceptanceCriteria: [
+          'proposal_only',
+          'approved_paths_bound',
+          'scratch_workspace_cleaned',
+          'signed_diff_valid',
+        ],
         riskClass: 'B',
         selectedAgents: ['Mestre'],
         selectedSkills: [ASTRYX_SKILL],
@@ -353,7 +358,12 @@ describe('MCF Astryx component discovery canonical runtime E2E', () => {
         diffDigest: expect.stringMatching(/^[a-f0-9]{64}$/u),
       },
     });
-    expect(Buffer.from(String((result.receipt?.metadata.sourceArtifact as { data: string }).data), 'base64').toString('utf8')).toBe(source);
+    expect(
+      Buffer.from(
+        String((result.receipt?.metadata.sourceArtifact as { data: string }).data),
+        'base64',
+      ).toString('utf8'),
+    ).toBe(source);
     expect(ledger.validatedReceiptId).toBe(result.receipt?.receiptId);
     expect(ledger.failures).toEqual([]);
     expect(repository.persisted?.evidenceStatus).toBe('VALID');

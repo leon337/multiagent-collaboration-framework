@@ -34,7 +34,8 @@ skills:
       - definir_contrato
       - selecionar_agentes
       - abrir_primeira_passagem
-    required_evidence: [mission_id, phase_id, selected_agents, acceptance_criteria]
+    required_evidence:
+      [mission_id, phase_id, selected_agents, acceptance_criteria]
     expected_outputs: [mission_contract, initial_handoff]
     acceptance_criteria: [objective_verifiable, agents_have_real_delivery]
     failure_modes: [objective_ambiguous, missing_authorization]
@@ -46,7 +47,8 @@ skills:
     version: 1.0.0
     purpose: Convocar somente agentes com entrega necessária.
     owner_agents: [Mestre, Leo]
-    trigger_phrases: ["chame os agentes", "selecione a equipe", "quem participa"]
+    trigger_phrases:
+      ["chame os agentes", "selecione a equipe", "quem participa"]
     required_inputs: [mission_contract]
     optional_inputs: [risk_class]
     allowed_tools: [Notion, GitHub]
@@ -65,13 +67,21 @@ skills:
     version: 1.0.0
     purpose: Retomar missão sem reconstrução inventada.
     owner_agents: [Miriam]
-    trigger_phrases: ["retomar projeto", "o que ficou decidido", "recuperar contexto"]
+    trigger_phrases:
+      ["retomar projeto", "o que ficou decidido", "recuperar contexto"]
     required_inputs: [project_or_mission_reference]
     optional_inputs: [time_window, document_paths]
-    allowed_tools: [GitHub, Google_Drive, Notion, Gmail, Granola, Fireflies, MeetGeek]
+    allowed_tools:
+      [GitHub, Google_Drive, Notion, Gmail, Granola, Fireflies, MeetGeek]
     forbidden_tools: [invent_missing_content]
     permission_profile: READ_ONLY
-    execution_steps: [localizar_fontes, validar_precedencia, detectar_contradicoes, montar_context_package]
+    execution_steps:
+      [
+        localizar_fontes,
+        validar_precedencia,
+        detectar_contradicoes,
+        montar_context_package,
+      ]
     required_evidence: [source_references, precedence_decisions, contradictions]
     expected_outputs: [context_package, source_of_truth_map]
     acceptance_criteria: [provenance_preserved, gaps_declared]
@@ -87,10 +97,26 @@ skills:
     trigger_phrases: ["nova ideia", "definir produto", "requisitos"]
     required_inputs: [idea_or_problem]
     optional_inputs: [target_users, constraints, metrics]
-    allowed_tools: [Notion, Linear, Product_Design, PostHog, Amplitude, Consensus, Sider_Scholar]
+    allowed_tools:
+      [
+        Notion,
+        Linear,
+        Product_Design,
+        PostHog,
+        Amplitude,
+        Consensus,
+        Sider_Scholar,
+      ]
     forbidden_tools: [implementation_without_scope]
     permission_profile: READ_AND_PROPOSE
-    execution_steps: [definir_problema, identificar_publico, separar_mvp, mapear_riscos, criar_aceite]
+    execution_steps:
+      [
+        definir_problema,
+        identificar_publico,
+        separar_mvp,
+        mapear_riscos,
+        criar_aceite,
+      ]
     required_evidence: [problem_statement, requirements, acceptance_criteria]
     expected_outputs: [product_brief, mvp_scope, roadmap]
     acceptance_criteria: [problem_clear, mvp_bounded]
@@ -103,14 +129,17 @@ skills:
     version: 1.0.0
     purpose: Definir jornadas, fluxos, UI e acessibilidade.
     owner_agents: [Evelyn, Laura, Isabela, Marina]
-    trigger_phrases: ["wireframe", "fluxo do usuário", "design", "acessibilidade"]
+    trigger_phrases:
+      ["wireframe", "fluxo do usuário", "design", "acessibilidade"]
     required_inputs: [product_requirements]
     optional_inputs: [brand, platform, accessibility_target]
     allowed_tools: [Figma, Canva, Product_Design, Mermaid_Chart]
     forbidden_tools: [production_code]
     permission_profile: READ_AND_PROPOSE
-    execution_steps: [mapear_jornada, criar_fluxo, definir_telas, revisar_acessibilidade]
-    required_evidence: [flow_reference, screen_reference, accessibility_findings]
+    execution_steps:
+      [mapear_jornada, criar_fluxo, definir_telas, revisar_acessibilidade]
+    required_evidence:
+      [flow_reference, screen_reference, accessibility_findings]
     expected_outputs: [user_flow, wireframe_or_prototype, accessibility_report]
     acceptance_criteria: [critical_paths_covered, accessibility_reviewed]
     failure_modes: [decorative_design, missing_states]
@@ -122,13 +151,21 @@ skills:
     version: 1.0.0
     purpose: Definir componentes, integrações, dados, infraestrutura e limites.
     owner_agents: [Sofia, Rafael]
-    trigger_phrases: ["arquitetura", "componentes", "integrações", "escalabilidade"]
+    trigger_phrases:
+      ["arquitetura", "componentes", "integrações", "escalabilidade"]
     required_inputs: [requirements, constraints]
     optional_inputs: [existing_system, deployment_target]
-    allowed_tools: [Mermaid_Chart, Figma, GitHub, Notion, OpenAI_Developers, MCP_Precheck]
+    allowed_tools:
+      [Mermaid_Chart, Figma, GitHub, Notion, OpenAI_Developers, MCP_Precheck]
     forbidden_tools: [irreversible_deployment]
     permission_profile: READ_AND_PROPOSE
-    execution_steps: [mapear_componentes, definir_contratos, identificar_riscos, planejar_validacao]
+    execution_steps:
+      [
+        mapear_componentes,
+        definir_contratos,
+        identificar_riscos,
+        planejar_validacao,
+      ]
     required_evidence: [architecture_diagram, decisions, risks]
     expected_outputs: [architecture_document, integration_contracts]
     acceptance_criteria: [boundaries_clear, risks_controlled]
@@ -141,14 +178,36 @@ skills:
     version: 1.0.0
     purpose: Produzir alteração de código dentro do escopo aprovado.
     owner_agents: [Rafael, Eduardo, Helena, Andre, Tiago, Daniela]
-    trigger_phrases: ["implementar", "corrigir", "integrar", "criar funcionalidade"]
-    required_inputs: [approved_scope, acceptance_criteria, repository, allowed_paths]
+    trigger_phrases:
+      ["implementar", "corrigir", "integrar", "criar funcionalidade"]
+    required_inputs:
+      [approved_scope, acceptance_criteria, repository, allowed_paths]
     optional_inputs: [branch, issue, design_reference]
-    allowed_tools: [GitHub, Linear, Supabase, Neon_Postgres, Render, Vercel, Cloudflare, OpenAI_Developers, Figma, CodeBuddy]
+    allowed_tools:
+      [
+        GitHub,
+        Linear,
+        Supabase,
+        Neon_Postgres,
+        Render,
+        Vercel,
+        Cloudflare,
+        OpenAI_Developers,
+        Figma,
+        CodeBuddy,
+      ]
     forbidden_tools: [direct_main_write, public_release_without_gate]
     permission_profile: SCOPED_WRITE
-    execution_steps: [preparar_workspace, implementar, coletar_diff, registrar_handoff_de_testes, passar_para_revisao]
-    required_evidence: [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
+    execution_steps:
+      [
+        preparar_workspace,
+        implementar,
+        coletar_diff,
+        registrar_handoff_de_testes,
+        passar_para_revisao,
+      ]
+    required_evidence:
+      [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
     expected_outputs: [implementation, technical_notes]
     acceptance_criteria: [scope_respected, tests_or_handoff_proven]
     failure_modes: [scope_creep, unsafe_write, missing_tests]
@@ -160,13 +219,32 @@ skills:
     version: 1.0.0
     purpose: Reproduzir falha, localizar causa raiz e recuperar fluxo.
     owner_agents: [Patricia, Bruno, Rafael]
-    trigger_phrases: ["bug", "incidente", "travamento", "falha", "erro em produção"]
+    trigger_phrases:
+      ["bug", "incidente", "travamento", "falha", "erro em produção"]
     required_inputs: [symptom_or_evidence]
     optional_inputs: [logs, screenshots, commit, environment]
-    allowed_tools: [Sentry, GitHub, PostHog, Amplitude, Render, Vercel, Supabase, Neon_Postgres]
+    allowed_tools:
+      [
+        Sentry,
+        GitHub,
+        PostHog,
+        Amplitude,
+        Render,
+        Vercel,
+        Supabase,
+        Neon_Postgres,
+      ]
     forbidden_tools: [blind_retry, destructive_fix_without_backup]
     permission_profile: SCOPED_WRITE
-    execution_steps: [capturar, reproduzir, classificar, identificar_causa, corrigir_ou_isolar, validar]
+    execution_steps:
+      [
+        capturar,
+        reproduzir,
+        classificar,
+        identificar_causa,
+        corrigir_ou_isolar,
+        validar,
+      ]
     required_evidence: [reproduction, root_cause, recovery_result]
     expected_outputs: [incident_report, fix_or_mitigation]
     acceptance_criteria: [cause_supported, regression_test_added]
@@ -179,13 +257,15 @@ skills:
     version: 1.0.0
     purpose: Avaliar qualidade estrutural, segurança e manutenção.
     owner_agents: [Vinicius, Lucas, Ricardo]
-    trigger_phrases: ["revisar código", "code review", "refatorar", "performance"]
+    trigger_phrases:
+      ["revisar código", "code review", "refatorar", "performance"]
     required_inputs: [diff_or_commit]
     optional_inputs: [quality_targets, performance_budget]
     allowed_tools: [GitHub, Codex_Security, Sentry]
     forbidden_tools: [merge_without_gate]
     permission_profile: READ_AND_PROPOSE
-    execution_steps: [inspecionar_diff, classificar_achados, propor_correcao, validar_risco]
+    execution_steps:
+      [inspecionar_diff, classificar_achados, propor_correcao, validar_risco]
     required_evidence: [file_and_line_references, severity, recommendation]
     expected_outputs: [review_report, refactoring_plan]
     acceptance_criteria: [findings_actionable, no_unverified_claims]
@@ -204,7 +284,14 @@ skills:
     allowed_tools: [GitHub, Sentry, PostHog, Vercel, Render, Supabase]
     forbidden_tools: [fabricated_pass]
     permission_profile: SCOPED_WRITE
-    execution_steps: [definir_casos, executar, coletar_evidencia, corrigir_teste_obsoleto_quando_autorizado, emitir_veredito]
+    execution_steps:
+      [
+        definir_casos,
+        executar,
+        coletar_evidencia,
+        corrigir_teste_obsoleto_quando_autorizado,
+        emitir_veredito,
+      ]
     required_evidence: [commands_or_workflows, passed, failed, logs]
     expected_outputs: [validation_summary, validation_full, smoke_result]
     acceptance_criteria: [all_critical_tests_pass]
@@ -217,13 +304,30 @@ skills:
     version: 1.0.0
     purpose: Avaliar ameaças, vulnerabilidades, permissões e dados.
     owner_agents: [Ricardo, Julia]
-    trigger_phrases: ["segurança", "ameaças", "permissões", "privacidade", "compliance"]
+    trigger_phrases:
+      ["segurança", "ameaças", "permissões", "privacidade", "compliance"]
     required_inputs: [system_or_change]
     optional_inputs: [data_classification, threat_model]
-    allowed_tools: [Codex_Security, MCP_Precheck, AccessOwl, Neura_Relay_MCP, PrivacyHawk, GitHub, Notion]
+    allowed_tools:
+      [
+        Codex_Security,
+        MCP_Precheck,
+        AccessOwl,
+        Neura_Relay_MCP,
+        PrivacyHawk,
+        GitHub,
+        Notion,
+      ]
     forbidden_tools: [secret_exposure, unrestricted_write]
     permission_profile: SENSITIVE_CONTROLLED
-    execution_steps: [classificar_dados, mapear_ameacas, revisar_permissoes, definir_controles, emitir_veredito]
+    execution_steps:
+      [
+        classificar_dados,
+        mapear_ameacas,
+        revisar_permissoes,
+        definir_controles,
+        emitir_veredito,
+      ]
     required_evidence: [threats, controls, residual_risk]
     expected_outputs: [security_report, governance_verdict]
     acceptance_criteria: [critical_risks_addressed_or_blocked]
@@ -242,7 +346,14 @@ skills:
     allowed_tools: [GitHub]
     forbidden_tools: [force_push_without_authorization, merge_with_red_ci]
     permission_profile: SCOPED_WRITE
-    execution_steps: [verificar_diff, criar_pr, acompanhar_ci, registrar_evidencia, integrar_quando_autorizado]
+    execution_steps:
+      [
+        verificar_diff,
+        criar_pr,
+        acompanhar_ci,
+        registrar_evidencia,
+        integrar_quando_autorizado,
+      ]
     required_evidence: [branch, head_sha, pr_number, ci_status, merge_sha]
     expected_outputs: [pull_request, integration_record]
     acceptance_criteria: [ci_green, gate_present]
@@ -258,10 +369,18 @@ skills:
     trigger_phrases: ["deploy", "publicar", "ambiente", "rollback"]
     required_inputs: [artifact_or_commit, target_environment]
     optional_inputs: [rollback_plan, release_notes]
-    allowed_tools: [Vercel, Render, Cloudflare, Supabase, Neon_Postgres, GitHub, Sentry]
+    allowed_tools:
+      [Vercel, Render, Cloudflare, Supabase, Neon_Postgres, GitHub, Sentry]
     forbidden_tools: [public_production_without_gate]
     permission_profile: SCOPED_WRITE
-    execution_steps: [verificar_gate, implantar, executar_smoke, observar_erros, confirmar_ou_reverter]
+    execution_steps:
+      [
+        verificar_gate,
+        implantar,
+        executar_smoke,
+        observar_erros,
+        confirmar_ou_reverter,
+      ]
     required_evidence: [deployment_id, target, smoke_result, rollback_state]
     expected_outputs: [deployment_record, validation_report]
     acceptance_criteria: [healthy_deployment, rollback_available]
@@ -274,13 +393,21 @@ skills:
     version: 1.0.0
     purpose: Verificar ordem, ferramentas, handoffs, loops, falhas e eficiência.
     owner_agents: [Augusto]
-    trigger_phrases: ["mission trace", "observabilidade multiagente", "verificar fluxo"]
+    trigger_phrases:
+      ["mission trace", "observabilidade multiagente", "verificar fluxo"]
     required_inputs: [mission_execution]
     optional_inputs: [token_and_latency_metrics]
     allowed_tools: [GitHub, Linear, Notion, PostHog, Amplitude, Sentry]
     forbidden_tools: [alter_domain_deliverables]
     permission_profile: READ_ONLY
-    execution_steps: [registrar_eventos, verificar_handoffs, detectar_loop, registrar_falhas, emitir_alertas]
+    execution_steps:
+      [
+        registrar_eventos,
+        verificar_handoffs,
+        detectar_loop,
+        registrar_falhas,
+        emitir_alertas,
+      ]
     required_evidence: [chronological_trace, handoff_status, recovery_status]
     expected_outputs: [mission_trace]
     acceptance_criteria: [no_hidden_gap, flow_recoverable]
@@ -293,13 +420,16 @@ skills:
     version: 1.0.0
     purpose: Medir qualidade, consistência, fidelidade e regressão de agentes.
     owner_agents: [Beatriz, Tiago]
-    trigger_phrases: ["avaliar agentes", "benchmark", "regressão de prompt", "scorecard"]
+    trigger_phrases:
+      ["avaliar agentes", "benchmark", "regressão de prompt", "scorecard"]
     required_inputs: [behavior_or_configuration, criteria]
     optional_inputs: [baseline, scenarios]
-    allowed_tools: [PostHog, Amplitude, Notion, GitHub, Consensus, Sider_Scholar]
+    allowed_tools:
+      [PostHog, Amplitude, Notion, GitHub, Consensus, Sider_Scholar]
     forbidden_tools: [self_approval_without_evidence]
     permission_profile: READ_ONLY
-    execution_steps: [definir_cenarios, executar_avaliacao, comparar_baseline, emitir_veredito]
+    execution_steps:
+      [definir_cenarios, executar_avaliacao, comparar_baseline, emitir_veredito]
     required_evidence: [test_cases, scores, regressions]
     expected_outputs: [evaluation_scorecard]
     acceptance_criteria: [criteria_reproducible]
@@ -318,7 +448,14 @@ skills:
     allowed_tools: [GitHub, Google_Drive, Notion, Documents, PDF, Spreadsheets]
     forbidden_tools: [declare_delivered_with_pending_action]
     permission_profile: SCOPED_WRITE
-    execution_steps: [consolidar_documentos, auditar_evidencias, decidir_gate, emitir_checkpoint, apresentar_entrega]
+    execution_steps:
+      [
+        consolidar_documentos,
+        auditar_evidencias,
+        decidir_gate,
+        emitir_checkpoint,
+        apresentar_entrega,
+      ]
     required_evidence: [phase_pack, audit_verdict, leo_decision, checkpoint]
     expected_outputs: [PRF, phase_closeout]
     acceptance_criteria: [traceability_complete, objective_state_truthful]
@@ -331,17 +468,64 @@ skills:
     version: 1.0.0
     purpose: Capturar, identificar, anotar e verificar superfícies operacionais visíveis em um desktop autorizado sem inventar conteúdo.
     owner_agents: [Augusto, Beatriz]
-    trigger_phrases: ["auditar desktop", "tirar print e anotar", "marcar navegadores", "auditoria visual"]
-    required_inputs: [audit_request, requested_unit, output_directory, authorizedScope]
-    optional_inputs: [expected_surface_count, time_budget_ms, open_surface_index, window_pattern]
+    trigger_phrases:
+      [
+        "auditar desktop",
+        "tirar print e anotar",
+        "marcar navegadores",
+        "auditoria visual",
+      ]
+    required_inputs:
+      [audit_request, requested_unit, output_directory, authorizedScope]
+    optional_inputs:
+      [
+        expected_surface_count,
+        time_budget_ms,
+        open_surface_index,
+        window_pattern,
+      ]
     allowed_tools: [SentinelX, Remote_Desktop_Commander]
-    forbidden_tools: [destructive_write, secret_exposure, fabricated_visual_evidence]
+    forbidden_tools:
+      [destructive_write, secret_exposure, fabricated_visual_evidence]
     permission_profile: SCOPED_WRITE
-    execution_steps: [inventariar_superficies, capturar_raw, interpretar_observavel, delimitar_e_anotar, salvar_artefatos, abrir_resultado, verificar_abertura, medir_execucao]
-    required_evidence: [raw_artifact, annotated_artifact, verification_artifact, surface_inventory, elapsed_ms, open_verified]
-    expected_outputs: [visual_audit_result, annotated_screenshot, verification_screenshot]
-    acceptance_criteria: [requested_unit_respected, annotations_observable_only, artifacts_traceable, open_verified, time_budget_respected_when_provided]
-    failure_modes: [gui_unavailable, surface_count_mismatch, ocr_unreliable, artifact_missing, open_not_verified]
+    execution_steps:
+      [
+        inventariar_superficies,
+        capturar_raw,
+        interpretar_observavel,
+        delimitar_e_anotar,
+        salvar_artefatos,
+        abrir_resultado,
+        verificar_abertura,
+        medir_execucao,
+      ]
+    required_evidence:
+      [
+        raw_artifact,
+        annotated_artifact,
+        verification_artifact,
+        surface_inventory,
+        elapsed_ms,
+        open_verified,
+      ]
+    expected_outputs:
+      [visual_audit_result, annotated_screenshot, verification_screenshot]
+    acceptance_criteria:
+      [
+        requested_unit_respected,
+        annotations_observable_only,
+        artifacts_traceable,
+        open_verified,
+        time_budget_respected_when_provided,
+      ]
+    failure_modes:
+      [
+        gui_unavailable,
+        surface_count_mismatch,
+        ocr_unreliable,
+        artifact_missing,
+        open_not_verified,
+      ]
     fallback: Preferir fonte estruturada; usar OCR somente como fallback; se a sessão gráfica ou a evidência final não puder ser verificada, declarar bloqueio sem inventar sucesso.
     handoff_to: Beatriz
 
@@ -350,11 +534,19 @@ skills:
     version: 0.1.0
     purpose: Selecionar agentes canônicos por competência e executar workers locais não cognitivos em processos separados, com receipts individuais e consolidados.
     owner_agents: [Mestre]
-    trigger_phrases: ["multiagente", "subagentes", "time de agentes", "mais agentes", "paralelismo"]
+    trigger_phrases:
+      [
+        "multiagente",
+        "subagentes",
+        "time de agentes",
+        "mais agentes",
+        "paralelismo",
+      ]
     required_inputs: [objective, mission_selected_agents]
     optional_inputs: []
     allowed_tools: [local-agent-runtime]
-    forbidden_tools: [shell_arbitrary, public_deployment, production_action, secret_access]
+    forbidden_tools:
+      [shell_arbitrary, public_deployment, production_action, secret_access]
     permission_profile: READ_AND_PROPOSE
     execution_steps:
       - selecionar_agentes_canonicos
@@ -362,10 +554,24 @@ skills:
       - executar_workers_locais_limitados
       - coletar_receipts_filhos
       - consolidar_receipt
-    required_evidence: [selected_agents, process_ids, worker_receipts, consolidated_digest]
+    required_evidence:
+      [selected_agents, process_ids, worker_receipts, consolidated_digest]
     expected_outputs: [local_team_result, consolidated_receipt]
-    acceptance_criteria: [canonical_agents_only, unique_processes, receipts_valid, cognitive_non_claim_preserved]
-    failure_modes: [executor_disabled, worker_timeout, duplicate_pid, invalid_receipt, mission_scope_mismatch]
+    acceptance_criteria:
+      [
+        canonical_agents_only,
+        unique_processes,
+        receipts_valid,
+        cognitive_non_claim_preserved,
+      ]
+    failure_modes:
+      [
+        executor_disabled,
+        worker_timeout,
+        duplicate_pid,
+        invalid_receipt,
+        mission_scope_mismatch,
+      ]
     fallback: Falhar fechado e retornar ao Mestre sem alegar execução cognitiva independente.
     handoff_to: Mestre
 
@@ -374,17 +580,71 @@ skills:
     version: 1.0.0
     purpose: Operar o MESTRE Workspace em desktop autorizado por observação semântica e Agent Bridge/IPC, selecionar a instância correta, capturar evidência nativa e evitar delegar operação técnica rotineira a Leandro.
     owner_agents: [Mestre]
-    trigger_phrases: ["dual browser", "workspace do mestre", "mestre workspace", "operar cockpit", "capturar workspace"]
+    trigger_phrases:
+      [
+        "dual browser",
+        "workspace do mestre",
+        "mestre workspace",
+        "operar cockpit",
+        "capturar workspace",
+      ]
     required_inputs: [interaction_goal, target_surface, authorizedScope]
-    optional_inputs: [preferred_instance, privacy_classification, human_gate_context]
-    allowed_tools: [Remote_Desktop_Commander, MCF_Dual_Browser_Cockpit, ORCA_AT_SPI]
-    forbidden_tools: [credential_capture, secret_exposure, access_control_bypass, physical_pointer_when_semantic_available, human_as_technical_operator]
+    optional_inputs:
+      [preferred_instance, privacy_classification, human_gate_context]
+    allowed_tools:
+      [Remote_Desktop_Commander, MCF_Dual_Browser_Cockpit, ORCA_AT_SPI]
+    forbidden_tools:
+      [
+        credential_capture,
+        secret_exposure,
+        access_control_bypass,
+        physical_pointer_when_semantic_available,
+        human_as_technical_operator,
+      ]
     permission_profile: SCOPED_WRITE
-    execution_steps: [identificar_instancias, selecionar_instancia_alvo_por_evidencia, observar_semanticamente, preferir_acao_semantica_ou_programatica, executar_interacao_autorizada, capturar_workspace_nativamente, classificar_e_sanitizar_evidencia, registrar_handoff]
-    required_evidence: [target_instance, interaction_policy, actions_performed, capture_evidence, privacy_disposition, human_gate_state]
-    expected_outputs: [workspace_interaction_result, native_capture_reference, interaction_receipt]
-    acceptance_criteria: [correct_instance_selected, semantic_first_preserved, native_capture_used, no_secret_exposure, leandro_not_technical_operator]
-    failure_modes: [ambiguous_instance, bridge_unavailable, semantic_target_not_found, login_human_gate, capture_failed, sensitive_data_detected]
+    execution_steps:
+      [
+        identificar_instancias,
+        selecionar_instancia_alvo_por_evidencia,
+        observar_semanticamente,
+        preferir_acao_semantica_ou_programatica,
+        executar_interacao_autorizada,
+        capturar_workspace_nativamente,
+        classificar_e_sanitizar_evidencia,
+        registrar_handoff,
+      ]
+    required_evidence:
+      [
+        target_instance,
+        interaction_policy,
+        actions_performed,
+        capture_evidence,
+        privacy_disposition,
+        human_gate_state,
+      ]
+    expected_outputs:
+      [
+        workspace_interaction_result,
+        native_capture_reference,
+        interaction_receipt,
+      ]
+    acceptance_criteria:
+      [
+        correct_instance_selected,
+        semantic_first_preserved,
+        native_capture_used,
+        no_secret_exposure,
+        leandro_not_technical_operator,
+      ]
+    failure_modes:
+      [
+        ambiguous_instance,
+        bridge_unavailable,
+        semantic_target_not_found,
+        login_human_gate,
+        capture_failed,
+        sensitive_data_detected,
+      ]
     fallback: Falhar fechado; usar observação ORCA/AT-SPI somente leitura; solicitar HUMAN_GATE apenas para autenticação ou 2FA e nunca transferir operação técnica rotineira para Leandro.
     handoff_to: Beatriz
 
@@ -394,24 +654,111 @@ skills:
     status: EXPERIMENTAL
     purpose: Ensinar o agente a operar o Browser nativo do DSH por sessão de conversa, usando dsh-builtin-browser como runtime primário e browser_open para a visão inline, com navegação rápida, verificação obrigatória e fallback controlado para Computer Use.
     owner_agents: [Mestre]
-    trigger_phrases: ["usar browser do DSH", "operar navegador no DSH", "browser use", "navegar com DSH"]
+    trigger_phrases:
+      [
+        "usar browser do DSH",
+        "operar navegador no DSH",
+        "browser use",
+        "navegar com DSH",
+      ]
     required_inputs: [target_url, interaction_goal, authorizedScope]
     optional_inputs: [allowed_actions, forbidden_actions, account_context]
-    allowed_tools: [dsh-builtin-browser, mcf-dsh-inline-browser, dsh-vision-router, dsh-vision-toolkit, dsh-tool-computer]
-    forbidden_tools: [curl, wget, requests, playwright_substitution, selenium_substitution, credential_capture, secret_exposure, access_control_bypass]
+    allowed_tools:
+      [
+        dsh-builtin-browser,
+        mcf-dsh-inline-browser,
+        dsh-vision-router,
+        dsh-vision-toolkit,
+        dsh-tool-computer,
+      ]
+    forbidden_tools:
+      [
+        curl,
+        wget,
+        requests,
+        playwright_substitution,
+        selenium_substitution,
+        credential_capture,
+        secret_exposure,
+        access_control_bypass,
+      ]
     permission_profile: SCOPED_WRITE
-    execution_steps: [classificar_tarefa, definir_rota_mais_curta, validar_escopo, carregar_skill, usar_browser_open_para_visao_inline, reutilizar_observacao_e_seletores, executar_acoes_em_lote_quando_aplicavel, esperar_somente_conteudo_assincrono, verificar_resultado, registrar_evidencia]
-    required_evidence: [provider_used, target_url, actions_performed, observed_result, side_effects, observed_at, human_gate_state, conversation_session_id]
-    expected_outputs: [browser_interaction_result, browser_interaction_receipt, inline_browser_view]
-    acceptance_criteria: [dsh_builtin_browser_preferred, harness_owned_session, shortest_route_attempted, observation_not_duplicated_without_reason, selectors_reused_when_available, result_verified, no_external_9222_attachment, no_secret_exposure, no_gate_bypass]
-    failure_modes: [browser_unavailable, provider_crash, login_required, captcha_or_2fa, semantic_target_not_found, scope_insufficient, verification_failed]
+    execution_steps:
+      [
+        classificar_tarefa,
+        definir_rota_mais_curta,
+        validar_escopo,
+        carregar_skill,
+        usar_browser_open_para_visao_inline,
+        reutilizar_observacao_e_seletores,
+        executar_acoes_em_lote_quando_aplicavel,
+        esperar_somente_conteudo_assincrono,
+        verificar_resultado,
+        registrar_evidencia,
+      ]
+    required_evidence:
+      [
+        provider_used,
+        target_url,
+        actions_performed,
+        observed_result,
+        side_effects,
+        observed_at,
+        human_gate_state,
+        conversation_session_id,
+      ]
+    expected_outputs:
+      [
+        browser_interaction_result,
+        browser_interaction_receipt,
+        inline_browser_view,
+      ]
+    acceptance_criteria:
+      [
+        dsh_builtin_browser_preferred,
+        harness_owned_session,
+        shortest_route_attempted,
+        observation_not_duplicated_without_reason,
+        selectors_reused_when_available,
+        result_verified,
+        no_external_9222_attachment,
+        no_secret_exposure,
+        no_gate_bypass,
+      ]
+    failure_modes:
+      [
+        browser_unavailable,
+        provider_crash,
+        login_required,
+        captcha_or_2fa,
+        semantic_target_not_found,
+        scope_insufficient,
+        verification_failed,
+      ]
     fallback: Usar visão para compreender a superfície e dsh-tool-computer somente quando o Browser não for suficiente; para leitura estática, degradar para MCF-WEB-FETCH. Nunca contornar autenticação ou controles do site.
     handoff_to: Beatriz
     global_dsh_session_default: true
     governance:
       data_classification: SENSITIVE_POSSIBLE
-      human_gate_triggers: [authentication, two_factor_authentication, captcha, public_post, account_change, purchase, payment, irreversible_action]
-      prohibited_actions: [capture_credentials, expose_secrets, bypass_access_control, bypass_captcha, autonomous_public_post_without_gate]
+      human_gate_triggers:
+        [
+          authentication,
+          two_factor_authentication,
+          captcha,
+          public_post,
+          account_change,
+          purchase,
+          payment,
+          irreversible_action,
+        ]
+      prohibited_actions:
+        [
+          capture_credentials,
+          expose_secrets,
+          bypass_access_control,
+          bypass_captcha,
+          autonomous_public_post_without_gate,
+        ]
 
   - skill_id: MCF-DSH-INLINE-BROWSER
     status: EXPERIMENTAL
@@ -420,17 +767,60 @@ skills:
     purpose: Renderizar a visão ao vivo do Browser nativo do DSH diretamente no card da chamada browser_open, usando a sessão própria da conversa.
     owner_agents: [Mestre]
     supporting_agents: [Rafael, Emily, Beatriz, Miriam]
-    trigger_phrases: ["browser dentro do chat", "browser inline", "abrir browser na conversa", "navegar dentro da conversa"]
+    trigger_phrases:
+      [
+        "browser dentro do chat",
+        "browser inline",
+        "abrir browser na conversa",
+        "navegar dentro da conversa",
+      ]
     required_inputs: [navigation_goal]
     optional_inputs: [target_url]
     allowed_tools: [mcf-dsh-inline-browser, dsh-builtin-browser]
-    forbidden_tools: [dsh-browser-agent, external_chrome_9222, second_browser_engine, duplicate_browser_session]
+    forbidden_tools:
+      [
+        dsh-browser-agent,
+        external_chrome_9222,
+        second_browser_engine,
+        duplicate_browser_session,
+      ]
     permission_profile: READ_ONLY
-    execution_steps: [resolve_conversation_session, browser_open, bind_call_to_session, render_inline_live_card, continue_browser_actions, verify_goal]
-    required_evidence: [conversation_session_id, browser_runtime_provider, browser_session_id, call_id, stream_session_match]
+    execution_steps:
+      [
+        resolve_conversation_session,
+        browser_open,
+        bind_call_to_session,
+        render_inline_live_card,
+        continue_browser_actions,
+        verify_goal,
+      ]
+    required_evidence:
+      [
+        conversation_session_id,
+        browser_runtime_provider,
+        browser_session_id,
+        call_id,
+        stream_session_match,
+      ]
     expected_outputs: [inline_browser_view]
-    acceptance_criteria: [view_appears_in_transcript, uses_dsh_builtin_browser_runtime, browser_session_owned_by_conversation, chat_isolation, event_isolation, no_external_9222_attachment, no_second_browser]
-    failure_modes: [browser_runtime_unavailable, stream_unavailable, plugin_not_loaded, session_binding_mismatch, browser_provider_crash]
+    acceptance_criteria:
+      [
+        view_appears_in_transcript,
+        uses_dsh_builtin_browser_runtime,
+        browser_session_owned_by_conversation,
+        chat_isolation,
+        event_isolation,
+        no_external_9222_attachment,
+        no_second_browser,
+      ]
+    failure_modes:
+      [
+        browser_runtime_unavailable,
+        stream_unavailable,
+        plugin_not_loaded,
+        session_binding_mismatch,
+        browser_provider_crash,
+      ]
     fallback: Usar dsh-builtin-browser diretamente, mantendo a mesma conversa e sessão; não usar @try-works/dsh-browser-agent.
     handoff_to: Beatriz
 
@@ -442,17 +832,53 @@ skills:
     version: 0.1.0
     purpose: Descobrir fontes web relevantes e atuais sem depender de um único provedor externo.
     owner_agents: [Miriam, Mestre]
-    trigger_phrases: ["pesquisar na web", "buscar fontes", "procurar na internet", "encontrar fontes atuais"]
+    trigger_phrases:
+      [
+        "pesquisar na web",
+        "buscar fontes",
+        "procurar na internet",
+        "encontrar fontes atuais",
+      ]
     required_inputs: [query]
     optional_inputs: [recency, domains, source_type, max_results, language]
-    allowed_tools: [Web_Native, GitHub, OpenAI_Developers, Exa, Consensus, Sider_Scholar, Firecrawl]
-    forbidden_tools: [paid_fallback_without_authorization, fabricate_results, bypass_access_controls]
+    allowed_tools:
+      [
+        Web_Native,
+        GitHub,
+        OpenAI_Developers,
+        Exa,
+        Consensus,
+        Sider_Scholar,
+        Firecrawl,
+      ]
+    forbidden_tools:
+      [
+        paid_fallback_without_authorization,
+        fabricate_results,
+        bypass_access_controls,
+      ]
     permission_profile: READ_ONLY
-    execution_steps: [classificar_consulta, selecionar_provider, executar_busca, deduplicar_resultados, priorizar_fontes_primarias, registrar_limitacoes]
-    required_evidence: [query, provider_used, result_urls, observed_at, limitations]
+    execution_steps:
+      [
+        classificar_consulta,
+        selecionar_provider,
+        executar_busca,
+        deduplicar_resultados,
+        priorizar_fontes_primarias,
+        registrar_limitacoes,
+      ]
+    required_evidence:
+      [query, provider_used, result_urls, observed_at, limitations]
     expected_outputs: [search_result_set, source_shortlist]
-    acceptance_criteria: [sources_traceable, provider_declared, no_fabricated_result, limitations_explicit]
-    failure_modes: [provider_unavailable, zero_results, stale_results, provider_rate_limited]
+    acceptance_criteria:
+      [
+        sources_traceable,
+        provider_declared,
+        no_fabricated_result,
+        limitations_explicit,
+      ]
+    failure_modes:
+      [provider_unavailable, zero_results, stale_results, provider_rate_limited]
     fallback: Usar o próximo provider aprovado; Firecrawl é apenas fallback opcional; se todos falharem, declarar dependência externa.
     handoff_to: Miriam
 
@@ -462,17 +888,59 @@ skills:
     version: 0.1.0
     purpose: Ler e extrair conteúdo de uma URL conhecida com proveniência, sem exigir Firecrawl.
     owner_agents: [Miriam]
-    trigger_phrases: ["abrir esta página", "ler esta URL", "extrair conteúdo", "consultar esta página"]
+    trigger_phrases:
+      [
+        "abrir esta página",
+        "ler esta URL",
+        "extrair conteúdo",
+        "consultar esta página",
+      ]
     required_inputs: [url]
-    optional_inputs: [freshness_requirement, extraction_goal, max_content, language]
+    optional_inputs:
+      [freshness_requirement, extraction_goal, max_content, language]
     allowed_tools: [Web_Native, ChatGPT_Work, Firecrawl]
-    forbidden_tools: [form_submission, credential_capture, access_control_bypass, paid_fallback_without_authorization]
+    forbidden_tools:
+      [
+        form_submission,
+        credential_capture,
+        access_control_bypass,
+        paid_fallback_without_authorization,
+      ]
     permission_profile: READ_ONLY
-    execution_steps: [validar_url, selecionar_provider, recuperar_pagina, extrair_conteudo_relevante, registrar_metadados, declarar_limites]
-    required_evidence: [url, provider_used, observed_at, content_reference, fetch_status, limitations]
+    execution_steps:
+      [
+        validar_url,
+        selecionar_provider,
+        recuperar_pagina,
+        extrair_conteudo_relevante,
+        registrar_metadados,
+        declarar_limites,
+      ]
+    required_evidence:
+      [
+        url,
+        provider_used,
+        observed_at,
+        content_reference,
+        fetch_status,
+        limitations,
+      ]
     expected_outputs: [page_content, page_metadata]
-    acceptance_criteria: [url_traceable, content_grounded, freshness_declared, no_hidden_side_effect]
-    failure_modes: [blocked_by_site, authentication_required, javascript_only_content, provider_unavailable, content_too_large]
+    acceptance_criteria:
+      [
+        url_traceable,
+        content_grounded,
+        freshness_declared,
+        no_hidden_side_effect,
+      ]
+    failure_modes:
+      [
+        blocked_by_site,
+        authentication_required,
+        javascript_only_content,
+        provider_unavailable,
+        content_too_large,
+      ]
     fallback: Usar navegador autorizado somente para leitura; se indisponível, tentar provider alternativo e declarar falha se todos falharem.
     handoff_to: Miriam
 
@@ -482,17 +950,47 @@ skills:
     version: 0.1.0
     purpose: Descobrir URLs relevantes de um domínio por sitemap, links observáveis e busca restrita ao site.
     owner_agents: [Miriam]
-    trigger_phrases: ["mapear site", "listar páginas", "descobrir URLs", "achar páginas deste domínio"]
+    trigger_phrases:
+      [
+        "mapear site",
+        "listar páginas",
+        "descobrir URLs",
+        "achar páginas deste domínio",
+      ]
     required_inputs: [site_root]
     optional_inputs: [search_term, max_urls, include_subdomains, sitemap_policy]
     allowed_tools: [Web_Native, ChatGPT_Work, Firecrawl]
-    forbidden_tools: [unbounded_crawl, access_control_bypass, fabricate_url_inventory]
+    forbidden_tools:
+      [unbounded_crawl, access_control_bypass, fabricate_url_inventory]
     permission_profile: READ_ONLY
-    execution_steps: [normalizar_dominio, consultar_sitemap_e_robots, coletar_links_observaveis, complementar_com_busca_site_scoped, deduplicar, classificar_cobertura]
-    required_evidence: [site_root, provider_used, discovered_urls, discovery_methods, coverage_statement, observed_at]
+    execution_steps:
+      [
+        normalizar_dominio,
+        consultar_sitemap_e_robots,
+        coletar_links_observaveis,
+        complementar_com_busca_site_scoped,
+        deduplicar,
+        classificar_cobertura,
+      ]
+    required_evidence:
+      [
+        site_root,
+        provider_used,
+        discovered_urls,
+        discovery_methods,
+        coverage_statement,
+        observed_at,
+      ]
     expected_outputs: [url_inventory, coverage_statement]
-    acceptance_criteria: [urls_traceable, methods_declared, coverage_not_overclaimed]
-    failure_modes: [no_sitemap, site_blocks_listing, provider_unavailable, excessive_url_count]
+    acceptance_criteria:
+      [urls_traceable, methods_declared, coverage_not_overclaimed]
+    failure_modes:
+      [
+        no_sitemap,
+        site_blocks_listing,
+        provider_unavailable,
+        excessive_url_count,
+      ]
     fallback: Usar busca site-scoped e páginas-semente, marcando cobertura PARCIAL; nunca alegar inventário completo sem evidência.
     handoff_to: Miriam
 
@@ -506,7 +1004,13 @@ skills:
     allowed_tools: [WebAgent_MCP]
     permission_profile: READ_ONLY
     global_agent_capability: true
-    acceptance_criteria: [event_driven_wait, bounded_delta, cursor_monotonic, no_full_snapshot_polling]
+    acceptance_criteria:
+      [
+        event_driven_wait,
+        bounded_delta,
+        cursor_monotonic,
+        no_full_snapshot_polling,
+      ]
     fallback: Bloquear e registrar dependência externa; sem stream de eventos, usar browser_wait apenas em alvo autorizado.
     handoff_to: Mestre
 
@@ -520,7 +1024,14 @@ skills:
     allowed_tools: [WebAgent_MCP]
     permission_profile: READ_ONLY
     global_agent_capability: true
-    acceptance_criteria: [shortest_route_attempted, event_feedback_used_when_waiting, minimal_verification, bounded_steps, bounded_time]
+    acceptance_criteria:
+      [
+        shortest_route_attempted,
+        event_feedback_used_when_waiting,
+        minimal_verification,
+        bounded_steps,
+        bounded_time,
+      ]
     fallback: Bloquear e registrar dependência externa; sem rota rápida, degradar para navegação autorizada com verificações limitadas.
     handoff_to: Mestre
 
@@ -530,17 +1041,61 @@ skills:
     version: 0.1.0
     purpose: Coletar um conjunto limitado de páginas de um site ou lista de URLs com deduplicação e evidência por página.
     owner_agents: [Miriam]
-    trigger_phrases: ["coletar várias páginas", "crawl limitado", "baixar documentação", "ler seção inteira"]
+    trigger_phrases:
+      [
+        "coletar várias páginas",
+        "crawl limitado",
+        "baixar documentação",
+        "ler seção inteira",
+      ]
     required_inputs: [seed_urls_or_site_root, collection_goal]
-    optional_inputs: [max_pages, max_depth, include_paths, exclude_paths, allow_subdomains]
+    optional_inputs:
+      [max_pages, max_depth, include_paths, exclude_paths, allow_subdomains]
     allowed_tools: [Web_Native, ChatGPT_Work, Firecrawl]
-    forbidden_tools: [unbounded_crawl, high_frequency_scraping, access_control_bypass, paid_fallback_without_authorization]
+    forbidden_tools:
+      [
+        unbounded_crawl,
+        high_frequency_scraping,
+        access_control_bypass,
+        paid_fallback_without_authorization,
+      ]
     permission_profile: READ_ONLY
-    execution_steps: [definir_fronteira, descobrir_urls, ordenar_fila, recuperar_paginas, deduplicar_conteudo, registrar_erros_por_pagina, produzir_manifesto]
-    required_evidence: [scope, provider_used, page_manifest, succeeded_urls, failed_urls, observed_at, coverage_statement]
+    execution_steps:
+      [
+        definir_fronteira,
+        descobrir_urls,
+        ordenar_fila,
+        recuperar_paginas,
+        deduplicar_conteudo,
+        registrar_erros_por_pagina,
+        produzir_manifesto,
+      ]
+    required_evidence:
+      [
+        scope,
+        provider_used,
+        page_manifest,
+        succeeded_urls,
+        failed_urls,
+        observed_at,
+        coverage_statement,
+      ]
     expected_outputs: [collection_manifest, collected_content_refs]
-    acceptance_criteria: [scope_bounded, page_level_provenance, failures_visible, no_complete_claim_without_evidence]
-    failure_modes: [provider_rate_limited, robots_or_policy_block, excessive_scope, partial_collection, content_duplication]
+    acceptance_criteria:
+      [
+        scope_bounded,
+        page_level_provenance,
+        failures_visible,
+        no_complete_claim_without_evidence,
+      ]
+    failure_modes:
+      [
+        provider_rate_limited,
+        robots_or_policy_block,
+        excessive_scope,
+        partial_collection,
+        content_duplication,
+      ]
     fallback: Degradar para MCF-WEB-MAP mais MCF-WEB-FETCH dentro do limite de páginas; Firecrawl permanece opcional.
     handoff_to: Miriam
 
@@ -550,17 +1105,73 @@ skills:
     version: 0.1.0
     purpose: Responder questões que exigem descoberta, leitura e reconciliação de múltiplas fontes sem depender de um único motor.
     owner_agents: [Miriam, Carlos]
-    trigger_phrases: ["pesquisa aprofundada", "pesquisa multi-fonte", "investigar", "verificar na web", "deep research"]
+    trigger_phrases:
+      [
+        "pesquisa aprofundada",
+        "pesquisa multi-fonte",
+        "investigar",
+        "verificar na web",
+        "deep research",
+      ]
     required_inputs: [research_question]
-    optional_inputs: [time_window, source_priority, domains, evidence_threshold, output_schema]
-    allowed_tools: [Web_Native, GitHub, OpenAI_Developers, Exa, Consensus, Sider_Scholar, ChatGPT_Work, Firecrawl]
-    forbidden_tools: [single_source_overclaim, paid_fallback_without_authorization, fabricated_citation, access_control_bypass]
+    optional_inputs:
+      [time_window, source_priority, domains, evidence_threshold, output_schema]
+    allowed_tools:
+      [
+        Web_Native,
+        GitHub,
+        OpenAI_Developers,
+        Exa,
+        Consensus,
+        Sider_Scholar,
+        ChatGPT_Work,
+        Firecrawl,
+      ]
+    forbidden_tools:
+      [
+        single_source_overclaim,
+        paid_fallback_without_authorization,
+        fabricated_citation,
+        access_control_bypass,
+      ]
     permission_profile: READ_ONLY
-    execution_steps: [decompor_pergunta, definir_plano_de_fontes, buscar, recuperar_fontes, reconciliar_conflitos, mapear_claims_para_fontes, classificar_confianca, consolidar]
-    required_evidence: [research_question, providers_used, source_ledger, claim_source_map, contradictions, observed_at, limitations]
+    execution_steps:
+      [
+        decompor_pergunta,
+        definir_plano_de_fontes,
+        buscar,
+        recuperar_fontes,
+        reconciliar_conflitos,
+        mapear_claims_para_fontes,
+        classificar_confianca,
+        consolidar,
+      ]
+    required_evidence:
+      [
+        research_question,
+        providers_used,
+        source_ledger,
+        claim_source_map,
+        contradictions,
+        observed_at,
+        limitations,
+      ]
     expected_outputs: [research_report, source_ledger, uncertainty_register]
-    acceptance_criteria: [material_claims_sourced, conflicts_explicit, primary_sources_preferred, provider_failures_visible]
-    failure_modes: [insufficient_sources, conflicting_primary_sources, provider_unavailable, stale_evidence, unverifiable_claim]
+    acceptance_criteria:
+      [
+        material_claims_sourced,
+        conflicts_explicit,
+        primary_sources_preferred,
+        provider_failures_visible,
+      ]
+    failure_modes:
+      [
+        insufficient_sources,
+        conflicting_primary_sources,
+        provider_unavailable,
+        stale_evidence,
+        unverifiable_claim,
+      ]
     fallback: Combinar MCF-WEB-SEARCH e MCF-WEB-FETCH com providers alternativos; sem providers, marcar fatos atuais como NÃO VERIFICADOS.
     handoff_to: Emily
 
@@ -570,17 +1181,59 @@ skills:
     version: 0.1.0
     purpose: Navegar páginas que exigem interação visual ou JavaScript, governando side effects.
     owner_agents: [Mestre, Rafael]
-    trigger_phrases: ["clicar no site", "navegar página", "interagir com formulário", "conteúdo exige login"]
+    trigger_phrases:
+      [
+        "clicar no site",
+        "navegar página",
+        "interagir com formulário",
+        "conteúdo exige login",
+      ]
     required_inputs: [target_url, interaction_goal, authorizedScope]
     optional_inputs: [allowed_actions, forbidden_actions, account_context]
     allowed_tools: [ChatGPT_Work, Remote_Desktop_Commander, Firecrawl]
-    forbidden_tools: [credential_capture, payment_without_human_gate, destructive_external_action, access_control_bypass]
+    forbidden_tools:
+      [
+        credential_capture,
+        payment_without_human_gate,
+        destructive_external_action,
+        access_control_bypass,
+      ]
     permission_profile: SCOPED_WRITE
-    execution_steps: [classificar_interacao, separar_read_de_write, validar_escopo, navegar, executar_somente_acoes_autorizadas, capturar_evidencia, encerrar_sessao]
-    required_evidence: [target_url, provider_used, actions_performed, side_effects, screenshots_or_receipts, observed_at]
+    execution_steps:
+      [
+        classificar_interacao,
+        separar_read_de_write,
+        validar_escopo,
+        navegar,
+        executar_somente_acoes_autorizadas,
+        capturar_evidencia,
+        encerrar_sessao,
+      ]
+    required_evidence:
+      [
+        target_url,
+        provider_used,
+        actions_performed,
+        side_effects,
+        screenshots_or_receipts,
+        observed_at,
+      ]
     expected_outputs: [interaction_result, interaction_receipt]
-    acceptance_criteria: [authorized_actions_only, side_effects_declared, no_secret_exposure, evidence_traceable]
-    failure_modes: [login_required, captcha_or_anti_bot, scope_insufficient, destructive_action_requested, provider_unavailable]
+    acceptance_criteria:
+      [
+        authorized_actions_only,
+        side_effects_declared,
+        no_secret_exposure,
+        evidence_traceable,
+      ]
+    failure_modes:
+      [
+        login_required,
+        captcha_or_anti_bot,
+        scope_insufficient,
+        destructive_action_requested,
+        provider_unavailable,
+      ]
     fallback: Usar outro navegador autorizado ou degradar para MCF-WEB-FETCH se apenas leitura for necessária; nunca contornar CAPTCHA ou acesso.
     handoff_to: Beatriz
 
@@ -590,20 +1243,58 @@ skills:
     version: 0.1.0
     purpose: Criar acompanhamento recorrente de páginas ou consultas sem acoplar o MCF ao monitoramento do Firecrawl.
     owner_agents: [Augusto, Miriam]
-    trigger_phrases: ["monitorar página", "avisar quando mudar", "acompanhar novos resultados", "watch web"]
-    required_inputs: [monitor_goal, target_or_query, schedule_or_condition, authorizedScope]
-    optional_inputs: [recipients, change_threshold, retention_policy, max_results]
+    trigger_phrases:
+      [
+        "monitorar página",
+        "avisar quando mudar",
+        "acompanhar novos resultados",
+        "watch web",
+      ]
+    required_inputs:
+      [monitor_goal, target_or_query, schedule_or_condition, authorizedScope]
+    optional_inputs:
+      [recipients, change_threshold, retention_policy, max_results]
     allowed_tools: [Automations, Web_Native, Firecrawl]
-    forbidden_tools: [silent_paid_monitor, spam_notifications, access_control_bypass]
+    forbidden_tools:
+      [silent_paid_monitor, spam_notifications, access_control_bypass]
     permission_profile: SCOPED_WRITE
-    execution_steps: [validar_objetivo, classificar_alvo, selecionar_scheduler, criar_monitor, executar_smoke_check, registrar_identificador, definir_condicao_de_notificacao]
-    required_evidence: [monitor_id, provider_used, target_or_query, schedule_or_condition, smoke_check, notification_policy]
+    execution_steps:
+      [
+        validar_objetivo,
+        classificar_alvo,
+        selecionar_scheduler,
+        criar_monitor,
+        executar_smoke_check,
+        registrar_identificador,
+        definir_condicao_de_notificacao,
+      ]
+    required_evidence:
+      [
+        monitor_id,
+        provider_used,
+        target_or_query,
+        schedule_or_condition,
+        smoke_check,
+        notification_policy,
+      ]
     expected_outputs: [monitor_record, monitoring_receipt]
-    acceptance_criteria: [monitor_created_or_blocked_truthfully, trigger_clear, no_duplicate_monitor, smoke_check_recorded]
-    failure_modes: [scheduler_unavailable, provider_quota, invalid_schedule, target_unreachable, duplicate_monitor]
+    acceptance_criteria:
+      [
+        monitor_created_or_blocked_truthfully,
+        trigger_clear,
+        no_duplicate_monitor,
+        smoke_check_recorded,
+      ]
+    failure_modes:
+      [
+        scheduler_unavailable,
+        provider_quota,
+        invalid_schedule,
+        target_unreachable,
+        duplicate_monitor,
+      ]
     fallback: Usar provider alternativo aprovado; se nenhum existir, registrar plano não executado e dependência externa.
     handoff_to: Augusto
-
 
   - skill_id: MCF-REMOTION-VIDEO-PRODUCE
     status: EXPERIMENTAL
@@ -611,17 +1302,90 @@ skills:
     version: 0.2.0
     purpose: Descobrir a capability Remotion, verificar o runner GPU privado, operar somente ações autorizadas e preservar evidências.
     owner_agents: [Mestre]
-    trigger_phrases: ["Remotion", "crie um vídeo", "narração Gemini", "vídeo na GPU", "MCF Cinematic", "Remotion GPU Worker"]
+    trigger_phrases:
+      [
+        "Remotion",
+        "crie um vídeo",
+        "narração Gemini",
+        "vídeo na GPU",
+        "MCF Cinematic",
+        "Remotion GPU Worker",
+      ]
     required_inputs: [video_goal_or_discovery_request]
-    optional_inputs: [script, format, duration, voice_provider, authorized_host, mission_id, phase_id]
-    allowed_tools: [GitHub, Remote_Desktop_Commander, Remotion_MCP_Local_Read, GitHub_Actions_Private_Worker_Health]
-    forbidden_tools: [credential_export, unapproved_publish, runtime_write_without_HDF, public_MCP_exposure, public_runner_registration, untrusted_workflow_dispatch, arbitrary_shell_input]
+    optional_inputs:
+      [
+        script,
+        format,
+        duration,
+        voice_provider,
+        authorized_host,
+        mission_id,
+        phase_id,
+      ]
+    allowed_tools:
+      [
+        GitHub,
+        Remote_Desktop_Commander,
+        Remotion_MCP_Local_Read,
+        GitHub_Actions_Private_Worker_Health,
+      ]
+    forbidden_tools:
+      [
+        credential_export,
+        unapproved_publish,
+        runtime_write_without_HDF,
+        public_MCP_exposure,
+        public_runner_registration,
+        untrusted_workflow_dispatch,
+        arbitrary_shell_input,
+      ]
     permission_profile: READ_AND_PROPOSE
-    execution_steps: [read_live_github, discover_skill_and_capability, verify_private_runner_scope, check_runner_online_and_labels, verify_health_workflow_run, reconcile_shas, inspect_host_read_only, inspect_gpu_composition_and_encoder_separately, verify_gate, return_plan_or_authorized_receipt]
-    required_evidence: [remote_shas, private_runner_repository_scope, runner_id_name_labels_status, host_status, tool_availability, gpu_acceleration_status, authorization_state, workflow_run_url_and_conclusion, receipts_or_blocker]
+    execution_steps:
+      [
+        read_live_github,
+        discover_skill_and_capability,
+        verify_private_runner_scope,
+        check_runner_online_and_labels,
+        verify_health_workflow_run,
+        reconcile_shas,
+        inspect_host_read_only,
+        inspect_gpu_composition_and_encoder_separately,
+        verify_gate,
+        return_plan_or_authorized_receipt,
+      ]
+    required_evidence:
+      [
+        remote_shas,
+        private_runner_repository_scope,
+        runner_id_name_labels_status,
+        host_status,
+        tool_availability,
+        gpu_acceleration_status,
+        authorization_state,
+        workflow_run_url_and_conclusion,
+        receipts_or_blocker,
+      ]
     expected_outputs: [capability_discovery, safe_execution_plan_or_evidence]
-    acceptance_criteria: [runner_private_repo_only, runner_online_verified_live, read_only_health_workflow_pass, no_unverified_runtime_claims, no_secret_leaks, no_ungated_write, idempotent_reconciliation]
-    failure_modes: [offline_host, inaccessible_private_repo, runner_offline, runner_scope_mismatch, os_account_not_isolated, missing_HDF, model_quota]
+    acceptance_criteria:
+      [
+        runner_private_repo_only,
+        runner_online_verified_live,
+        read_only_health_workflow_pass,
+        no_unverified_runtime_claims,
+        no_secret_leaks,
+        no_ungated_write,
+        idempotent_reconciliation,
+      ]
+    failure_modes:
+      [
+        offline_host,
+        inaccessible_private_repo,
+        runner_offline,
+        runner_scope_mismatch,
+        os_account_not_isolated,
+        missing_HDF,
+        model_quota,
+      ]
     fallback: Sem host ou ferramentas, entregar contrato e limitação verificável; não executar.
     handoff_to: Mestre
 
@@ -632,17 +1396,96 @@ skills:
     purpose: Reconciliar projeto local/remoto e preservar dados, modelos e configuração para restauração, transferindo à conta Drive autorizada com integridade e evidências.
     owner_agents: [Mestre]
     supporting_agents: [Miriam, Rafael, Renato, Emily, Ricardo, Gabriel]
-    trigger_phrases: ["enviar o projeto para o google drive", "enviar projeto para o Drive", "backup completo no Google Drive", "cópia portátil da aplicação", "salvar o projeto no Drive"]
+    trigger_phrases:
+      [
+        "enviar o projeto para o google drive",
+        "enviar projeto para o Drive",
+        "backup completo no Google Drive",
+        "cópia portátil da aplicação",
+        "salvar o projeto no Drive",
+      ]
     required_inputs: [project_reference_or_current_session_context]
-    optional_inputs: [local_url, repository, target_account, recovery_scope, target_os, authorized_host]
-    allowed_tools: [Remote_Desktop_Commander, GitHub, Google_Drive, authorized_browser, local_archive_utilities]
-    forbidden_tools: [credential_exfiltration, public_sharing, cross_account_upload, force_push, destructive_reset, unapproved_merge, unapproved_deploy, HDF_bypass]
+    optional_inputs:
+      [
+        local_url,
+        repository,
+        target_account,
+        recovery_scope,
+        target_os,
+        authorized_host,
+      ]
+    allowed_tools:
+      [
+        Remote_Desktop_Commander,
+        GitHub,
+        Google_Drive,
+        authorized_browser,
+        local_archive_utilities,
+      ]
+    forbidden_tools:
+      [
+        credential_exfiltration,
+        public_sharing,
+        cross_account_upload,
+        force_push,
+        destructive_reset,
+        unapproved_merge,
+        unapproved_deploy,
+        HDF_bypass,
+      ]
     permission_profile: SCOPED_WRITE
-    execution_steps: [discover_source_host_and_repo, reconcile_git, classify_data_and_secrets, snapshot_databases, package_install_manifest, verify_sha256, upload_private_idempotent, verify_drive_metadata_and_privacy, test_restore_when_possible, issue_receipt]
-    required_evidence: [source_identity, git_remote_sha, data_manifest, local_checksums, excluded_secrets, verified_drive_account, remote_file_ids_and_sizes, privacy_state, restore_status, source_preservation]
-    expected_outputs: [portable_backup, restoration_guide, drive_folder_ref, reconciliation_receipt]
-    acceptance_criteria: [authorized_account_verified, project_preserved, secrets_protected, local_integrity_pass, remote_files_verified, restore_claim_truthful]
-    failure_modes: [host_offline, destination_ambiguous, missing_auth, data_snapshot_inconsistent, secret_exposure, upload_partial, restore_unverified]
+    execution_steps:
+      [
+        discover_source_host_and_repo,
+        reconcile_git,
+        classify_data_and_secrets,
+        snapshot_databases,
+        package_install_manifest,
+        verify_sha256,
+        upload_private_idempotent,
+        verify_drive_metadata_and_privacy,
+        test_restore_when_possible,
+        issue_receipt,
+      ]
+    required_evidence:
+      [
+        source_identity,
+        git_remote_sha,
+        data_manifest,
+        local_checksums,
+        excluded_secrets,
+        verified_drive_account,
+        remote_file_ids_and_sizes,
+        privacy_state,
+        restore_status,
+        source_preservation,
+      ]
+    expected_outputs:
+      [
+        portable_backup,
+        restoration_guide,
+        drive_folder_ref,
+        reconciliation_receipt,
+      ]
+    acceptance_criteria:
+      [
+        authorized_account_verified,
+        project_preserved,
+        secrets_protected,
+        local_integrity_pass,
+        remote_files_verified,
+        restore_claim_truthful,
+      ]
+    failure_modes:
+      [
+        host_offline,
+        destination_ambiguous,
+        missing_auth,
+        data_snapshot_inconsistent,
+        secret_exposure,
+        upload_partial,
+        restore_unverified,
+      ]
     fallback: Preservar arquivos locais e declarar PARTIAL/BLOCKED quando conector, gate ou verificação de upload faltar; nunca inventar transferência.
     handoff_to: Mestre
 
@@ -655,9 +1498,21 @@ skills:
     required_inputs: []
     optional_inputs: []
     allowed_tools: [mcf-google-bridge]
-    forbidden_tools: [generate, create, delete, update, write, deploy, billing, iam, public_deployment]
+    forbidden_tools:
+      [
+        generate,
+        create,
+        delete,
+        update,
+        write,
+        deploy,
+        billing,
+        iam,
+        public_deployment,
+      ]
     permission_profile: READ_ONLY
-    execution_steps: [validar_permissao, consultar_bridge_local, registrar_recibo_assinado]
+    execution_steps:
+      [validar_permissao, consultar_bridge_local, registrar_recibo_assinado]
     required_evidence: [bridge_trace_id, local_read_only_receipt]
     expected_outputs: [cloud_status_or_projects]
     acceptance_criteria: [no_remote_bridge_exposure, valid_receipt, no_write]
@@ -670,16 +1525,110 @@ skills:
     version: 0.2.0
     purpose: Descobrir componentes, templates, fontes e esqueletos Astryx; gerar proposta de scaffold somente em workspace descartável, sem alterar checkout ou projeto alvo.
     owner_agents: [Mestre]
-    trigger_phrases: ["descobrir componentes Astryx", "consultar templates Astryx", "propor scaffolding Astryx", "desenvolvimento visual full-stack"]
+    trigger_phrases:
+      [
+        "descobrir componentes Astryx",
+        "consultar templates Astryx",
+        "propor scaffolding Astryx",
+        "desenvolvimento visual full-stack",
+      ]
     required_inputs: []
-    optional_inputs: [componentName, templateId, targetPath, baseCommitSha, repository, allowed_paths]
+    optional_inputs:
+      [
+        componentName,
+        templateId,
+        targetPath,
+        baseCommitSha,
+        repository,
+        allowed_paths,
+      ]
     allowed_tools: [mcf-astryx-cli]
-    forbidden_tools: [apply, write_to_checkout, delete, publish, deploy, shell, arbitrary_command, production]
+    forbidden_tools:
+      [
+        apply,
+        write_to_checkout,
+        delete,
+        publish,
+        deploy,
+        shell,
+        arbitrary_command,
+        production,
+      ]
     permission_profile: READ_AND_PROPOSE
-    execution_steps: [validar_skill_e_provider, consultar_cli_allowlisted, validar_template_e_workspace, gerar_proposta_em_workspace_descartavel, calcular_diff_digest, validar_paths_aprovados, limpar_workspace, emitir_receipt_assinado]
-    required_evidence: [provider, operation, adapterId, readOnly, proposalOnly, writeMode, command, workspace, proposalWorkspace, proposalWorkspaceCleaned, cliPackageRoot, corePackageRoot, cliBinary, cliVersion, coreVersion, cliCopy, templateId, targetPath, baseCommitSha, approvedPaths, sourceArtifact, diffArtifact, diffDigest, exitCode, outputBytes, outputDigest]
-    acceptance_criteria: [provider_and_resource_allowlisted, workspace_isolated, local_cli_binary_resolved, local_core_package_resolved, cli_and_core_versions_match_installed_packages, command_fixed_and_no_shell, child_environment_sanitized, component_and_template_responses_semantically_valid, scaffold_created_only_in_disposable_workspace, only_one_regular_source_file_captured, diff_and_source_sha256_match, target_path_inside_approved_paths, proposal_workspace_cleaned, receipt_signed_and_semantically_valid, disabled_by_default]
-    failure_modes: [adapter_disabled, workspace_unavailable, cli_missing, core_missing, package_version_mismatch, timeout, invalid_component_name, invalid_template_id, invalid_target_path, path_not_approved, oversized_template, invalid_output, scratch_cleanup_failed]
+    execution_steps:
+      [
+        validar_skill_e_provider,
+        consultar_cli_allowlisted,
+        validar_template_e_workspace,
+        gerar_proposta_em_workspace_descartavel,
+        calcular_diff_digest,
+        validar_paths_aprovados,
+        limpar_workspace,
+        emitir_receipt_assinado,
+      ]
+    required_evidence:
+      [
+        provider,
+        operation,
+        adapterId,
+        readOnly,
+        proposalOnly,
+        writeMode,
+        command,
+        workspace,
+        proposalWorkspace,
+        proposalWorkspaceCleaned,
+        cliPackageRoot,
+        corePackageRoot,
+        cliBinary,
+        cliVersion,
+        coreVersion,
+        cliCopy,
+        templateId,
+        targetPath,
+        baseCommitSha,
+        approvedPaths,
+        sourceArtifact,
+        diffArtifact,
+        diffDigest,
+        exitCode,
+        outputBytes,
+        outputDigest,
+      ]
+    acceptance_criteria:
+      [
+        provider_and_resource_allowlisted,
+        workspace_isolated,
+        local_cli_binary_resolved,
+        local_core_package_resolved,
+        cli_and_core_versions_match_installed_packages,
+        command_fixed_and_no_shell,
+        child_environment_sanitized,
+        component_and_template_responses_semantically_valid,
+        scaffold_created_only_in_disposable_workspace,
+        only_one_regular_source_file_captured,
+        diff_and_source_sha256_match,
+        target_path_inside_approved_paths,
+        proposal_workspace_cleaned,
+        receipt_signed_and_semantically_valid,
+        disabled_by_default,
+      ]
+    failure_modes:
+      [
+        adapter_disabled,
+        workspace_unavailable,
+        cli_missing,
+        core_missing,
+        package_version_mismatch,
+        timeout,
+        invalid_component_name,
+        invalid_template_id,
+        invalid_target_path,
+        path_not_approved,
+        oversized_template,
+        invalid_output,
+        scratch_cleanup_failed,
+      ]
     fallback: Se o adapter estiver desabilitado, CLI indisponível ou qualquer validação falhar, parar sem gravar no projeto alvo; nunca usar shell arbitrário nem fallback global.
     handoff_to: Mestre
 
@@ -690,17 +1639,129 @@ skills:
     version: 0.1.0
     purpose: Orquestrar a construção de aplicações completas, usando Astryx como provider visual opcional e as capacidades MCF existentes para arquitetura, frontend, backend, dados, integrações, testes e governança.
     owner_agents: [Mestre, Sofia, Rafael]
-    supporting_agents: [Evelyn, Laura, Isabela, Marina, Eduardo, Helena, Andre, Tiago, Daniela, Vinicius, Lucas, Ricardo, Beatriz, Augusto, Julia]
-    trigger_phrases: ["desenvolver aplicação completa", "full-stack", "criar interface com Astryx", "desenvolvimento visual", "construir dashboard"]
-    required_inputs: [product_requirements, approved_scope, repository, acceptance_criteria]
-    optional_inputs: [design_system, astryx_version, frontend_stack, backend_stack, database, deployment_target, accessibility_target]
-    allowed_tools: [GitHub, Figma, Playwright, Supabase, Neon_Postgres, Vercel, Render, OpenAI_Developers]
-    forbidden_tools: [direct_main_write, production_deploy_without_gate, secret_exposure, unapproved_schema_destructive_change, business_logic_in_ui_only]
+    supporting_agents:
+      [
+        Evelyn,
+        Laura,
+        Isabela,
+        Marina,
+        Eduardo,
+        Helena,
+        Andre,
+        Tiago,
+        Daniela,
+        Vinicius,
+        Lucas,
+        Ricardo,
+        Beatriz,
+        Augusto,
+        Julia,
+      ]
+    trigger_phrases:
+      [
+        "desenvolver aplicação completa",
+        "full-stack",
+        "criar interface com Astryx",
+        "desenvolvimento visual",
+        "construir dashboard",
+      ]
+    required_inputs:
+      [product_requirements, approved_scope, repository, acceptance_criteria]
+    optional_inputs:
+      [
+        design_system,
+        astryx_version,
+        frontend_stack,
+        backend_stack,
+        database,
+        deployment_target,
+        accessibility_target,
+      ]
+    allowed_tools:
+      [
+        GitHub,
+        Figma,
+        Playwright,
+        Supabase,
+        Neon_Postgres,
+        Vercel,
+        Render,
+        OpenAI_Developers,
+      ]
+    forbidden_tools:
+      [
+        direct_main_write,
+        production_deploy_without_gate,
+        secret_exposure,
+        unapproved_schema_destructive_change,
+        business_logic_in_ui_only,
+      ]
     permission_profile: SCOPED_WRITE
-    execution_steps: [recover_repository_context, define_product_and_acceptance, design_user_flows, define_fullstack_boundaries, select_visual_provider, verify_astryx_compatibility, scaffold_or_extend_frontend, implement_backend_contracts, implement_data_model_and_migrations, integrate_auth_and_external_services, validate_visual_and_functional_flows, review_security_accessibility_and_performance, produce_phase_evidence, request_review_and_governed_merge]
-    required_evidence: [base_commit_sha, architecture_decisions, visual_reference, provider_and_version, dependency_lockfile, api_contracts, data_model, migration_plan, test_results, visual_test_results, accessibility_findings, security_findings, diff_digest, ci_status]
-    expected_outputs: [fullstack_architecture, visual_implementation, backend_and_data_contracts, validation_report, governed_pull_request]
-    acceptance_criteria: [frontend_backend_contracts_consistent, visual_system_used_or_exception_documented, responsive_critical_flows_pass, api_and_data_tests_pass, authorization_enforced_server_side, migrations_reversible_or_recovery_documented, accessibility_reviewed, secrets_absent, ci_green, no_unapproved_production_effect]
-    failure_modes: [astryx_incompatible_or_unavailable, unsupported_component, backend_contract_drift, schema_risk, auth_gap, visual_regression, accessibility_failure, ci_failure]
+    execution_steps:
+      [
+        recover_repository_context,
+        define_product_and_acceptance,
+        design_user_flows,
+        define_fullstack_boundaries,
+        select_visual_provider,
+        verify_astryx_compatibility,
+        scaffold_or_extend_frontend,
+        implement_backend_contracts,
+        implement_data_model_and_migrations,
+        integrate_auth_and_external_services,
+        validate_visual_and_functional_flows,
+        review_security_accessibility_and_performance,
+        produce_phase_evidence,
+        request_review_and_governed_merge,
+      ]
+    required_evidence:
+      [
+        base_commit_sha,
+        architecture_decisions,
+        visual_reference,
+        provider_and_version,
+        dependency_lockfile,
+        api_contracts,
+        data_model,
+        migration_plan,
+        test_results,
+        visual_test_results,
+        accessibility_findings,
+        security_findings,
+        diff_digest,
+        ci_status,
+      ]
+    expected_outputs:
+      [
+        fullstack_architecture,
+        visual_implementation,
+        backend_and_data_contracts,
+        validation_report,
+        governed_pull_request,
+      ]
+    acceptance_criteria:
+      [
+        frontend_backend_contracts_consistent,
+        visual_system_used_or_exception_documented,
+        responsive_critical_flows_pass,
+        api_and_data_tests_pass,
+        authorization_enforced_server_side,
+        migrations_reversible_or_recovery_documented,
+        accessibility_reviewed,
+        secrets_absent,
+        ci_green,
+        no_unapproved_production_effect,
+      ]
+    failure_modes:
+      [
+        astryx_incompatible_or_unavailable,
+        unsupported_component,
+        backend_contract_drift,
+        schema_risk,
+        auth_gap,
+        visual_regression,
+        accessibility_failure,
+        ci_failure,
+      ]
     fallback: Se Astryx não for compatível, selecionar outro design system ou componentes existentes sem bloquear backend; registrar a exceção e manter contratos de API/dados independentes da camada visual. Se faltar adapter de runtime, executar somente por ferramentas autorizadas e não declarar a Skill como runtime-executável.
     handoff_to: Beatriz

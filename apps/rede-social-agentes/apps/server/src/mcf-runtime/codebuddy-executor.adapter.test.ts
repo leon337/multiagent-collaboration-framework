@@ -433,12 +433,7 @@ describe('CodeBuddyExecutorAdapter', () => {
       authorizedScope: true,
       approvedBy: 'LEANDRO',
     });
-    evidence.verifyForSkill(
-      receipt,
-      request.tool,
-      skill,
-      inputs,
-    );
+    evidence.verifyForSkill(receipt, request.tool, skill, inputs);
   });
 
   it('rolls back an already-published patch if disposable worktree cleanup fails', async () => {

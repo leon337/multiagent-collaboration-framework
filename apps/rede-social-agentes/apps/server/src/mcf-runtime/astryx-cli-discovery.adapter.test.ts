@@ -132,8 +132,12 @@ describe('Astryx CLI discovery adapter', () => {
       true,
     );
     expect(subject.supports(request('list-templates'))).toBe(true);
-    expect(subject.supports(request('read-template-source', { templateId: 'Dashboard' }))).toBe(true);
-    expect(subject.supports(request('read-template-skeleton', { templateId: 'Dashboard' }))).toBe(true);
+    expect(subject.supports(request('read-template-source', { templateId: 'Dashboard' }))).toBe(
+      true,
+    );
+    expect(subject.supports(request('read-template-skeleton', { templateId: 'Dashboard' }))).toBe(
+      true,
+    );
     expect(subject.supports(request('draft-template-scaffold'))).toBe(true);
     expect(subject.supports(request('publish'))).toBe(false);
     expect(
@@ -373,22 +377,44 @@ describe('Astryx CLI discovery adapter', () => {
     const runner = vi.fn(async (_binary: string, args: string[]) => {
       if (args.includes('--list')) {
         expect(args).toEqual([localCliBinary(workspace!), '--json', 'template', '--list']);
-        return { stdout: jsonResponse('template.list', { templates: [{ id: 'Dashboard' }] }), stderr: '' };
+        return {
+          stdout: jsonResponse('template.list', { templates: [{ id: 'Dashboard' }] }),
+          stderr: '',
+        };
       }
       if (args.includes('--skeleton')) {
-        expect(args).toEqual([localCliBinary(workspace!), '--json', 'template', 'Dashboard', '--skeleton']);
-        return { stdout: jsonResponse('template.skeleton', { skeleton: { rows: [] } }), stderr: '' };
+        expect(args).toEqual([
+          localCliBinary(workspace!),
+          '--json',
+          'template',
+          'Dashboard',
+          '--skeleton',
+        ]);
+        return {
+          stdout: jsonResponse('template.skeleton', { skeleton: { rows: [] } }),
+          stderr: '',
+        };
       }
       expect(args).toEqual([localCliBinary(workspace!), '--json', 'template', 'Dashboard']);
-      return { stdout: jsonResponse('template.show', { source: 'export default function Dashboard() {}' }), stderr: '' };
+      return {
+        stdout: jsonResponse('template.show', { source: 'export default function Dashboard() {}' }),
+        stderr: '',
+      };
     });
     const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner);
 
     const list = await subject.execute(request('list-templates'));
-    const source = await subject.execute(request('read-template-source', { templateId: 'Dashboard' }));
-    const skeleton = await subject.execute(request('read-template-skeleton', { templateId: 'Dashboard' }));
+    const source = await subject.execute(
+      request('read-template-source', { templateId: 'Dashboard' }),
+    );
+    const skeleton = await subject.execute(
+      request('read-template-skeleton', { templateId: 'Dashboard' }),
+    );
 
-    expect(list.metadata).toMatchObject({ readOnly: true, outputDigest: expect.stringMatching(/^[a-f0-9]{64}$/u) });
+    expect(list.metadata).toMatchObject({
+      readOnly: true,
+      outputDigest: expect.stringMatching(/^[a-f0-9]{64}$/u),
+    });
     expect(source.metadata).toMatchObject({ readOnly: true, templateId: 'Dashboard' });
     expect(skeleton.metadata).toMatchObject({ readOnly: true, templateId: 'Dashboard' });
     expect(runner).toHaveBeenCalledTimes(3);
@@ -400,7 +426,11 @@ describe('Astryx CLI discovery adapter', () => {
     const runner = vi.fn(async (_binary: string, args: string[], options: unknown) => {
       const cwd = (options as { cwd: string }).cwd;
       expect(args).toEqual([
-        localCliBinary(workspace!), '--json', 'template', 'Dashboard', 'src/components/PilotCard.tsx',
+        localCliBinary(workspace!),
+        '--json',
+        'template',
+        'Dashboard',
+        'src/components/PilotCard.tsx',
       ]);
       const target = join(cwd, 'src/components/PilotCard.tsx');
       await mkdir(dirname(target), { recursive: true });
@@ -440,9 +470,21 @@ describe('Astryx CLI discovery adapter', () => {
     });
     const scratch = String(receipt.metadata.proposalWorkspace);
     await expect(import('node:fs/promises').then(({ stat }) => stat(scratch))).rejects.toThrow();
-    expect(Buffer.from(String((receipt.metadata.sourceArtifact as { data: string }).data), 'base64').toString('utf8')).toBe(source);
+    expect(
+      Buffer.from(
+        String((receipt.metadata.sourceArtifact as { data: string }).data),
+        'base64',
+      ).toString('utf8'),
+    ).toBe(source);
     expect(runner).toHaveBeenCalledTimes(1);
-    expect(() => new PermissionEngine().assertAllowed(skill, 'Mestre', request('draft-template-scaffold', inputs).tool, inputs)).not.toThrow();
+    expect(() =>
+      new PermissionEngine().assertAllowed(
+        skill,
+        'Mestre',
+        request('draft-template-scaffold', inputs).tool,
+        inputs,
+      ),
+    ).not.toThrow();
   });
 
   it('rejects scaffold path traversal and unapproved paths before invoking the CLI', async () => {
@@ -456,7 +498,9 @@ describe('Astryx CLI discovery adapter', () => {
       repository: 'leon337/multiagent-collaboration-framework',
       allowed_paths: ['src/components'],
     };
-    await expect(subject.execute(request('draft-template-scaffold', inputs))).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
+    await expect(subject.execute(request('draft-template-scaffold', inputs))).rejects.toMatchObject(
+      { code: 'INVALID_CONTEXT' },
+    );
     expect(runner).not.toHaveBeenCalled();
   });
 

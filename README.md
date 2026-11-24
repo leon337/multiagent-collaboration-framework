@@ -4,7 +4,6 @@ O **MCF** é um framework para coordenação governada de agentes de IA, com pap
 
 > **Estado documental:** o mapa canônico está em [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md). Branch heads, `latest`, estados de PR/Issue, workflows, metadados mutáveis de Release e SHAs/status reportados por providers são valores voláteis e devem ser lidos no GitHub/provider live.
 
-
 ## Modelos Google: memória reutilizável do MESTRE
 
 A seleção inicial de modelos para novos projetos e agentes está documentada em [MCF-GOOGLE-MODEL-ROUTING](docs/operations/MCF-GOOGLE-MODEL-ROUTING.md). O arquivo [AGENTS.md](AGENTS.md) orienta novas sessões que carreguem as instruções do repositório a consultar essa política antes de escolher o provedor.

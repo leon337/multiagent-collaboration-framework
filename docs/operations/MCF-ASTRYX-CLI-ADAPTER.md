@@ -11,13 +11,13 @@ The adapter connects Astryx to the MCF `ExternalActionDispatcher`, `AdapterRegis
 
 Allowlisted operations:
 
-| Operation | Fixed argv | Effect |
-|---|---|---|
-| `list-components` | `--json component --list` | Read-only catalog at `detail: names` |
-| `read-component-docs` | `--json component <Name> --detail compact` | Read-only component docs |
-| `list-templates` | `--json template --list` | Read-only template catalog |
-| `read-template-source` | `--json template <id>` | Read-only template source |
-| `read-template-skeleton` | `--json template <id> --skeleton` | Read-only structural skeleton |
+| Operation                 | Fixed argv                                        | Effect                                                                                                   |
+| ------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `list-components`         | `--json component --list`                         | Read-only catalog at `detail: names`                                                                     |
+| `read-component-docs`     | `--json component <Name> --detail compact`        | Read-only component docs                                                                                 |
+| `list-templates`          | `--json template --list`                          | Read-only template catalog                                                                               |
+| `read-template-source`    | `--json template <id>`                            | Read-only template source                                                                                |
+| `read-template-skeleton`  | `--json template <id> --skeleton`                 | Read-only structural skeleton                                                                            |
 | `draft-template-scaffold` | `--json template <id> <repository-relative-file>` | Copies exactly one file into a unique disposable workspace, then returns source + add-file diff proposal |
 
 The runtime resolves `@astryxdesign/cli` and `@astryxdesign/core` from workspace package manifests, verifies package names, semantic versions and package-root containment, and invokes the exact CLI binary through `process.execPath` with `execFile`. It does not use a shell, PATH lookup, global CLI, or model-supplied executable. Do not use `npx astryx`: the unscoped npm package name is unrelated.

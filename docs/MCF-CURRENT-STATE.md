@@ -734,6 +734,7 @@ O PR #543 foi mergeado em `main@97d79ee8152ead27564d2bf634ad63df5cc284e6`, adici
 A arquitetura e o cold-start reutilizável estão em [MCF-REMOTION-GPU-WORKER.md](operations/MCF-REMOTION-GPU-WORKER.md), com entrada em [AGENTS.md](../AGENTS.md), skill `MCF-REMOTION-VIDEO-PRODUCE` e [capability manifest](../context/capabilities/remotion-video-engine-local.yaml). O repositório público contém documentação e contratos; **não** hospeda runner e não recebe acesso ao computador. O runner pertence exclusivamente ao repositório privado.
 
 Limites observados:
+
 - runner executa como usuário Linux `leo`, sem conta de sistema isolada; não é sandbox;
 - workflow privado de health check integrado pelo PR #1; run #44028059898 SUCCESS, qualificando somente disponibilidade read-only do worker;
 - serviço MCP local respondeu `ready`;
@@ -742,7 +743,6 @@ Limites observados:
 - não há integração executável ao MissionRuntime, autorização de produção ou deploy.
 
 Runner online, workflow health aprovado, capability executável no MissionRuntime e produção são estados distintos. Consultar GitHub, o repositório privado e o host ao vivo antes de qualquer operação. Não inferir acesso privado ou disponibilidade do host em novas sessões.
-
 
 ## MCF Astryx Component/Template Discovery — CURRENT_IMPLEMENTED
 

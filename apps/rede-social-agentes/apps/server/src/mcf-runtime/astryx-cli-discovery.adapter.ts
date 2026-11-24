@@ -16,7 +16,14 @@ import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine
 export const ASTRYX_PROVIDER = 'mcf-astryx-cli';
 export const ASTRYX_RESOURCE = 'astryx-design-system';
 export const ASTRYX_SKILL = 'MCF-ASTRYX-COMPONENT-DISCOVERY';
-export const ASTRYX_OPERATIONS = ['list-components', 'read-component-docs', 'list-templates', 'read-template-source', 'read-template-skeleton', 'draft-template-scaffold'] as const;
+export const ASTRYX_OPERATIONS = [
+  'list-components',
+  'read-component-docs',
+  'list-templates',
+  'read-template-source',
+  'read-template-skeleton',
+  'draft-template-scaffold',
+] as const;
 
 const MAX_OUTPUT_BYTES = 32_768;
 const MAX_TEMPLATE_OUTPUT_BYTES = 262_144;
@@ -130,7 +137,9 @@ function parseCliEnvelope(
   const data = envelope.data;
   if (operation === 'list-components') {
     if (!isRecord(data) || !isRecord(data.components) || data.detail !== 'names') {
-      return invalid('Astryx CLI component list must contain its catalog at the fixed names detail level');
+      return invalid(
+        'Astryx CLI component list must contain its catalog at the fixed names detail level',
+      );
     }
   } else if (operation === 'read-component-docs') {
     if (!isRecord(data) || data.name !== componentName) {
@@ -340,11 +349,20 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         args = ['--json', 'template', id, '--skeleton'];
       } else {
         const rawPath = request.inputs.targetPath;
-        if (typeof rawPath !== 'string' || rawPath !== rawPath.trim() || rawPath.startsWith('/') || rawPath.includes('\\') || rawPath.includes('\0')) {
+        if (
+          typeof rawPath !== 'string' ||
+          rawPath !== rawPath.trim() ||
+          rawPath.startsWith('/') ||
+          rawPath.includes('\\') ||
+          rawPath.includes('\0')
+        ) {
           return invalidContext('targetPath must be a safe repository-relative file path');
         }
         const segments = rawPath.split('/');
-        if (segments.some((segment) => !segment || segment === '.' || segment === '..') || !/\.(?:tsx|jsx|ts|js)$/u.test(rawPath)) {
+        if (
+          segments.some((segment) => !segment || segment === '.' || segment === '..') ||
+          !/\.(?:tsx|jsx|ts|js)$/u.test(rawPath)
+        ) {
           return invalidContext('targetPath must be a safe TypeScript or JavaScript source file');
         }
         targetPath = rawPath;
@@ -354,20 +372,36 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         }
         baseCommitSha = rawSha.toLowerCase();
         const repository = request.inputs.repository;
-        if (typeof repository !== 'string' || !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/[A-Za-z0-9._-]{1,100}$/u.test(repository)) {
+        if (
+          typeof repository !== 'string' ||
+          !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/[A-Za-z0-9._-]{1,100}$/u.test(
+            repository,
+          )
+        ) {
           return invalidContext('repository must be a canonical owner/repository identifier');
         }
-        if (!Array.isArray(request.inputs.allowed_paths) || request.inputs.allowed_paths.length === 0) {
+        if (
+          !Array.isArray(request.inputs.allowed_paths) ||
+          request.inputs.allowed_paths.length === 0
+        ) {
           return invalidContext('allowed_paths must contain at least one approved repository path');
         }
         allowedPaths = request.inputs.allowed_paths.map((value) => {
-          if (typeof value !== 'string' || value !== value.trim() || value.startsWith('/') || value.includes('\\') || value.split('/').some((segment) => !segment || segment === '.' || segment === '..')) {
+          if (
+            typeof value !== 'string' ||
+            value !== value.trim() ||
+            value.startsWith('/') ||
+            value.includes('\\') ||
+            value.split('/').some((segment) => !segment || segment === '.' || segment === '..')
+          ) {
             return invalidContext('allowed_paths contains an unsafe repository-relative path');
           }
           return value;
         });
         if (!allowedPaths.some((scope) => rawPath === scope || rawPath.startsWith(`${scope}/`))) {
-          return invalidContext('targetPath must remain inside an explicitly approved allowed_paths entry');
+          return invalidContext(
+            'targetPath must remain inside an explicitly approved allowed_paths entry',
+          );
         }
         proposalWorkspace = await mkdtemp(resolve(cwd, '.mcf-astryx-proposal-'));
         executionCwd = proposalWorkspace;
@@ -387,17 +421,30 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
     const tempDir = resolve(executionCwd, '.tmp');
     const appDataDir = resolve(executionCwd, '.appdata');
     const localAppDataDir = resolve(executionCwd, '.localappdata');
-    await Promise.all([configDir, cacheDir, tempDir, appDataDir, localAppDataDir].map((directory) => mkdir(directory, { recursive: true })));
+    await Promise.all(
+      [configDir, cacheDir, tempDir, appDataDir, localAppDataDir].map((directory) =>
+        mkdir(directory, { recursive: true }),
+      ),
+    );
     const childEnv = {
-      CI: 'true', NO_COLOR: '1', NODE_ENV: 'production',
-      HOME: executionCwd, USERPROFILE: executionCwd,
-      APPDATA: appDataDir, LOCALAPPDATA: localAppDataDir,
-      XDG_CONFIG_HOME: configDir, XDG_CACHE_HOME: cacheDir,
-      TMPDIR: tempDir, TEMP: tempDir, TMP: tempDir,
+      CI: 'true',
+      NO_COLOR: '1',
+      NODE_ENV: 'production',
+      HOME: executionCwd,
+      USERPROFILE: executionCwd,
+      APPDATA: appDataDir,
+      LOCALAPPDATA: localAppDataDir,
+      XDG_CONFIG_HOME: configDir,
+      XDG_CACHE_HOME: cacheDir,
+      TMPDIR: tempDir,
+      TEMP: tempDir,
+      TMP: tempDir,
       ...(process.env.SystemRoot ? { SystemRoot: process.env.SystemRoot } : {}),
       ...(process.env.WINDIR ? { WINDIR: process.env.WINDIR } : {}),
     };
-    const maxOutputBytes = operation.includes('template') ? MAX_TEMPLATE_OUTPUT_BYTES : MAX_OUTPUT_BYTES;
+    const maxOutputBytes = operation.includes('template')
+      ? MAX_TEMPLATE_OUTPUT_BYTES
+      : MAX_OUTPUT_BYTES;
     let result: { stdout: string; stderr: string };
 
     try {
@@ -410,9 +457,15 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       });
     } catch (error) {
       if (proposalWorkspace) await rm(proposalWorkspace, { recursive: true, force: true });
-      const isTimeout = isRecord(error) && (error.code === 'ETIMEDOUT' || (error.killed === true && error.signal === 'SIGTERM'));
+      const isTimeout =
+        isRecord(error) &&
+        (error.code === 'ETIMEDOUT' || (error.killed === true && error.signal === 'SIGTERM'));
       const code = isTimeout ? 'ADAPTER_TIMEOUT' : 'ADAPTER_FAILURE';
-      throw new ExternalActionAdapterError(code, 'Astryx CLI operation failed; command output was not exposed', code === 'ADAPTER_TIMEOUT');
+      throw new ExternalActionAdapterError(
+        code,
+        'Astryx CLI operation failed; command output was not exposed',
+        code === 'ADAPTER_TIMEOUT',
+      );
     }
 
     const stdout = result.stdout.trim();
@@ -429,11 +482,19 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       try {
         const fileInfo = await lstat(destination);
         const resolvedFile = await realpath(destination);
-        if (!fileInfo.isFile() || fileInfo.isSymbolicLink() || !isWithin(proposalWorkspace, resolvedFile)) {
-          return invalid('Astryx scaffold proposal must produce one regular file inside scratch space');
+        if (
+          !fileInfo.isFile() ||
+          fileInfo.isSymbolicLink() ||
+          !isWithin(proposalWorkspace, resolvedFile)
+        ) {
+          return invalid(
+            'Astryx scaffold proposal must produce one regular file inside scratch space',
+          );
         }
         if (fileInfo.size < 1 || fileInfo.size > MAX_TEMPLATE_SOURCE_BYTES) {
-          return invalid('Astryx scaffold proposal source is empty or exceeds the bounded file size');
+          return invalid(
+            'Astryx scaffold proposal source is empty or exceeds the bounded file size',
+          );
         }
         sourceContent = await readFile(resolvedFile, 'utf8');
         const envelope = JSON.parse(stdout) as unknown;
@@ -441,15 +502,26 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         if (!data || data.filesCopied !== 1 || data.fileName !== basename(targetPath)) {
           return invalid('Astryx template copy receipt does not match the exact proposed file');
         }
-        if (typeof data.outputDir === 'string' && (!isAbsolute(data.outputDir) || resolve(data.outputDir) !== dirname(destination))) {
-          return invalid('Astryx template copy outputDir does not match the disposable proposal path');
+        if (
+          typeof data.outputDir === 'string' &&
+          (!isAbsolute(data.outputDir) || resolve(data.outputDir) !== dirname(destination))
+        ) {
+          return invalid(
+            'Astryx template copy outputDir does not match the disposable proposal path',
+          );
         }
         const normalizedContent = sourceContent.replace(/\r\n/gu, '\n');
-        const lines = normalizedContent.endsWith('\n') ? normalizedContent.slice(0, -1).split('\n') : normalizedContent.split('\n');
+        const lines = normalizedContent.endsWith('\n')
+          ? normalizedContent.slice(0, -1).split('\n')
+          : normalizedContent.split('\n');
         diff = [
           `diff --git a/${targetPath} b/${targetPath}`,
-          'new file mode 100644', '--- /dev/null', `+++ b/${targetPath}`,
-          `@@ -0,0 +1,${lines.length} @@`, ...lines.map((line) => `+${line}`), '',
+          'new file mode 100644',
+          '--- /dev/null',
+          `+++ b/${targetPath}`,
+          `@@ -0,0 +1,${lines.length} @@`,
+          ...lines.map((line) => `+${line}`),
+          '',
         ].join('\n');
         diffDigest = createHash('sha256').update(diff).digest('hex');
       } finally {
@@ -457,9 +529,17 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       }
     }
 
-    const provenance = parseCliEnvelope(stdout, operation, componentName, templateId, packages.cliVersion, packages.coreVersion);
+    const provenance = parseCliEnvelope(
+      stdout,
+      operation,
+      componentName,
+      templateId,
+      packages.cliVersion,
+      packages.coreVersion,
+    );
     const outputDigest = createHash('sha256').update(stdout).digest('hex');
-    const sourceBytes = sourceContent === undefined ? undefined : Buffer.from(sourceContent, 'utf8');
+    const sourceBytes =
+      sourceContent === undefined ? undefined : Buffer.from(sourceContent, 'utf8');
     const diffBytes = diff === undefined ? undefined : Buffer.from(diff, 'utf8');
 
     return this.evidence.createTrustedReceipt({
@@ -482,18 +562,40 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         corePackageRoot: packages.corePackageRoot,
         readOnly: !isProposal,
         ...(templateId ? { templateId } : {}),
-        ...(isProposal ? {
-          proposalOnly: true, writeMode: 'DISPOSABLE_PROPOSAL_ONLY',
-          proposalWorkspace: proposalWorkspace ?? null, proposalWorkspaceCleaned: true,
-          templateId, targetPath, baseCommitSha, repository: request.inputs.repository,
-          approvedPaths: allowedPaths,
-          sourceArtifact: { encoding: 'base64', data: sourceBytes?.toString('base64'), byteLength: sourceBytes?.byteLength, digest: createHash('sha256').update(sourceBytes ?? Buffer.alloc(0)).digest('hex') },
-          diffArtifact: { encoding: 'base64', data: diffBytes?.toString('base64'), byteLength: diffBytes?.byteLength },
-          diffDigest,
-        } : {}),
-        command, workspace: cwd, stdout,
+        ...(isProposal
+          ? {
+              proposalOnly: true,
+              writeMode: 'DISPOSABLE_PROPOSAL_ONLY',
+              proposalWorkspace: proposalWorkspace ?? null,
+              proposalWorkspaceCleaned: true,
+              templateId,
+              targetPath,
+              baseCommitSha,
+              repository: request.inputs.repository,
+              approvedPaths: allowedPaths,
+              sourceArtifact: {
+                encoding: 'base64',
+                data: sourceBytes?.toString('base64'),
+                byteLength: sourceBytes?.byteLength,
+                digest: createHash('sha256')
+                  .update(sourceBytes ?? Buffer.alloc(0))
+                  .digest('hex'),
+              },
+              diffArtifact: {
+                encoding: 'base64',
+                data: diffBytes?.toString('base64'),
+                byteLength: diffBytes?.byteLength,
+              },
+              diffDigest,
+            }
+          : {}),
+        command,
+        workspace: cwd,
+        stdout,
         stderr: truncateUtf8(result.stderr, MAX_STDERR_BYTES),
-        exitCode: 0, outputBytes: Buffer.byteLength(stdout, 'utf8'), outputDigest,
+        exitCode: 0,
+        outputBytes: Buffer.byteLength(stdout, 'utf8'),
+        outputDigest,
       },
     });
   }

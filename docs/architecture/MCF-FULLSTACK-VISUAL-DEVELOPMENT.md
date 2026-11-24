@@ -79,12 +79,12 @@ MCF HDF + Permission Engine + Evidence Validator + Receipt + PR gates
 
 A capability deve classificar operações pelo efeito real, não pelo nome do comando:
 
-| Classe | Operações | Política MCF |
-|---|---|---|
-| READ_ONLY integrado | `component --list`; `component <Name> --detail compact`; `template --list`; `template <id>`; `template <id> --skeleton` | Allowlist fechada, argv fixo, CLI/Core locais verificados, limites de saída e receipt semântico |
-| READ_AND_PROPOSE integrado | `template <id> <path>` para um único arquivo de scaffold | Executar apenas em workspace descartável; gerar source + diff + digest assinado; limpar scratch; sem checkout write |
-| SCOPED_WRITE governado | Aplicação do receipt via `MCF-IMPLEMENT-CHANGE` / CodeBuddy | Exigir HDF v1.1 aprovado por LEANDRO, TEAM_FIRST, `authorizedScope`, base SHA exato, paths permitidos, receipt, rollback e handoff de testes |
-| Futuro / não habilitado | `swizzle`, `init`, `theme add/use/build`, `upgrade --apply`, deploy e outras operações de escrita Astryx | Não allowlistar até adapter, schema semântico, rollback e testes específicos; nunca executar diretamente no checkout |
+| Classe                     | Operações                                                                                                               | Política MCF                                                                                                                                 |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| READ_ONLY integrado        | `component --list`; `component <Name> --detail compact`; `template --list`; `template <id>`; `template <id> --skeleton` | Allowlist fechada, argv fixo, CLI/Core locais verificados, limites de saída e receipt semântico                                              |
+| READ_AND_PROPOSE integrado | `template <id> <path>` para um único arquivo de scaffold                                                                | Executar apenas em workspace descartável; gerar source + diff + digest assinado; limpar scratch; sem checkout write                          |
+| SCOPED_WRITE governado     | Aplicação do receipt via `MCF-IMPLEMENT-CHANGE` / CodeBuddy                                                             | Exigir HDF v1.1 aprovado por LEANDRO, TEAM_FIRST, `authorizedScope`, base SHA exato, paths permitidos, receipt, rollback e handoff de testes |
+| Futuro / não habilitado    | `swizzle`, `init`, `theme add/use/build`, `upgrade --apply`, deploy e outras operações de escrita Astryx                | Não allowlistar até adapter, schema semântico, rollback e testes específicos; nunca executar diretamente no checkout                         |
 
 Regras adicionais:
 
@@ -111,18 +111,18 @@ Regras adicionais:
 
 ## 6. Matriz de responsabilidade
 
-| Área | Responsável primário | Astryx |
-|---|---|---|
-| Requisitos e produto | MCF Product | Não |
-| Jornada e UX | MCF Design Experience | Referência de componentes |
-| Arquitetura | MCF Design Architecture | Provider opcional |
-| Componentes e tema | Frontend / Visual Provider | Sim |
-| Estado e integração UI | Frontend Engineering | Parcial |
-| APIs e regras de negócio | Backend Engineering | Não |
-| Banco e migrações | Data Engineering | Não |
-| Autenticação/autorização | Backend + MCF Permission Engine | Não |
-| Testes e qualidade | MCF Validation | CLI/docs podem apoiar |
-| Missões, gates e receipts | MCF Runtime | Não |
+| Área                      | Responsável primário            | Astryx                    |
+| ------------------------- | ------------------------------- | ------------------------- |
+| Requisitos e produto      | MCF Product                     | Não                       |
+| Jornada e UX              | MCF Design Experience           | Referência de componentes |
+| Arquitetura               | MCF Design Architecture         | Provider opcional         |
+| Componentes e tema        | Frontend / Visual Provider      | Sim                       |
+| Estado e integração UI    | Frontend Engineering            | Parcial                   |
+| APIs e regras de negócio  | Backend Engineering             | Não                       |
+| Banco e migrações         | Data Engineering                | Não                       |
+| Autenticação/autorização  | Backend + MCF Permission Engine | Não                       |
+| Testes e qualidade        | MCF Validation                  | CLI/docs podem apoiar     |
+| Missões, gates e receipts | MCF Runtime                     | Não                       |
 
 ## 7. Critérios de aceite da capacidade
 

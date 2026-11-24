@@ -944,44 +944,96 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
     } | null = null;
     if (request.inputs.scaffoldProposalReceipt !== undefined) {
       if (request.inputs.authorizedScope !== true) {
-        throw new ExternalActionAdapterError('INVALID_CONTEXT', 'Astryx scaffold application requires authorizedScope=true', false);
+        throw new ExternalActionAdapterError(
+          'INVALID_CONTEXT',
+          'Astryx scaffold application requires authorizedScope=true',
+          false,
+        );
       }
       const hdf = requireObject(request.inputs.v11AuthorizationContext, 'v11AuthorizationContext');
       const teamFirst = requireObject(hdf.teamFirst, 'v11AuthorizationContext.teamFirst');
-      const gate = requireObject(hdf.humanGateDecision, 'v11AuthorizationContext.humanGateDecision');
+      const gate = requireObject(
+        hdf.humanGateDecision,
+        'v11AuthorizationContext.humanGateDecision',
+      );
       if (
         hdf.reservedHumanAuthority !== true ||
         hdf.actionClass !== 'SCOPED_WRITE' ||
-        typeof hdf.projectId !== 'string' || !hdf.projectId.trim() ||
+        typeof hdf.projectId !== 'string' ||
+        !hdf.projectId.trim() ||
         hdf.missionId !== request.context?.missionId ||
-        typeof hdf.environment !== 'string' || /production|producao/iu.test(hdf.environment) ||
+        typeof hdf.environment !== 'string' ||
+        /production|producao/iu.test(hdf.environment) ||
         hdf.reversible !== true ||
         teamFirst.attempted !== true ||
         teamFirst.fallbackExhausted !== true ||
-        !Array.isArray(teamFirst.evidenceRefs) || teamFirst.evidenceRefs.length === 0 ||
+        !Array.isArray(teamFirst.evidenceRefs) ||
+        teamFirst.evidenceRefs.length === 0 ||
         gate.status !== 'APPROVED' ||
-        String(gate.decidedBy ?? '').trim().toLowerCase() !== 'leandro' ||
-        typeof gate.accountId !== 'string' || !gate.accountId.trim() ||
-        typeof gate.sourceRef !== 'string' || !gate.sourceRef.trim()
+        String(gate.decidedBy ?? '')
+          .trim()
+          .toLowerCase() !== 'leandro' ||
+        typeof gate.accountId !== 'string' ||
+        !gate.accountId.trim() ||
+        typeof gate.sourceRef !== 'string' ||
+        !gate.sourceRef.trim()
       ) {
-        throw new ExternalActionAdapterError('INVALID_CONTEXT', 'Astryx scaffold application requires a complete LEANDRO HDF approval after TEAM_FIRST', false);
+        throw new ExternalActionAdapterError(
+          'INVALID_CONTEXT',
+          'Astryx scaffold application requires a complete LEANDRO HDF approval after TEAM_FIRST',
+          false,
+        );
       }
-      const proposalReceipt = requireObject(request.inputs.scaffoldProposalReceipt, 'scaffoldProposalReceipt') as unknown as McfToolReceipt;
-      if (!Array.isArray(hdf.evidenceRefs) || !hdf.evidenceRefs.includes(proposalReceipt.receiptId)) {
-        throw new ExternalActionAdapterError('INVALID_CONTEXT', 'LEANDRO HDF approval must reference the exact signed Astryx proposal receipt', false);
+      const proposalReceipt = requireObject(
+        request.inputs.scaffoldProposalReceipt,
+        'scaffoldProposalReceipt',
+      ) as unknown as McfToolReceipt;
+      if (
+        !Array.isArray(hdf.evidenceRefs) ||
+        !hdf.evidenceRefs.includes(proposalReceipt.receiptId)
+      ) {
+        throw new ExternalActionAdapterError(
+          'INVALID_CONTEXT',
+          'LEANDRO HDF approval must reference the exact signed Astryx proposal receipt',
+          false,
+        );
       }
-      const proposalMetadata = requireObject(proposalReceipt.metadata, 'scaffoldProposalReceipt.metadata');
+      const proposalMetadata = requireObject(
+        proposalReceipt.metadata,
+        'scaffoldProposalReceipt.metadata',
+      );
       this.evidence.verifyAstryxScaffoldProposal(proposalReceipt, {
         templateId: proposalMetadata.templateId,
         allowed_paths: proposalMetadata.approvedPaths,
       });
-      const proposalRepository = requireNonEmptyString(proposalMetadata.repository, 'scaffold proposal repository');
-      const proposalBaseSha = requireNonEmptyString(proposalMetadata.baseCommitSha, 'scaffold proposal baseCommitSha');
-      const proposalTargetPath = canonicalRepositoryPath(proposalMetadata.targetPath, 'scaffold proposal targetPath');
-      const proposalTemplateId = requireNonEmptyString(proposalMetadata.templateId, 'scaffold proposal templateId');
-      const proposalDiffDigest = requireNonEmptyString(proposalMetadata.diffDigest, 'scaffold proposal diffDigest');
-      const sourceArtifact = requireObject(proposalMetadata.sourceArtifact, 'scaffold proposal sourceArtifact');
-      const sourceData = requireNonEmptyString(sourceArtifact.data, 'scaffold proposal sourceArtifact.data');
+      const proposalRepository = requireNonEmptyString(
+        proposalMetadata.repository,
+        'scaffold proposal repository',
+      );
+      const proposalBaseSha = requireNonEmptyString(
+        proposalMetadata.baseCommitSha,
+        'scaffold proposal baseCommitSha',
+      );
+      const proposalTargetPath = canonicalRepositoryPath(
+        proposalMetadata.targetPath,
+        'scaffold proposal targetPath',
+      );
+      const proposalTemplateId = requireNonEmptyString(
+        proposalMetadata.templateId,
+        'scaffold proposal templateId',
+      );
+      const proposalDiffDigest = requireNonEmptyString(
+        proposalMetadata.diffDigest,
+        'scaffold proposal diffDigest',
+      );
+      const sourceArtifact = requireObject(
+        proposalMetadata.sourceArtifact,
+        'scaffold proposal sourceArtifact',
+      );
+      const sourceData = requireNonEmptyString(
+        sourceArtifact.data,
+        'scaffold proposal sourceArtifact.data',
+      );
       const source = Buffer.from(sourceData, 'base64');
       if (
         proposalRepository.toLowerCase() !== repository.toLowerCase() ||
@@ -994,14 +1046,21 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         source.byteLength > 262_144 ||
         !pathIsAllowed(proposalTargetPath, allowedPaths)
       ) {
-        throw new ExternalActionAdapterError('INVALID_CONTEXT', 'Astryx scaffold proposal does not match the authorized repository, base SHA or allowed paths', false);
+        throw new ExternalActionAdapterError(
+          'INVALID_CONTEXT',
+          'Astryx scaffold proposal does not match the authorized repository, base SHA or allowed paths',
+          false,
+        );
       }
       scaffoldProposal = {
         receiptId: requireNonEmptyString(proposalReceipt.receiptId, 'scaffold proposal receiptId'),
         templateId: proposalTemplateId,
         targetPath: proposalTargetPath,
         diffDigest: proposalDiffDigest,
-        sourceDigest: requireNonEmptyString(sourceArtifact.digest, 'scaffold proposal source digest'),
+        sourceDigest: requireNonEmptyString(
+          sourceArtifact.digest,
+          'scaffold proposal source digest',
+        ),
         baseCommitSha: proposalBaseSha,
         source: source.toString('utf8'),
         hdfApprovalSourceRef: String(gate.sourceRef),
@@ -1058,17 +1117,19 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
       ...allowedPaths.map((path) => `- ${path}`),
       'Acceptance criteria:',
       ...acceptance.map((item) => `- ${item}`),
-      ...(scaffoldProposal ? [
-        `Verified Astryx template: ${scaffoldProposal.templateId}`,
-        `Required scaffold target: ${scaffoldProposal.targetPath}`,
-        `Proposal receipt: ${scaffoldProposal.receiptId}`,
-        `Proposal diff SHA-256: ${scaffoldProposal.diffDigest}`,
-        `Proposal source SHA-256: ${scaffoldProposal.sourceDigest}`,
-        'Use the following verified Astryx source as the starting point at the required target path; adapt only within allowed_paths:',
-        '--- BEGIN VERIFIED ASTRYX TEMPLATE SOURCE ---',
-        scaffoldProposal.source,
-        '--- END VERIFIED ASTRYX TEMPLATE SOURCE ---',
-      ] : []),
+      ...(scaffoldProposal
+        ? [
+            `Verified Astryx template: ${scaffoldProposal.templateId}`,
+            `Required scaffold target: ${scaffoldProposal.targetPath}`,
+            `Proposal receipt: ${scaffoldProposal.receiptId}`,
+            `Proposal diff SHA-256: ${scaffoldProposal.diffDigest}`,
+            `Proposal source SHA-256: ${scaffoldProposal.sourceDigest}`,
+            'Use the following verified Astryx source as the starting point at the required target path; adapt only within allowed_paths:',
+            '--- BEGIN VERIFIED ASTRYX TEMPLATE SOURCE ---',
+            scaffoldProposal.source,
+            '--- END VERIFIED ASTRYX TEMPLATE SOURCE ---',
+          ]
+        : []),
       'Modify only the listed allowed repository paths. Do not commit, merge, deploy, publish, or use shell commands.',
     ].join('\n');
 
@@ -1177,18 +1238,20 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         filesystemIsolation: 'BUBBLEWRAP_MINIMAL_FS',
         processIsolation: 'BUBBLEWRAP_PID_NAMESPACE',
         configIsolation: 'EPHEMERAL_CODEBUDDY_CONFIG',
-        ...(scaffoldProposal ? {
-          scaffoldProposal: {
-            receiptId: scaffoldProposal.receiptId,
-            templateId: scaffoldProposal.templateId,
-            targetPath: scaffoldProposal.targetPath,
-            diffDigest: scaffoldProposal.diffDigest,
-            sourceDigest: scaffoldProposal.sourceDigest,
-            hdfApprovalSourceRef: scaffoldProposal.hdfApprovalSourceRef,
-            authorizedScope: true,
-            approvedBy: 'LEANDRO',
-          },
-        } : {}),
+        ...(scaffoldProposal
+          ? {
+              scaffoldProposal: {
+                receiptId: scaffoldProposal.receiptId,
+                templateId: scaffoldProposal.templateId,
+                targetPath: scaffoldProposal.targetPath,
+                diffDigest: scaffoldProposal.diffDigest,
+                sourceDigest: scaffoldProposal.sourceDigest,
+                hdfApprovalSourceRef: scaffoldProposal.hdfApprovalSourceRef,
+                authorizedScope: true,
+                approvedBy: 'LEANDRO',
+              },
+            }
+          : {}),
       };
       receipt = this.evidence.createTrustedReceipt({
         provider: 'codebuddy',
