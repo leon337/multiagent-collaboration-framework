@@ -51,7 +51,7 @@ Capacidades comprovadas incluem:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - dispatcher de ações externas e adapters com evidência verificável;
-- **19 skills executáveis no servidor atual** após a integração da descoberta Astryx read-only pela PR #579 (`80ca638`); esta branch adiciona uma Skill full-stack experimental de orquestração, não executável;
+- **19 skills executáveis no servidor atual**; a Skill Astryx existente foi ampliada nesta branch para descoberta de templates e propostas de scaffold somente em scratch; aplicação separada via CodeBuddy exige HDF + SCOPED_WRITE; a Skill full-stack permanece experimental até a qualificação do piloto;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA, readiness/version e recovery por redeploy;
@@ -162,7 +162,7 @@ Princípios centrais:
 
 ## Desenvolvimento visual e full-stack (experimental)
 
-A Skill `MCF-FULLSTACK-VISUAL-DEVELOPMENT` permanece `EXPERIMENTAL` e é um contrato de orquestração, não uma Skill executável. A Skill `MCF-ASTRYX-COMPONENT-DISCOVERY` foi integrada ao `main` pela PR #579 (`80ca638`): descoberta read-only com CLI/Core locais verificados, workspace e ambiente de subprocesso isolados, receipt semântico assinado e duas operações allowlisted (`component --list` e documentação compacta). O adapter continua disabled-by-default e não grava arquivos. A validação Foundation executou 1.160 testes aprovados e a integração com CLI/Core 0.7.17 passou; Qualification, Container Smoke, Production Readiness e Documentation validation também passaram. Astryx é o provider visual opcional (React 19+, componentes, temas, templates e CLI; StyleX é detalhe interno de autoria, não requisito de consumo); backend, APIs, banco, autenticação, integrações e governança continuam sob competências MCF independentes. Scaffolding, aplicação de diffs e piloto full-stack ainda não estão implementados. Consulte [arquitetura MCF Full-Stack Visual Development](docs/architecture/MCF-FULLSTACK-VISUAL-DEVELOPMENT.md) e [contrato da Skill](skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml).
+A Skill `MCF-FULLSTACK-VISUAL-DEVELOPMENT` permanece `EXPERIMENTAL` e é um contrato de orquestração, não uma Skill executável. A Skill `MCF-ASTRYX-COMPONENT-DISCOVERY` foi integrada ao `main` pela PR #579 (`80ca638`) e esta branch amplia seu adapter: além da descoberta de componentes, permite catálogo/fonte/skeleton de templates e proposta de um único arquivo em workspace descartável, com diff e digest assinados. A proposta não grava no checkout; a aplicação usa `MCF-IMPLEMENT-CHANGE` / CodeBuddy com HDF aprovado por LEANDRO, `SCOPED_WRITE`, paths aprovados, base SHA e rollback. Tudo continua disabled-by-default. O piloto não produtivo em `examples/astryx-fullstack-pilot/` cobre React 19 + Astryx, API autenticada, PostgreSQL isolado, Playwright desktop/mobile, axe e regressão visual. A Skill full-stack só será promovida após lockfile/baselines e CI/review aprovados no SHA exato. Consulte [arquitetura MCF Full-Stack Visual Development](docs/architecture/MCF-FULLSTACK-VISUAL-DEVELOPMENT.md), [adapter Astryx](docs/operations/MCF-ASTRYX-CLI-ADAPTER.md) e [contrato da Skill](skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml).
 
 ## Skills
 
