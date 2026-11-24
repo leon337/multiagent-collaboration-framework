@@ -953,6 +953,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         hdf.reservedHumanAuthority !== true ||
         hdf.actionClass !== 'SCOPED_WRITE' ||
         typeof hdf.projectId !== 'string' || !hdf.projectId.trim() ||
+        hdf.missionId !== request.context?.missionId ||
         typeof hdf.environment !== 'string' || /production|producao/iu.test(hdf.environment) ||
         hdf.reversible !== true ||
         teamFirst.attempted !== true ||
@@ -966,6 +967,9 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         throw new ExternalActionAdapterError('INVALID_CONTEXT', 'Astryx scaffold application requires a complete LEANDRO HDF approval after TEAM_FIRST', false);
       }
       const proposalReceipt = requireObject(request.inputs.scaffoldProposalReceipt, 'scaffoldProposalReceipt') as unknown as McfToolReceipt;
+      if (!Array.isArray(hdf.evidenceRefs) || !hdf.evidenceRefs.includes(proposalReceipt.receiptId)) {
+        throw new ExternalActionAdapterError('INVALID_CONTEXT', 'LEANDRO HDF approval must reference the exact signed Astryx proposal receipt', false);
+      }
       const proposalMetadata = requireObject(proposalReceipt.metadata, 'scaffoldProposalReceipt.metadata');
       this.evidence.verifyAstryxScaffoldProposal(proposalReceipt, {
         templateId: proposalMetadata.templateId,
