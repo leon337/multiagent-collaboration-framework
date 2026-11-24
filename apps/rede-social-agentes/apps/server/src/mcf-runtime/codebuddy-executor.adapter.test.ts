@@ -446,6 +446,20 @@ describe('CodeBuddyExecutorAdapter', () => {
     ).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
     expect(host.execute).not.toHaveBeenCalled();
 
+    const validChanges = host.changes;
+    host.changes = {
+      changedFiles: ['src/components/Pilot.tsx', 'src/OutsideProposalScope.tsx'],
+      diff:
+        'diff --git a/src/components/Pilot.tsx b/src/components/Pilot.tsx\\n+export function Pilot() {}\\n' +
+        'diff --git a/src/OutsideProposalScope.tsx b/src/OutsideProposalScope.tsx\\n+export const outside = true;\\n',
+      headSha: host.snapshot.headSha,
+    };
+    await expect(subject.execute(requestWithMission)).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+    expect(host.publishChanges).not.toHaveBeenCalled();
+    host.changes = validChanges;
+
     const receipt = await subject.execute(requestWithMission);
 
     expect(host.execute).toHaveBeenCalledOnce();
