@@ -79,26 +79,6 @@ jobs:
           test -f "$workspace/node_modules/@astryxdesign/core/package.json"
           echo "MCF_ASTRYX_REAL_CLI_WORKSPACE=$workspace" >> "$GITHUB_ENV"
 
-      - name: Temporary Prettier inspection for Astryx runtime files
-        run: |
-          pnpm exec prettier --write \
-            apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.ts \
-            apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.test.ts \
-            apps/server/src/mcf-runtime/astryx-cli-discovery.runtime-e2e.test.ts \
-            apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts \
-            apps/server/src/mcf-runtime/evidence-validator.ts \
-            apps/server/src/mcf-runtime/evidence-validator.test.ts
-          for file in \
-            apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.ts \
-            apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.test.ts \
-            apps/server/src/mcf-runtime/astryx-cli-discovery.runtime-e2e.test.ts \
-            apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts \
-            apps/server/src/mcf-runtime/evidence-validator.ts \
-            apps/server/src/mcf-runtime/evidence-validator.test.ts; do
-            echo "--- FILE:$file ---"
-            cat "$file"
-          done
-
       - name: Verify formatting
         run: pnpm format:check
 
