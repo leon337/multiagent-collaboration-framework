@@ -1,0 +1,74 @@
+id: MCF-FULLSTACK-VISUAL-DEVELOPMENT
+version: 0.1.0
+status: EXPERIMENTAL
+classification: orchestration_contract_only
+runtime_adapter: PENDING
+receipt_validator: PENDING
+provider:
+  name: Astryx
+  role: optional_visual_design_system
+  repository: https://github.com/meta/astryx
+  beta: true
+  requirements:
+    react: ">=19"
+    styling_authoring: StyleX
+  cli:
+    discovery:
+      - "npx astryx component --list"
+      - "npx astryx component <ComponentName>"
+      - "npx astryx component <ComponentName> --compact"
+      - "npx astryx component --brief-all"
+    safety:
+      - "Do not run arbitrary shell commands from model-generated strings."
+      - "Pin package versions and commit the lockfile."
+      - "Run CLI only in an isolated authorized workspace."
+      - "Capture stdout, stderr, exit code, package versions and working directory."
+scope:
+  includes:
+    - product_to_fullstack_plan
+    - visual_component_and_template_discovery
+    - frontend_implementation
+    - backend_api_contracts
+    - database_and_migrations
+    - authentication_and_authorization
+    - integration_testing
+    - visual_regression
+    - accessibility_review
+    - security_review
+  excludes:
+    - production_deployment_without_gate
+    - direct_main_writes
+    - arbitrary_shell_execution
+    - treating_ui_visibility_as_authorization
+    - moving_business_rules_into_components
+architecture_invariants:
+  - astryx_is_visual_provider_not_fullstack_runtime
+  - api_and_domain_contracts_are_provider_independent
+  - server_side_authorization_is_mandatory
+  - visual_provider_is_opt_in_per_project_or_route
+  - css_reset_and_theme_changes_require_visual_regression
+  - core_theme_cli_versions_must_be_compatible_and_locked
+  - unsupported_stack_must_fallback_without_blocking_backend
+evidence:
+  required:
+    - base_commit_sha
+    - provider_version
+    - lockfile
+    - architecture_decisions
+    - api_contracts
+    - data_model_and_migration_plan
+    - unit_api_integration_e2e_results
+    - visual_regression_results
+    - accessibility_findings
+    - security_findings
+    - diff_digest
+    - ci_status
+acceptance:
+  - frontend_backend_contracts_consistent
+  - critical_flows_pass
+  - responsive_review_complete
+  - server_side_authorization_verified
+  - migrations_recovery_documented
+  - no_secrets
+  - ci_green
+  - no_unapproved_production_effect
