@@ -1,6 +1,7 @@
 name: Temporary Astryx Formatting
 on:
-  workflow_dispatch:
+  push:
+    branches: [feat/mcf-astryx-governed-scaffolding]
 permissions:
   contents: write
 jobs:
