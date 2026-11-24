@@ -522,13 +522,18 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         if (!data || data.filesCopied !== 1 || data.fileName !== basename(targetPath)) {
           return invalid('Astryx template copy receipt does not match the exact proposed file');
         }
-        if (
-          typeof data.outputDir === 'string' &&
-          (!isAbsolute(data.outputDir) || resolve(data.outputDir) !== dirname(destination))
-        ) {
-          return invalid(
-            'Astryx template copy outputDir does not match the disposable proposal path',
-          );
+        if (typeof data.outputDir === 'string') {
+          const reportedOutputDir = isAbsolute(data.outputDir)
+            ? resolve(data.outputDir)
+            : resolve(proposalWorkspace, data.outputDir);
+          if (
+            !isWithin(proposalWorkspace, reportedOutputDir) ||
+            reportedOutputDir !== dirname(destination)
+          ) {
+            return invalid(
+              'Astryx template copy outputDir does not match the disposable proposal path',
+            );
+          }
         }
         const normalizedContent = sourceContent.replace(/\r\n/gu, '\n');
         const lines = normalizedContent.endsWith('\n')
