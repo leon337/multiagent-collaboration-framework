@@ -1,0 +1,134 @@
+checkpoint_id: CP-GUI-NEXT-RELEASE-CONSENSUS-20260827-02
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+date: 2026-08-27
+status: WAITING_HUMAN_GATE
+human_authority: LEANDRO
+coordinator: MESTRE_SUCCESSOR
+
+source:
+  branch: ops/mcf-mestre-cross-chat-succession-001
+  finding_commit: 9dffa205304fcbd9021b23d325c40182240b9f08
+  finding_artifact: missions/MCF-MESTRE-CROSS-CHAT-SUCCESSION-001/GUI_WINDOW_CONTROL_FINDING_20260827.md
+  prior_team_review_commit: ccbeca7fd7fb9860570c2fd0dd60207adee7838e
+  resumed_review_receipt_commit: f0cb191d45d495fab5ff54e6a3add21a4a278c70
+  prior_pending_checkpoint_commit: 5bcd6d1d7ea141066c2f4975478339b28b464b61
+  emily_independent_audit_commit: 5bf587486d004ecf997cd8c9721749b7373d8580
+  team_consensus_commit: 90230092138f317b11bebbb9f573e7ceb36456c6
+
+release_state:
+  latest_stable: v1.2.0
+  next_version: NOT_DECIDED
+  protocol_rule_official: false
+  main_mutation: NONE
+  merge_authorized: false
+  tag_authorized: false
+  release_authorized: false
+
+retrospective_classification:
+  cross_chat_historical_result: PASS
+  gui_window_surface_coverage_original_run: GAP_NOT_TESTED
+  consolidated_classification: MAINTAIN_WITH_GAP
+  note: >-
+    The original run satisfied the acceptance criteria then in force. The later
+    GUI/window finding establishes an additional invariant that the original run
+    did not test. Historical validity and later-discovered coverage completeness
+    are tracked as separate dimensions.
+
+reviews:
+  leo:
+    verdict: APPROVE
+    severity: MEDIUM-HIGH
+    position_preserved: NEW_INVARIANT_NOT_COVERED
+  beatriz:
+    verdict: ADOPT_WITH_CONDITIONS
+    severity: MEDIUM
+    position_preserved: DO_NOT_INVALIDATE_HISTORICAL_PASS
+  renato:
+    verdict: ADOPT_WITH_CONDITIONS
+    severity: MEDIUM-HIGH
+    retrospective_position: MAINTAIN_WITH_GAP
+    route: oc/laguna-s-2.1-free
+    vote_valid: true
+  augusto:
+    verdict: CONDITIONAL_PASS_WITH_DOCUMENTED_INVARIANT
+    severity: MEDIUM
+    retrospective_position: MAINTAIN_WITH_GAP
+    route: oc/mimo-v2.5-free
+    vote_valid: true
+  emily:
+    verdict: PASS_WITH_CONDITIONS
+    evidence_sufficiency: SUFFICIENT
+    severity: MEDIUM
+    retrospective_position: MAINTAIN_WITH_GAP
+    reconciliation: ACCEPT
+    route: NVIDIA_NIM/minimaxai/minimax-m3
+    vote_valid: true
+    independent_audit: true
+
+team_gate:
+  team_consensus: PASS
+  consensus_scope:
+    - retrospective_classification
+    - next_release_scope_candidate
+    - mandatory_remediation_direction
+  consensus_does_not_authorize:
+    - protocol_officialization
+    - main_mutation
+    - merge
+    - tag
+    - release
+    - version_number
+
+candidate_remediations:
+  - OPEN_NEW_WINDOW_EXPLICIT
+  - OPEN_NEW_CHAT_DISTINCT_OPERATION
+  - PREDECESSOR_SURFACE_PRESERVED_THROUGH_EQUIVALENCE_AND_HANDOFF
+  - SUCCESSOR_SESSION_ID_DISTINCT
+  - SUCCESSOR_WINDOW_SURFACE_ID_DISTINCT
+  - TWO_WINDOW_VISUAL_ASSERTION
+  - EXPLICIT_PREDECESSOR_CLOSE_ACTION
+  - X11_SYNTHETIC_EVENT_NE_DEVICE_LEVEL_INPUT_EVENT
+  - DEVICE_LEVEL_INPUT_EVIDENCE
+  - MONITOR_AWARE_TILING
+  - OBSERVABLE_SHORTCUT_EXECUTION
+  - SIMULTANEOUS_COPRESENCE_REGRESSION
+  - ORIGINAL_RUN_GAP_AUDIT_TRAIL
+  - FUTURE_INDEPENDENT_REVALIDATION_FOR_GATE_CRITICAL_USE
+
+runtime_evidence:
+  local_dsh_incident:
+    cause_verified: EACCES_ON_ROOT_OWNED_SESSION_ARTIFACTS
+    root_owned_objects_before: 8
+    root_owned_objects_after: 0
+    content_modified: false
+    modes_modified: false
+    service_after_repair: active_running
+    http_3081_after_repair: 200
+  default_headless_provider_after_repair: RATE_LIMIT_429
+  emily_fallback_independent_route: NVIDIA_NIM/minimaxai/minimax-m3
+  emily_route_smoke: HTTP_200
+  secrets_exposed: false
+
+human_gate:
+  state: OPEN
+  authority: LEANDRO
+  decision_requested: >-
+    Approve or reject formalization and implementation of the agreed candidate
+    GUI/window-control rules for the next release scope. This gate does not by
+    itself authorize merge, tag, release, or a version number.
+  on_approve:
+    - formalize_candidate_protocol_changes_on_non_main_branch
+    - implement_tests_and_trace_requirements
+    - qualify_resulting_candidate
+    - return_to_leandro_before_any_merge_tag_or_release_unless_explicitly_authorized
+  on_reject:
+    - preserve_finding_and_consensus_as_audit_history
+    - no_protocol_mutation
+
+security_and_governance:
+  secrets_exposed: false
+  missing_votes_inferred: false
+  evidence_before_claim: enforced
+  human_final_authority_preserved: true
+
+next_action: AWAIT_LEANDRO_HUMAN_GATE_DECISION

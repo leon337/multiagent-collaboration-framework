@@ -1,0 +1,69 @@
+checkpoint_id: CP-GUI-WINDOW-CONTROL-FORMALIZATION-20260827-04
+mission: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+phase: PHASE-GUI-WINDOW-CONTROL-FORMALIZATION
+prf_class: B
+status: POST_MERGE_VERIFIED_PRF_INTEGRITY_PASS_AWAITING_RELEASE_DELIBERATION
+candidate:
+  branch: ops/mcf-gui-window-control-clean-candidate
+  pr: 179
+  pr_state: MERGED
+  base_main_before_merge: 5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+  candidate_head: 3a2545237ca1449b4ac2ba44d781c3e4e01be339
+  candidate_tree: 2c1e907612610376a9d7b99d729ab06001ddc59e
+  changed_files: 7
+  qualification: PASS
+  merge_commit: a98cc9140c8b001135a8ce9cc37abab69c7165a6
+  main_head_after_merge: a98cc9140c8b001135a8ce9cc37abab69c7165a6
+classification:
+  historical_cross_chat_succession: PASS
+  original_gui_window_coverage: GAP_NOT_TESTED
+  consolidated: MAINTAIN_WITH_GAP
+validation:
+  gui_qualification_push_33103543742: PASS
+  gui_qualification_pr_33103547722: PASS
+  documentation_validation_pr_33103547784: PASS
+  production_readiness_pr_33103547736: PASS
+  local_smoke_attempt_1: FAIL_HARNESS_CWD
+  local_smoke_attempt_2: PASS
+  post_merge_documentation_validation_33108628274: PASS
+  post_merge_production_readiness_33108627886: PASS
+reviews:
+  leo_isolated_project:
+    gate: PASS_WITH_NOTES
+    severity: LOW
+    open_blockers: NONE
+    recommendation: MERGE_QUALIFIED_CANDIDATE_ONLY
+  emily_isolated_project:
+    final_gate: PASS_WITH_NOTES
+    evidence_sufficiency: SUFFICIENT_FOR_PHASE_CLOSEOUT_AND_HUMAN_GATE
+    blocking_findings: NONE
+    prf_integrity: PASS
+    human_gate_readiness: READY
+    note: GAP_NOT_TESTED_MAINTAIN_WITH_GAP_REMAINS_EXPLICIT
+human_gates:
+  formalization: APPROVED
+  merge_pr_179: APPROVED_AND_CONSUMED
+  tag: NOT_AUTHORIZED
+  version: NOT_DECIDED
+  release: NOT_AUTHORIZED
+prf:
+  plan: PRESENT
+  report: PRESENT
+  validation: PRESENT
+  validation_full: PRESENT
+  smoke: PRESENT
+  checkpoint: PRESENT
+  decisions: PRESENT
+  mission_trace: PRESENT
+  readme: PRESENT
+  artifact_manifest_sha256: PRESENT_VERIFIED
+governance:
+  main_mutation: a98cc9140c8b001135a8ce9cc37abab69c7165a6
+  merge_executed: true
+  tag_authorized: false
+  release_authorized: false
+  version_number: NOT_DECIDED
+  next_human_gate: RELEASE_VERSION_DELIBERATION_NOT_YET_OPENED
+next:
+  - deliberate SemVer and release scope with the team
+  - return to LEANDRO with a separate HUMAN_GATE before any tag or release
