@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile, appendFile, stat, rename, unlink, link } fr
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { GoogleAuth } from 'google-auth-library';
+import { CLOUD_PROVISIONING_OPERATIONS, dispatchCloudProvisioning } from './cloud-provisioning.mjs';
 
 function stateDir() { return process.env.MCF_GOOGLE_BRIDGE_STATE_DIR || path.join(homedir(), '.config', 'mcf-google-bridge'); }
 const safeOps = Object.freeze([
@@ -10,7 +11,8 @@ const safeOps = Object.freeze([
   'google.gmail.search', 'google.calendar.events', 'google.cloud.projects'
 ]);
 const meteredOps = Object.freeze(['google.gemini.generate']);
-export const OPERATIONS = Object.freeze([...safeOps, ...meteredOps]);
+const provisionOps = CLOUD_PROVISIONING_OPERATIONS;
+export const OPERATIONS = Object.freeze([...safeOps, ...meteredOps, ...provisionOps]);
 const timeoutMs = 12000;
 const GOOGLE_SCOPES = Object.freeze([
   'https://www.googleapis.com/auth/drive.metadata.readonly',
@@ -31,8 +33,10 @@ function safeCount(value, fallback=10, max=25) {
   return n;
 }
 export function isAllowedOperation(op) {
-  return OPERATIONS.includes(op) &&
-    (op !== 'google.gemini.generate' || process.env.GOOGLE_BRIDGE_ALLOW_GENERATION === 'true');
+  if (!OPERATIONS.includes(op)) return false;
+  if (op === 'google.gemini.generate') return process.env.GOOGLE_BRIDGE_ALLOW_GENERATION === 'true';
+  if (provisionOps.includes(op)) return process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED === 'true';
+  return true;
 }
 export function requireAllowed(op) {
   if (!OPERATIONS.includes(op)) throw new BridgeError('UNSUPPORTED_OPERATION', 404);
@@ -46,7 +50,8 @@ export function status() {
     oauthClientConfigured: Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID),
     adcConfigured: Boolean(process.env.GOOGLE_APPLICATION_CREDENTIALS),
     operations: OPERATIONS.map(name=>({ name, enabled: isAllowedOperation(name) })),
-    binding: 'localhost-or-local-mcp', policy: 'read-only-default',
+    binding: 'localhost-or-local-mcp', cloudProvisioningEnabled: process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED === 'true',
+    policy: 'read-only-default; cloud provisioning requires explicit opt-in',
     oauthConnected: 'check with google.status only after authorization',
   };
 }
@@ -133,8 +138,11 @@ async function authorizedHeaders(kind) {
     if(!tokens) throw new BridgeError('WORKSPACE_OAUTH_REQUIRED',401);
     return {'authorization':'Bearer '+await refreshOauth(tokens)};
   }
-  if (kind==='cloud') {
-    const auth=new GoogleAuth({scopes:['https://www.googleapis.com/auth/cloud-platform.read-only']});
+  if (kind==='cloud' || kind==='cloud-write') {
+    const scope = kind === 'cloud-write'
+      ? 'https://www.googleapis.com/auth/cloud-platform'
+      : 'https://www.googleapis.com/auth/cloud-platform.read-only';
+    const auth=new GoogleAuth({scopes:[scope]});
     let token;
     try { token=await auth.getAccessToken(); } catch { throw new BridgeError('ADC_AUTH_REQUIRED',401); }
     if(!token) throw new BridgeError('ADC_AUTH_REQUIRED',401);
@@ -144,7 +152,7 @@ async function authorizedHeaders(kind) {
 }
 export async function googleRequest(url, kind, init={}) {
   const host=new URL(url).hostname;
-  if(!['generativelanguage.googleapis.com','www.googleapis.com','gmail.googleapis.com','calendar.googleapis.com','cloudresourcemanager.googleapis.com'].includes(host))
+  if(!['generativelanguage.googleapis.com','www.googleapis.com','gmail.googleapis.com','calendar.googleapis.com','cloudresourcemanager.googleapis.com','serviceusage.googleapis.com','apikeys.googleapis.com'].includes(host))
     throw new BridgeError('GOOGLE_HOST_NOT_ALLOWED',403);
   const headers={...(await authorizedHeaders(kind)), 'accept':'application/json', ...(init.body?{'content-type':'application/json'}:{})};
   let result;
@@ -203,6 +211,11 @@ async function dispatch(op,args={}) {
       const data=await googleRequest('https://cloudresourcemanager.googleapis.com/v3/projects:search?pageSize=20','cloud');
       return {projects:(data.projects||[]).map(p=>({name:p.name,projectId:p.projectId,displayName:p.displayName,state:p.state}))};
     }
+    case 'google.cloud.projects.create':
+    case 'google.cloud.services.enableMaps':
+    case 'google.cloud.apiKeys.createMaps':
+    case 'google.cloud.apiKeys.inspectMaps':
+      return dispatchCloudProvisioning(op,args,{googleRequest,BridgeError});
     default: throw new BridgeError('UNSUPPORTED_OPERATION',404);
   }
 }
