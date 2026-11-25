@@ -71,6 +71,22 @@ describe('AbuseProtectionGuard Cloud subject isolation', () => {
     }
   });
 
+  it('binds App Hub reads to the direct socket peer independently of Bearer values', async () => {
+    const { consume, guard } = harness();
+    await guard.canActivate(
+      context({
+        route: '/v1/mcf/context/cloud/apphub',
+        authorization: 'Bearer attacker-selected',
+        peer: '127.0.0.1',
+      }),
+    );
+    expect(consume).toHaveBeenCalledWith('cloud-peer:127.0.0.1', {
+      name: 'mcf-apphub-inventory-local-read',
+      limit: 10,
+      windowSeconds: 60,
+    });
+  });
+
   it('collapses a missing peer into one fail-closed bucket without changing other routes', async () => {
     const { consume, guard } = harness();
 
