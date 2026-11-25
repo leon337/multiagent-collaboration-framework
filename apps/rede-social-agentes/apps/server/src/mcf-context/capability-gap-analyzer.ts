@@ -192,7 +192,7 @@ export class McfCapabilityGapAnalyzer {
           );
           return {
             capability_id: requirement.capability_id,
-            status: 'MISSING',
+            status: 'MISSING' as const,
             gaps: [missing],
             provider_project_id: null,
             mode: null,
