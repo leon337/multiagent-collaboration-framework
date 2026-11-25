@@ -110,7 +110,9 @@ function validateGoogleCloudProvisionReceipt(
     metadata.projectId !== projectId ||
     metadata.missionId !== missionId ||
     metadata.readOnly !== false ||
-    metadata.billingMutationAllowed !== false
+    metadata.billingMutationAllowed !== false ||
+    metadata.billingEnabled !== false ||
+    metadata.billingLinked !== false
   ) {
     reject('Google Cloud provisioning receipt does not match the approved mission scope');
   }
