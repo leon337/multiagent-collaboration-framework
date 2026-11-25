@@ -1,0 +1,36 @@
+schema: mcf-phase-checkpoint/v1
+mission_id: MCF-BROWSER-BRIDGE-001
+issue_number: 455
+phase_id: PHASE-01-BROWSER-BRIDGE-DISCOVERY
+cycle: 1
+state: PLANNING_DOCUMENTED_REVIEW_PENDING
+coordinator: MESTRE
+human_final_authority: LEANDRO
+operational_gate: LEO
+base_main_sha: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
+implementation_authorized: false
+production_authorized: false
+runtime_modified: false
+browser_profiles_modified: false
+host:
+  name: leo-N43SM
+  os: linuxmint_22.1
+  brave: installed_running_1.97.57
+  chrome: deinstalled_config_files_only
+  native_messaging_host_count: 0
+  dual_browser_discovery: NOT_RUN
+risks:
+  - prompt_injection_untrusted_dom
+  - native_messaging_local_only
+  - unauthenticated_local_host_injection
+  - cross_tab_and_origin_drift
+  - sensitive_dom_screenshots
+  - lifecycle_external_effect_unknown_issue_365
+  - current_security_ci_debt_issue_427
+pending:
+  - exact_pr_sha_and_ci
+  - independent_audit
+  - leo_gate
+  - implementation_gate_if_new_phase
+next_action: Validate draft planning PR against exact SHA and obtain real independent audit.
+checkpoint_recipient: MESTRE
