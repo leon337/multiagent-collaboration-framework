@@ -14,29 +14,24 @@ function compareText(left: string, right: string): number {
 
 function matchesResource(pattern: string, resource: string): boolean {
   if (pattern === resource) return true;
-  const expression = pattern
-    .split('*')
-    .map((part) => part.replace(/[.*+?^${}()|[\\]\\\\]/gu, '\\\\function matchesResource(pattern: string, resource: string): boolean {
-  if (pattern === resource) return true;
-  if (pattern.endsWith('*')) return resource.startsWith(pattern.slice(0, -1));
-  if (pattern.startsWith('*')) return resource.endsWith(pattern.slice(1));
-  return false;
-}'))
-    .join('.*');
-  return new RegExp(`^${expression}import type {
-  McfCapabilityGap,
-  McfCapabilityGapItem,
-  McfCapabilityGapReport,
-  McfCapabilityGapRequest,
-  McfCapabilityLiveVerification,
-  McfCapabilityRegistryEntry,
-  McfCapabilityRegistrySnapshot,
-} from '@rsa/contracts';
-
-function compareText(left: string, right: string): number {
-  return left < right ? -1 : left > right ? 1 : 0;
+  const segments = pattern.split('*');
+  let cursor = 0;
+  if (!pattern.startsWith('*')) {
+    if (!resource.startsWith(segments[0] ?? '')) return false;
+    cursor = (segments[0] ?? '').length;
+  }
+  for (let index = 1; index < segments.length; index += 1) {
+    const segment = segments[index] ?? '';
+    if (segment.length === 0) continue;
+    const found = resource.indexOf(segment, cursor);
+    if (found < 0) return false;
+    if (index === segments.length - 1 && !pattern.endsWith('*') && found + segment.length !== resource.length) {
+      return false;
+    }
+    cursor = found + segment.length;
+  }
+  return true;
 }
-
 , 'u').test(resource);
 }
 
