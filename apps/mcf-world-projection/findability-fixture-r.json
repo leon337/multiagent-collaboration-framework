@@ -1,0 +1,331 @@
+{
+  "schema": "mcf-world-fixture/v1",
+  "mode": "REPRESENTATIVE_FINDABILITY_FIXTURE",
+  "missionId": "ORION-TRACE-021",
+  "sourceRevision": "fixture:world-projection-findability-r:v1",
+  "observedAt": "2026-09-26T09:05:00Z",
+  "entities": [
+    {
+      "id": "project:mcf",
+      "kind": "project",
+      "canonicalRef": "fixture:findability-r:project/mcf",
+      "label": "Project Orion",
+      "state": "ACTIVE",
+      "freshness": "FRESH",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Projeto representativo para o teste de findability."
+    },
+    {
+      "id": "mission:world",
+      "kind": "mission",
+      "canonicalRef": "fixture:findability-r:mission/world",
+      "label": "ORION-TRACE-021",
+      "state": "BLOCKED",
+      "freshness": "FRESH",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Missão bloqueada aguardando revisão humana."
+    },
+    {
+      "id": "agent:mestre",
+      "kind": "agent",
+      "canonicalRef": "fixture:findability-r:agent/mestre",
+      "label": "MESTRE",
+      "state": "ORCHESTRATING",
+      "freshness": "FRESH",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Orquestração da missão."
+    },
+    {
+      "id": "agent:leonardo",
+      "kind": "agent",
+      "canonicalRef": "fixture:findability-r:agent/leonardo",
+      "label": "Ana",
+      "state": "COMPLETED",
+      "freshness": "FRESH",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Mapeou requisitos do fluxo."
+    },
+    {
+      "id": "agent:laura",
+      "kind": "agent",
+      "canonicalRef": "fixture:findability-r:agent/laura",
+      "label": "Caio",
+      "state": "COMPLETED",
+      "freshness": "FRESH",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Desenhou o fluxo operacional."
+    },
+    {
+      "id": "agent:sofia",
+      "kind": "agent",
+      "canonicalRef": "fixture:findability-r:agent/sofia",
+      "label": "Júlia",
+      "state": "COMPLETED",
+      "freshness": "FRESH",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Produziu o artefato de arquitetura."
+    },
+    {
+      "id": "agent:emily",
+      "kind": "agent",
+      "canonicalRef": "fixture:findability-r:agent/emily",
+      "label": "Marcos",
+      "state": "COMPLETED",
+      "freshness": "FRESH",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Executou auditoria independente."
+    },
+    {
+      "id": "artifact:wpp",
+      "kind": "artifact",
+      "canonicalRef": "fixture:findability-r:artifact/wpp",
+      "label": "Ops Matrix v2",
+      "state": "CANDIDATE",
+      "freshness": "FRESH",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Artefato atual da missão."
+    },
+    {
+      "id": "gate:read-only",
+      "kind": "human_gate",
+      "canonicalRef": "fixture:findability-r:gate/read-only",
+      "label": "Review Gate",
+      "state": "HUMAN_REVIEW_REQUIRED",
+      "freshness": "FRESH",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Revisão humana é o gate atual."
+    },
+    {
+      "id": "effect:pr380",
+      "kind": "artifact",
+      "canonicalRef": "fixture:findability-r:effect/pr380",
+      "label": "Build #908",
+      "state": "OBSERVED",
+      "freshness": "FRESH",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Provider observation: Build #908 existe. Isto não é um receipt canônico."
+    },
+    {
+      "id": "evidence:rebuild",
+      "kind": "evidence",
+      "canonicalRef": "fixture:findability-r:evidence/rebuild",
+      "label": "Signature receipt",
+      "state": "PENDING",
+      "freshness": "UNKNOWN",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Confirmação de assinatura ainda não foi estabelecida."
+    },
+    {
+      "id": "gate:future",
+      "kind": "human_gate",
+      "canonicalRef": "fixture:findability-r:gate/future",
+      "label": "Runtime snapshot",
+      "state": "NOT_AUTHORIZED",
+      "freshness": "STALE",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Snapshot conhecido anteriormente, mas pode ter mudado."
+    }
+  ],
+  "relations": [
+    {
+      "type": "contains",
+      "from": "project:mcf",
+      "to": "mission:world",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:1"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "orchestrated_by",
+      "from": "mission:world",
+      "to": "agent:mestre",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:2"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "contributed_by",
+      "from": "mission:world",
+      "to": "agent:leonardo",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:3"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "contributed_by",
+      "from": "mission:world",
+      "to": "agent:laura",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:4"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "contributed_by",
+      "from": "mission:world",
+      "to": "agent:sofia",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:5"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "audited_by",
+      "from": "mission:world",
+      "to": "agent:emily",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:6"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "produced",
+      "from": "agent:sofia",
+      "to": "artifact:wpp",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:7"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "gated_by",
+      "from": "artifact:wpp",
+      "to": "gate:read-only",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:8"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "materialized_as",
+      "from": "mission:world",
+      "to": "effect:pr380",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:9"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "requires_evidence",
+      "from": "artifact:wpp",
+      "to": "evidence:rebuild",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:10"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "future_gate",
+      "from": "mission:world",
+      "to": "gate:future",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:findability-r:relation:11"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    }
+  ],
+  "events": [
+    {
+      "seq": 1,
+      "type": "MISSION_CREATED",
+      "subject": "mission:world",
+      "actor": "agent:mestre",
+      "at": "2026-09-25T23:29:24Z",
+      "summary": "Missão ORION-TRACE-021 criada.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "fixture:findability-r:event:1"
+      ]
+    },
+    {
+      "seq": 2,
+      "type": "PRODUCT",
+      "subject": "agent:leonardo",
+      "actor": "agent:leonardo",
+      "at": "2026-09-25T23:32:00Z",
+      "summary": "Ana mapeou os requisitos.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "fixture:findability-r:event:2"
+      ]
+    },
+    {
+      "seq": 3,
+      "type": "UX",
+      "subject": "agent:laura",
+      "actor": "agent:laura",
+      "at": "2026-09-25T23:33:00Z",
+      "summary": "Caio definiu o fluxo operacional.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "fixture:findability-r:event:3"
+      ]
+    },
+    {
+      "seq": 4,
+      "type": "ARCHITECTURE",
+      "subject": "artifact:wpp",
+      "actor": "agent:sofia",
+      "at": "2026-09-25T23:35:00Z",
+      "summary": "Júlia produziu Ops Matrix v2.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "fixture:findability-r:event:4"
+      ]
+    },
+    {
+      "seq": 5,
+      "type": "AUDIT_GATE",
+      "subject": "gate:read-only",
+      "actor": "agent:emily",
+      "at": "2026-09-25T23:36:00Z",
+      "summary": "Marcos marcou revisão humana como necessária.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "fixture:findability-r:event:5"
+      ]
+    },
+    {
+      "seq": 6,
+      "type": "EXTERNAL_EFFECT_CONFIRMED",
+      "subject": "effect:pr380",
+      "actor": "agent:mestre",
+      "at": "2026-09-25T23:39:04Z",
+      "summary": "Build #908 observada pelo provider.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "fixture:findability-r:event:6"
+      ]
+    }
+  ],
+  "fixtureRole": "MATERIALIZED_PROJECTION_FIXTURE",
+  "adapterLayerImplemented": false,
+  "snapshotLabel": "Findability fixture R — representative, not live telemetry",
+  "experimentFixtureId": "R"
+}

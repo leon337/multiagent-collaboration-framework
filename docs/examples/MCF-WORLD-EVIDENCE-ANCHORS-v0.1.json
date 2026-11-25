@@ -1,0 +1,20 @@
+{
+  "schema": "world-evidence-anchor-metadata/v1",
+  "metadataRevision": "anchor-fixture-v1",
+  "anchors": [
+    {
+      "anchorId": "anchor:fixture-decision",
+      "evidenceCanonicalRef": "repo-file://leon337/multiagent-collaboration-framework/docs/examples/MCF-WORLD-ANCHOR-SOURCE-v0.1.md",
+      "sourceRef": {
+        "source": "repo-file",
+        "ref": "docs/examples/MCF-WORLD-ANCHOR-SOURCE-v0.1.md"
+      },
+      "lineStart": 9,
+      "lineEnd": 11,
+      "declaredBy": {
+        "source": "fixture-anchor-metadata",
+        "ref": "docs/examples/MCF-WORLD-EVIDENCE-ANCHORS-v0.1.json#anchors/0"
+      }
+    }
+  ]
+}

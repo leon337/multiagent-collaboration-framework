@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCF World Projection Findability R</title>
+<style>
+:root{color-scheme:dark;font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#090d12;color:#eef3f8;--panel:#111923;--panel2:#151f2b;--line:#2a3848;--muted:#94a4b8}
+*{box-sizing:border-box}body{margin:0;background:#090d12;color:#eef3f8}button,input{font:inherit;color:inherit}button:focus-visible,input:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.app{max-width:1440px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;border-bottom:1px solid var(--line);padding-bottom:14px}
+.top h1{margin:3px 0;font-size:clamp(26px,3.4vw,44px)}.ey{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:800}.flag{border:1px solid #61758d;border-radius:999px;padding:5px 8px;font-size:11px}
+.meta{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);padding:10px 0;font-size:12px}
+.statebar{display:grid;grid-template-columns:1.3fr .9fr .9fr;gap:8px;margin:10px 0 14px}.statebar>div{border:1px solid var(--line);background:#101822;border-radius:10px;padding:10px}.statebar strong{display:block;font-size:16px;margin-top:3px}
+.tabs{display:flex;gap:8px;margin:8px 0 16px;overflow:auto}.tabs button{white-space:nowrap;background:transparent;border:1px solid var(--line);border-radius:999px;padding:8px 13px;cursor:pointer}.tabs button.on{background:#eef3f8;color:#091018}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px}.panel{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:16px}.inspector{position:sticky;top:14px}
+.hero{display:grid;grid-template-columns:1.3fr .7fr;gap:12px;margin-bottom:12px}.stateHero,.gateHero{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--panel2)}
+.stateHero h2{font-size:clamp(28px,4vw,48px);line-height:1;margin:8px 0 10px}.gateHero strong{font-size:20px;display:block;margin:8px 0}.why{font-size:16px;max-width:760px}
+.statusGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.statusCard{border:1px solid var(--line);border-radius:12px;padding:14px;background:#131d28;min-height:150px}.statusCard h3{margin:7px 0;font-size:19px}.statusCard p{margin:6px 0}.criticalItem{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}.criticalItem .kind{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--muted)}.criticalItem .name{font-size:23px;font-weight:900;line-height:1.05;margin:5px 0}.criticalItem .binding{font-weight:800;margin-top:7px}.criticalItem .whyState{font-size:13px;color:var(--muted);margin-top:4px}.statePill{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:3px 7px;font-size:11px;font-weight:900;letter-spacing:.06em}.statusCard.unknown{border-style:dashed}.statusCard.stale{border-style:double;border-width:3px}
+.explain{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.quick .card{border:1px solid var(--line);background:#151f2b;border-radius:10px;padding:12px}.quick strong{display:block;margin-top:5px}
+.muted{color:var(--muted)}.entity{background:transparent;border:1px solid #3a4b60;border-radius:8px;padding:8px;text-align:left;cursor:pointer}.entity small{display:block;color:var(--muted)}
+.timeline{list-style:none;padding:0}.timeline li{display:grid;grid-template-columns:160px 1fr;gap:10px;margin-bottom:10px}.timeline button{background:#17212e;border:1px solid var(--line);border-radius:9px;text-align:left;padding:10px;cursor:pointer}
+.linear{display:grid;gap:8px}.linear .row{display:grid;grid-template-columns:220px 1fr auto;gap:10px;align-items:center}.graph{position:relative;height:580px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0d141c}.graph svg{position:absolute;inset:0;width:100%;height:100%}.graph line{stroke:#45576f;stroke-width:1.5}.node{position:absolute;transform:translate(-50%,-50%);width:130px;background:#182431;border:1px solid #60758f;border-radius:9px;padding:8px;cursor:pointer;text-align:left}.node.sel{border:3px solid #fff}.node small{display:block;color:var(--muted)}
+.semantic{display:inline-flex;gap:6px;align-items:center;font-weight:800}.semantic.unknown:before{content:"?";display:grid;place-items:center;width:22px;height:22px;border:1px solid currentColor;border-radius:50%}.semantic.stale:before{content:"↻";font-size:20px}.semantic.fresh:before{content:"✓"}
+dl{display:grid;grid-template-columns:95px 1fr;gap:7px}dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}code{font-size:12px}.rels{padding-left:18px}.rels li{margin:6px 0}input{background:#0d141c;border:1px solid var(--line);border-radius:8px;padding:9px;width:min(340px,100%)}
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.legend>div{border:1px solid var(--line);border-radius:9px;padding:10px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.inspector{position:static}.hero,.statusGrid,.quick,.legend,.statebar{grid-template-columns:1fr}.linear .row{grid-template-columns:1fr}.timeline li{grid-template-columns:1fr}.graph{height:720px}.top{align-items:start;flex-direction:column}}
+</style>
+</head>
+<body><div id="app" class="app"></div>
+<script type="module">
+const data=await fetch("./findability-fixture-r.json",{cache:"no-store"}).then(r=>r.json());
+const byId=new Map(data.entities.map(e=>[e.id,e]));
+const state={view:"cockpit",selected:"mission:world",q:""};
+const ACTIVE_STATUSES=new Set(["ACTIVE","WORKING","EXECUTING","ORCHESTRATING"]);
+const app=document.querySelector("#app");
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const btn=e=>'<button class="entity" data-sel="'+esc(e.id)+'"><small>'+esc(e.kind)+'</small><strong>'+esc(e.label)+'</strong></button>';
+function rels(id){return data.relations.filter(r=>r.from===id||r.to===id)}
+function semanticFresh(e){const f=String(e.freshness||"UNKNOWN").toLowerCase();return '<span class="semantic '+f+'">'+esc(e.freshness)+'</span>'}
+function inspector(){const e=byId.get(state.selected)||byId.get("mission:world");return '<aside class="panel inspector"><div class="ey">DETALHE · SOB DEMANDA</div><h2>'+esc(e.label)+'</h2><p><strong>'+esc(e.state)+'</strong> · '+semanticFresh(e)+'</p><p>'+esc(e.summary)+'</p><dl><dt>WorldRef</dt><dd><code>'+esc(e.id)+'</code></dd><dt>Tipo</dt><dd>'+esc(e.kind)+'</dd><dt>Fonte</dt><dd><code>'+esc(e.canonicalRef)+'</code></dd><dt>Confiança</dt><dd>'+esc(e.trust)+'</dd></dl><h3>Relações</h3><ul class="rels">'+rels(e.id).map(r=>{const pid=r.from===e.id?r.to:r.from,p=byId.get(pid);return '<li><code>'+esc(r.type)+'</code> '+(p?btn(p):esc(pid))+'</li>'}).join("")+'</ul></aside>'}
+function baseline(){const q=state.q.toLowerCase(),items=data.entities.filter(e=>!q||[e.label,e.kind,e.summary,e.canonicalRef].some(v=>String(v).toLowerCase().includes(q)));return '<section class="panel"><div class="ey">REFERÊNCIA · NÃO É A HOME RECOMENDADA</div><h2>Lista linear</h2><input id="q" aria-label="Buscar entidade" placeholder="Buscar entidade…" value="'+esc(state.q)+'"><p class="muted">Usada apenas como comparação e busca detalhada.</p><div class="linear">'+items.map(e=>'<div class="row">'+btn(e)+'<span>'+esc(e.summary)+'</span><span>'+semanticFresh(e)+' · '+esc(e.state)+'</span></div>').join("")+'</div></section>'}
+function cockpit(){
+ const m=byId.get("mission:world"),last=data.events.at(-1),unknown=data.entities.filter(e=>e.freshness==="UNKNOWN"),stale=data.entities.filter(e=>e.freshness==="STALE"),gate=byId.get("gate:read-only");
+ const currentWorkers=data.entities.filter(e=>e.kind==="agent"&&ACTIVE_STATUSES.has(e.state));
+ return '<section class="panel"><div class="ey">AGORA · RESUMO OPERACIONAL</div><h2>Cockpit Findability R</h2>'+
+ '<div class="hero"><div class="stateHero"><div class="ey">ESTADO ATUAL DA MISSÃO</div><h2>'+esc(m.state)+'</h2><div class="why">'+esc(m.summary)+'</div><div class="explain">Isto é o agora. Histórico fica na Timeline.</div></div>'+
+ '<div class="gateHero"><div class="ey">GATE ATUAL / LIMITE</div><strong>'+esc(gate.state)+'</strong><p>'+esc(gate.summary)+'</p><div class="explain">Este fixture não comprova decisão humana pendente. Gate resolvido não é próxima decisão.</div></div></div>'+
+ '<div class="statusGrid"><article class="statusCard"><div class="ey">QUEM ESTÁ ATUANDO</div><h3>'+esc(currentWorkers.map(x=>x.label).join(", ")||"Ninguém ativo")+'</h3><p>'+esc(currentWorkers.map(x=>x.state).join(" · ")||"Sem agente em execução")+'</p></article>'+
+ '<article class="statusCard unknown"><div class="ey">❓ O QUE AINDA NÃO SABEMOS</div><h3>'+unknown.length+' item(ns)</h3>'+unknown.map(e=>'<div class="criticalItem"><div class="kind">'+esc(e.kind).toUpperCase()+'</div><div class="name">'+esc(e.label)+'</div><span class="statePill">UNKNOWN</span><div class="binding">Ainda não confirmada</div><div class="whyState">'+esc(e.summary)+'</div></div>').join("")+'<div class="explain">UNKNOWN = ainda não conseguimos confirmar.</div></article>'+
+ '<article class="statusCard stale"><div class="ey">↻ O QUE PODE TER MUDADO</div><h3>'+stale.length+' item(ns)</h3>'+stale.map(e=>'<div class="criticalItem"><div class="kind">'+esc(e.kind).toUpperCase()+'</div><div class="name">'+esc(e.label)+'</div><span class="statePill">STALE</span><div class="binding">Precisa ser revalidado</div><div class="whyState">'+esc(e.summary)+'</div></div>').join("")+'<div class="explain">STALE = já sabíamos, mas pode estar desatualizado.</div></article></div>'+
+ '<div class="quick"><div class="card"><div class="ey">ÚLTIMO ACONTECIMENTO</div><strong>'+esc(last.summary)+'</strong><span class="muted">'+esc(last.type)+'</span></div><div class="card"><div class="ey">MISSÃO</div><strong>'+esc(m.label)+'</strong><span class="muted">'+esc(m.canonicalRef)+'</span></div><div class="card"><div class="ey">LEITURA RECOMENDADA</div><strong>Comece aqui. Abra Timeline ou Relações apenas quando precisar.</strong></div></div>'+
+ '<div class="legend"><div><strong>FRESH</strong><p class="muted">Informação atualmente confirmada.</p></div><div><strong>UNKNOWN</strong><p class="muted">Ainda não sabemos / não confirmamos.</p></div><div><strong>STALE</strong><p class="muted">Já soubemos, mas pode ter mudado.</p></div></div></section>';
+}
+function timeline(){return '<section class="panel"><div class="ey">HISTÓRICO · QUANDO VOCÊ PRECISAR</div><h2>Timeline</h2><p class="muted">Mostra ordem temporal do fixture. Não implica causalidade.</p><ol class="timeline">'+data.events.map(ev=>'<li><time>'+esc(ev.at)+'</time><button data-sel="'+esc(ev.subject)+'"><small>'+esc(ev.type)+'</small><strong>'+esc(byId.get(ev.subject)?.label||ev.subject)+'</strong><p>'+esc(ev.summary)+'</p></button></li>').join("")+'</ol></section>'}
+const pos={"project:mcf":[12,12],"mission:world":[42,12],"agent:mestre":[72,10],"agent:leonardo":[15,42],"agent:laura":[35,47],"agent:sofia":[58,44],"agent:emily":[80,42],"artifact:wpp":[58,72],"gate:read-only":[81,72],"effect:pr380":[90,15],"evidence:rebuild":[28,90],"gate:future":[86,91]};
+function graph(){const lines=data.relations.map(r=>{const a=pos[r.from],b=pos[r.to];return '<line x1="'+a[0]+'%" y1="'+a[1]+'%" x2="'+b[0]+'%" y2="'+b[1]+'%"></line>'}).join("");const nodes=data.entities.map(e=>{const p=pos[e.id]||[50,50];return '<button class="node '+(e.id===state.selected?'sel':'')+'" data-sel="'+esc(e.id)+'" style="left:'+p[0]+'%;top:'+p[1]+'%"><small>'+esc(e.kind)+'</small><strong>'+esc(e.label)+'</strong><small>'+esc(e.freshness)+'</small></button>'}).join("");return '<section class="panel"><div class="ey">RELAÇÕES · QUANDO A PERGUNTA FOR “COMO ISSO SE LIGA?”</div><h2>Grafo focado</h2><p class="muted">Não use o grafo para descobrir o estado atual. Use-o para entender relações.</p><div class="graph"><svg aria-hidden="true">'+lines+'</svg>'+nodes+'</div></section>'}
+function surface(){return state.view==="baseline"?baseline():state.view==="timeline"?timeline():state.view==="graph"?graph():cockpit()}
+function render(){
+ const m=byId.get("mission:world"),u=data.entities.filter(e=>e.freshness==="UNKNOWN").length,st=data.entities.filter(e=>e.freshness==="STALE").length;
+ app.innerHTML='<header class="top"><div><div class="ey">MCF-WORLD-PROJECTION-001</div><h1>World Projection Findability R</h1></div><div class="flag">REPRESENTATIVE FIXTURE · READ-ONLY</div></header>'+
+ '<div class="meta"><span>'+esc(data.sourceRevision)+'</span><span>observado: '+esc(data.observedAt)+'</span><span>'+data.entities.length+' entidades</span></div>'+
+ '<div class="statebar"><div><div class="ey">MISSÃO · AGORA</div><strong>'+esc(m.state)+'</strong></div><div><div class="ey">AINDA NÃO SABEMOS</div><strong>'+u+' UNKNOWN</strong></div><div><div class="ey">PODE TER MUDADO</div><strong>'+st+' STALE</strong></div></div>'+
+ '<nav class="tabs">'+[["cockpit","Agora"],["timeline","Timeline"],["graph","Relações"],["baseline","Lista / busca"]].map(v=>'<button class="'+(state.view===v[0]?'on':'')+'" data-view="'+v[0]+'">'+v[1]+'</button>').join("")+'</nav><main class="layout">'+surface()+inspector()+'</main>';
+ app.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{state.view=b.dataset.view;render()});
+ app.querySelectorAll("[data-sel]").forEach(b=>b.onclick=()=>{state.selected=b.dataset.sel;render()});
+ const q=app.querySelector("#q");if(q)q.oninput=e=>{state.q=e.target.value;render();requestAnimationFrame(()=>{const n=app.querySelector("#q");n?.focus();n?.setSelectionRange(state.q.length,state.q.length)})};
+}
+render();
+</script></body></html>

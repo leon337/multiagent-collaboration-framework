@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCF World Projection — Open Interface Findability Test</title>
+<style>
+:root{color-scheme:dark;font:16px system-ui;background:#080d12;color:#eef3f8}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:1180px;margin:auto;padding:16px}
+.head,.questionBar,.answerPanel,.result{background:#111923;border:1px solid #2a3848;border-radius:14px;padding:16px;margin-bottom:12px}
+.head h1{margin:.2rem 0}.muted{color:#94a4b8}.questionBar{position:sticky;top:0;z-index:5;box-shadow:0 6px 20px #0008}
+.questionBar h2{margin:6px 0 0;font-size:20px}.answerPanel h3{margin:0 0 10px}.answers{display:flex;gap:7px;flex-wrap:wrap}.answers label{border:1px solid #40536a;border-radius:9px;padding:8px 10px;cursor:pointer}
+button{font:inherit;color:inherit;background:#1a2734;border:1px solid #42556c;border-radius:9px;padding:9px 13px;cursor:pointer}
+iframe{width:100%;height:720px;border:1px solid #2a3848;border-radius:14px;background:#090d12}.result pre{white-space:pre-wrap;overflow:auto;background:#080d12;padding:12px;border-radius:9px}
+@media(max-width:720px){.wrap{padding:8px}.questionBar{top:0;padding:10px 12px}.questionBar h2{font-size:17px;line-height:1.2}.answers{display:grid;grid-template-columns:1fr}.answerPanel{margin-top:10px}iframe{height:68vh;min-height:480px}}
+</style></head>
+<body><div class="wrap">
+<div class="head"><div class="muted">OPEN-INTERFACE FINDABILITY TEST · FIXTURE R</div><h1>Encontre usando a interface</h1><p>A interface fica disponível o tempo todo. Você pode navegar, consultar e voltar. Não memorize: use a ferramenta.</p><button id="start">Iniciar teste</button><button id="last">Ver último resultado salvo</button></div>
+<div id="question"></div>
+<iframe id="world" src="./findability-world.html" title="World Projection Findability R"></iframe>
+<div id="answerArea"></div>
+</div>
+<script>
+const tasks=[
+ {q:"Qual é o estado atual da missão?",a:"BLOCKED",opts:["BLOCKED","WORKING","COMPLETED","UNKNOWN"]},
+ {q:"Qual item ainda não foi confirmado?",a:"Signature receipt",opts:["Build #908","Signature receipt","Ops Matrix v2","Review Gate"]},
+ {q:"Qual item pode ter mudado e precisa ser revalidado?",a:"Runtime snapshot",opts:["Runtime snapshot","Ops Matrix v2","Build #908","Review Gate"]},
+ {q:"Qual artefato foi observado pelo provider, mas NÃO é receipt canônico?",a:"Build #908",opts:["Build #908","Signature receipt","Ops Matrix v2","Review Gate"]},
+ {q:"Quem executou a auditoria independente?",a:"Marcos",opts:["Ana","Caio","Júlia","Marcos"]}
+];
+const questionBox=document.querySelector("#question"),answerArea=document.querySelector("#answerArea"),frame=document.querySelector("#world");
+let run=null,currentEvents=[];
+const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function activeSurface(){
+ try{
+   const b=frame.contentDocument.querySelector(".tabs button.on");
+   return b?b.textContent.trim():"UNKNOWN";
+ }catch{return "UNKNOWN";}
+}
+function attachInstrumentation(){
+ try{
+   const doc=frame.contentDocument;
+   if(!doc||doc.__mcfInstrumented)return;
+   doc.__mcfInstrumented=true;
+   doc.addEventListener("click",e=>{
+     if(!run)return;
+     const b=e.target.closest("button");
+     if(!b)return;
+     currentEvents.push({
+       atMs:Math.round(performance.now()-run.taskStarted),
+       kind:b.dataset.view?"view":b.dataset.sel?"entity":"button",
+       value:b.dataset.view||b.dataset.sel||(b.textContent||"").trim().slice(0,80)
+     });
+   },true);
+ }catch{}
+}
+frame.addEventListener("load",()=>{attachInstrumentation();setTimeout(attachInstrumentation,100)});
+
+function renderTask(){
+ const t=tasks[run.i];currentEvents=[];
+ questionBox.className="questionBar";
+ questionBox.innerHTML='<div class="muted">Tarefa '+(run.i+1)+'/'+tasks.length+'</div><h2>'+esc(t.q)+'</h2>';
+ answerArea.className="answerPanel";
+ answerArea.innerHTML='<h3>Responder</h3><div class="answers">'+
+ t.opts.map(o=>'<label><input type="radio" name="a" value="'+esc(o)+'"> '+esc(o)+'</label>').join("")+
+ '</div><p><button id="answer">Confirmar resposta</button></p>';
+ run.taskStarted=performance.now();
+ document.querySelector("#answer").onclick=answer;
+}
+function answer(){
+ const p=document.querySelector('input[name=a]:checked');if(!p)return;
+ const t=tasks[run.i],elapsed=Math.round(performance.now()-run.taskStarted);
+ run.rows.push({
+  task:run.i+1,question:t.q,answer:p.value,expected:t.a,correct:p.value===t.a,
+  elapsedMs:elapsed,activeSurfaceAtAnswer:activeSurface(),interactionCount:currentEvents.length,
+  interactions:[...currentEvents]
+ });
+ run.i++;
+ if(run.i===tasks.length)return finish();
+ renderTask();
+}
+function finish(){
+ const o={schema:"mcf-world-open-interface-findability/v1",prototype:"v0.3-findability-r",fixtureId:"R",
+  startedAt:run.startedAt,finishedAt:new Date().toISOString(),
+  correct:run.rows.filter(x=>x.correct).length,total:tasks.length,totalMs:run.rows.reduce((a,b)=>a+b.elapsedMs,0),
+  results:run.rows,claimsBoundary:"Open-interface findability/task-completion evidence only; not Product GO."};
+ localStorage.setItem("mcf-world-findability-r-result",JSON.stringify(o));
+ show(o);
+}
+function show(o){
+ questionBox.className="result";
+ questionBox.innerHTML='<h2>Resultado salvo</h2><p><strong>'+o.correct+'/'+o.total+'</strong> corretas · '+(o.totalMs/1000).toFixed(1)+' s de tarefas.</p><p class="muted">A interface permaneceu disponível durante toda a execução.</p><pre>'+esc(JSON.stringify(o,null,2))+'</pre>';
+ answerArea.innerHTML='';
+}
+document.querySelector("#start").onclick=()=>{run={i:0,rows:[],startedAt:new Date().toISOString(),taskStarted:0};renderTask()};
+document.querySelector("#last").onclick=()=>{const x=localStorage.getItem("mcf-world-findability-r-result");if(x)show(JSON.parse(x));else questionBox.innerHTML='<div class="result">Nenhum resultado salvo ainda.</div>'};
+</script></body></html>
