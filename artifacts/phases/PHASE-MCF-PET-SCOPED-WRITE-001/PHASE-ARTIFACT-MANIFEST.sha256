@@ -1,0 +1,12 @@
+7b914fa877f869a12df73f87deb4e3416e03f57cacd96eea2ef5766046f1ab7f  tools/mcf-pet-gemini-live/README.md
+56c65ba06ed52d411c84d963eaac18beb7471f5a133cca5a20ad86762f62c5df  tools/mcf-pet-gemini-live/install_local.py
+a1e60e2fc5f82163f8ff530a755c246ca2c5816d4f264ef080f72cd53edbd011  tools/mcf-pet-gemini-live/backend/pet_scoped_write.py
+a27545de145456f1e2fa0e2662d2ab0cb9391a24d801f66e02212a484972409a  tools/mcf-pet-gemini-live/tests/test_pet_scoped_write.py
+76e70cd20d7c3897b31b84a6c6d6f016fa5e15372ca537565943999e01cb8924  tools/mcf-pet-gemini-live/tests/test_installer.py
+11faa728bd9d6c7f77de4420e5c03e0bcedba610dc3684cd078811a7f39fa25f  context/capabilities/mcf-pet-scoped-write-lab.yaml
+3d96662b340b661c6717eaa339f8b604c6745a4e5fbfedbd267ae96ca57c3241  artifacts/phases/PHASE-MCF-PET-SCOPED-WRITE-001/PHASE-PLAN.md
+e7038370fdb41e1b600474d9aaf834b0d960fd8f10495d9cedc441a9b3cd8caf  artifacts/phases/PHASE-MCF-PET-SCOPED-WRITE-001/PHASE-DECISIONS.md
+a71f1302bda4fb7e0c8fbe649c377780832094888afc0566cd576bd422696355  artifacts/phases/PHASE-MCF-PET-SCOPED-WRITE-001/PHASE-VALIDATION.txt
+d221faf53e217d5512016a3fef0c0fda35df0dac4984d2504b16025f1a1d8494  artifacts/phases/PHASE-MCF-PET-SCOPED-WRITE-001/PHASE-CHECKPOINT.yaml
+97b50d2d32b4f4b9b23d4921ac48429b2c0b9e70b15d8b537c0bf923ea06857a  artifacts/phases/PHASE-MCF-PET-SCOPED-WRITE-001/PHASE-CHECKLIST.md
+c864d7301959a5ebefb5ce29495c57cfb9874de84ccf7c707dfb7a6bbf316f02  artifacts/phases/PHASE-MCF-PET-SCOPED-WRITE-001/README.md

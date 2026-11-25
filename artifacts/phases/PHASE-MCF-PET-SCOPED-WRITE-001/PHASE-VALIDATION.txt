@@ -1,0 +1,33 @@
+SCOPED_WRITE LAB VALIDATION
+PASS: 112 Python tests including SCOPED_WRITE and installer preview route.
+PASS: permission engine absent, wrong issuer, wrong gate, wrong resource and
+      expired grants are blocked.
+PASS: private temporary notes created only with synthetic trusted verdict;
+      receipt/idempotency and rollback SHA256 verified.
+PASS: retry idempotency, simulated DB write failure cleanup, rollback
+      tombstone cleanup, symlink/path traversal and modified-file rejection.
+PASS: Playwright browser.tabs.read adapter only with mock authenticated verdict;
+      no clicks, navigation or form submission.
+PASS: preview-only HTTP route has no calls to create_note/rollback_note.
+BLOCKED: real write capability because canonical PermissionEngine is not
+      connected. This is a deliberate security boundary.
+NOT EXECUTED: any production filesystem writes, MissionRuntime actions,
+      public actions, or real browser changes.
+POST-INSTALL HOST E2E:
+PASS: deployed code and Hub service active; /healthz /api/v1/pet returned 200.
+PASS: anonymous preview HTTP403, invalid CSRF HTTP403.
+PASS: authorized preview HTTP200 with executed=false, write_enabled=false,
+      runtime_connected=false, human_gate=false.
+PASS: unknown execute:true field HTTP400 INVALID_SCHEMA.
+PASS: path traversal ../escape HTTP400 INVALID_NOTE_ID.
+PASS: no file created in SCOPED_WRITE notes tree for preview test mission.
+LOCAL BACKUP:
+  /home/leo/.local/share/mcf-service-hub/backups/mcf-pet-live-20261117T015755Z/
+P2 CODEX REVIEW REMEDIATION (PR #537):
+PASS: bootstrap shared ROOT explicitly as private 0700 under umask 022.
+PASS: creation and rollback use verified directory FDs with O_DIRECTORY,
+      O_NOFOLLOW and dir_fd-relative note operations.
+PASS: rollback through symlinked mission directory denied; an external file
+      with matching content stays unchanged.
+PASS: creation after symlink substitution denied with zero external writes.
+PASS: tests cover default sibling notes/database layout and directory swaps.
