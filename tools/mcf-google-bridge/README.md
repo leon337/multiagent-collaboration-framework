@@ -80,3 +80,42 @@ Adicionar SOMENTE no computador, quando autorizado: GOOGLE_OAUTH_CLIENT_ID, opci
 Nao inserir credenciais neste repositorio, nos prompts, nos logs ou no config.toml do Codex.
 O registro do Codex usa node --env-file-if-exists=... e le o mesmo bridge.env da unidade systemd.
 Com a conta OAuth Desktop configurada, executar npm run auth no computador e concluir o consentimento no navegador local. Nao executar automaticamente a autorizacao.
+
+
+## Provisionamento Google Cloud governado (experimental, desabilitado por padrão)
+
+O Bridge agora contém operações de escrita limitadas, destinadas exclusivamente ao adapter do runtime MCF. Elas permanecem desabilitadas até que ambos os flags estejam explicitamente habilitados no runtime/serviço:
+
+- MCF Bridge: MCF_GOOGLE_CLOUD_PROVISION_ENABLED=true
+- MCF runtime: MCF_GOOGLE_CLOUD_PROVISION_RUNTIME_ENABLED=true
+
+Operações HTTP locais allowlisted:
+- google.cloud.projects.create — cria um projeto com projectId determinístico e labels mcf_managed/mcf_mission; se já existir, só reutiliza quando as labels confirmarem propriedade e missão.
+- google.cloud.services.enableMaps — habilita somente apikeys.googleapis.com, geocoding-backend.googleapis.com e routes.googleapis.com.
+- google.cloud.apiKeys.createMaps — cria/reconcilia a chave mcf-obras-maps-v1 com API restrictions exatas para Geocoding e Routes; a string é gravada localmente e nunca retornada.
+- google.cloud.apiKeys.inspectMaps — consulta metadados e confirma se o secret local está presente com permissões seguras.
+
+O Bridge não implementa billing link, billing account creation, IAM administration, service-account key export, delete, deploy ou public exposure. O projeto é criado sem vincular faturamento. A chave criada restringe os serviços de API; a restrição de IP de aplicação permanece uma etapa de hardening quando o IP de saída do ambiente estiver estabilizado.
+
+### Autorização Cloud ADC
+
+As operações de escrita usam Google Application Default Credentials com escopo cloud-platform. A sessão de OAuth do Workspace (Drive/Gmail/Calendar) não é reutilizada para Cloud. O operador precisa configurar ADC com consentimento explícito e permissões IAM mínimas, por exemplo:
+
+```bash
+gcloud auth application-default login --scopes=https://www.googleapis.com/auth/cloud-platform
+```
+
+Esse comando requer Google Cloud CLI instalado e autenticação interativa. O Bridge não automatiza consentimento, não aceita Termos de Serviço e não altera billing.
+
+### Segredo Maps local
+
+Após criar/reconciliar a chave, o Bridge grava o valor diretamente em:
+`~/.config/agente-logistica-obras/google_maps_api_key`
+
+O diretório é 0700 e o arquivo 0600. O receipt contém apenas alias lógico e SHA-256 fingerprint. Se já existir um arquivo com valor diferente, a operação falha fechada; não sobrescreve silenciosamente.
+
+### Fronteira de execução
+
+As operações mutáveis **não são registradas no MCP stdio genérico**, pois esse transporte não prova identidade do agente ou autorização da missão. Elas só são expostas pelo endpoint HTTP loopback e consumidas pelo adapter MCF, que exige PermissionEngine + Human Delegation Firewall, projeto aprovado, identidade Cloud verificada, aceite de termos e autorização humana/sensível/escopo. O adapter transforma timeouts e resultados pendentes em receipt PARTIAL/UNKNOWN para reconciliação, nunca em retry cego.
+
+O endpoint permanece em 127.0.0.1:8755 e exige Bearer local. Nunca publique essa porta. Mesmo assim, processos locais do mesmo usuário podem acessar o token; use apenas em host confiável e mantenha o usuário do serviço protegido.
