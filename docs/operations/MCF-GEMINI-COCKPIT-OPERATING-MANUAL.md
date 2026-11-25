@@ -126,3 +126,13 @@ A conexão GitHub do Gemini Web **não concede escrita Git/commit/PR**. Para pub
 5. Avaliar replay e segurança ao persistir estado de envio incerto entre reinícios do Cockpit; preservar isolamento de instâncias e dados.
 
 **Repositório e documentação fonte de verdade:** https://github.com/leon337/multiagent-collaboration-framework
+
+## Complemento — colaboração textual pelo DSH (observação de 2026-11-22)
+
+Existe um **fluxo laboratorial separado do Dual Browser Cockpit** no qual o MESTRE do DSH usa um broker MCP restrito para conversar com uma única thread autenticada do Gemini Web. Consultar o documento [MCF-DSH-GEMINI-BROKER-LAB](MCF-DSH-GEMINI-BROKER-LAB.md) antes dessa modalidade. Este complemento **não altera** os procedimentos documentados acima para leitura de arquivos pelo painel Workspace do Cockpit.
+
+**Observação verificada no laboratório:** chamadas reais de `gemini_session_status`, `gemini_send_message`, `gemini_receipt` e `gemini_read_reply` pelo MESTRE; mensagem editorial enviada uma vez, resposta posteriormente recuperada e recibo `REPLY_COMPLETE`. A suíte local anterior à revisão editorial reportou 34/34 testes aprovados, dos quais o cenário de resposta cruzada usou transporte simulado. Não houve teste de integração ao MissionRuntime central do MCF.
+
+**Tratamento de falhas:** o preflight rejeitou uma solicitação editorial por filtro de escopo textual; não se deve confundir essa rejeição com perda de sessão. Um novo pedido compatível com o escopo foi submetido sob ID diferente, mantendo rastreabilidade e sem repetir envios incertos. A ponte de navegador também exibiu `BRIDGE_BUSY` sob concorrência de capturas, portanto disponibilidade contínua não está homologada.
+
+**Governança:** qualquer futura habilidade executável requer contrato e revisão próprios, PermissionEngine/HUMAN_GATE do MCF e validação independente. Não publicar contas, URLs de conversa, históricos privados, informações de autenticação ou screenshots autenticados. Documentação de experimento não ativa ferramenta nem concede permissão.

@@ -61,6 +61,15 @@ A skill continua documental/experimental. O adapter central do MCF permanece rea
 
 **Natureza desta alteração:** conhecimento operacional versionado e recuperável; não registra uma nova skill executável, não amplia permissões, não faz merge, deploy ou automação de acesso Gemini por si só.
 
+
+## Colaboração DSH ↔ Gemini Web via broker de conversa (laboratório, 2026-11-22)
+
+Quando uma missão exigir que o **MESTRE do DSH** dialogue por ferramentas MCP com uma sessão Gemini Web já autorizada, ler antes de operar: [MCF-DSH-GEMINI-BROKER-LAB](docs/operations/MCF-DSH-GEMINI-BROKER-LAB.md). Este fluxo é **distinto** do painel Gemini no Dual Browser Cockpit e não pressupõe compartilhamento de contas, perfis ou permissões.
+
+**Evidência local:** o servidor MCP experimental `mcfgemini` permitiu envio único, consulta de recibo e recuperação da resposta pelo DSH, chegando a `REPLY_COMPLETE` na rodada editorial R3B; a suíte local anterior teve 34/34 testes aprovados. Isso prova um laboratório delimitado, **não** adapter executável no MissionRuntime central, aprovação de ações sensíveis, estabilidade de produção nem integração permanente do PermissionEngine.
+
+**Invariantes:** destino e identidade devem ser conferidos na própria operação; reservar antes de enviar; correlacionar resposta ao pedido; **nunca reenviar cegamente após timeout**. Em incerteza, reconciliar somente por leitura e preservar HUMAN_GATE de LEANDRO. Não expor URL de conversa, e-mail, transcrição privada ou dados de autenticação no repositório. O Brave embutido permanece visualmente somente leitura. Classificar resultados reais, testes simulados e propostas separadamente.
+
 ## Backup portátil de projetos para Google Drive (discovery, 2026-11-17)
 
 **Gatilho de execução do MESTRE:** quando LEANDRO disser **"enviar o projeto para o google drive"** (ou pedido equivalente de cópia restaurável), **não pedir explicação do procedimento**. Descobrir a skill `MCF-PROJECT-DRIVE-BACKUP` no catálogo `skills/registry.yaml`; ler [skill operacional](skills/backup/mcf-project-drive-backup/SKILL.md), [contrato](skills/backup/MCF-PROJECT-DRIVE-BACKUP.yaml) e [manual](docs/operations/MCF-PROJECT-DRIVE-BACKUP.md). Resolver automaticamente o projeto do contexto/URL/host autorizado, não assumir que toda referência a "projeto" aponta para o MCF. A conta de Drive da preferência operacional vigente deve ser resolvida e verificada em um conector autorizado, sem publicar seu e-mail no repositório.
