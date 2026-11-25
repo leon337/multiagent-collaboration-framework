@@ -1,0 +1,46 @@
+name: MCF Trust Boundary Research
+
+on:
+  pull_request:
+    paths:
+      - "apps/rede-social-agentes/apps/server/src/mcf-runtime/trust-boundary-research.test.ts"
+      - "artifacts/phases/PHASE-MCF-TRUST-BOUNDARY-RESEARCH-001/**"
+      - ".github/workflows/mcf-trust-boundary-research.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trust-boundary-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/rede-social-agentes
+
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies from lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Check research-file formatting
+        run: pnpm exec prettier --check apps/server/src/mcf-runtime/trust-boundary-research.test.ts
+
+      - name: Run trust-boundary experiments only
+        run: >-
+          pnpm --filter @rsa/server exec vitest run
+          src/mcf-runtime/trust-boundary-research.test.ts
+          --reporter=verbose
