@@ -267,7 +267,8 @@ async function storeMapsKey(keyString, BridgeError) {
       !metadata.isFile() ||
       metadata.isSymbolicLink() ||
       metadata.uid !== process.getuid?.() ||
-      (metadata.mode & 0o077) !== 0
+      (metadata.mode & 0o077) !== 0 ||
+      metadata.size < 1 || metadata.size > 16384
     ) {
       throw new BridgeError('INSECURE_SECRET_FILE', 500);
     }
@@ -371,6 +372,7 @@ async function createMapsKey(googleRequest, args, BridgeError) {
   return {
     status: 'SUCCEEDED',
     projectId,
+    projectNumber: String(project.projectNumber),
     keyResourceName: current.name,
     keyId: KEY_ID,
     apiRestrictions: ['geocoding-backend.googleapis.com', 'routes.googleapis.com'],
@@ -391,7 +393,8 @@ async function mapsKeyStored(BridgeError) {
       !metadata.isFile() ||
       metadata.isSymbolicLink() ||
       metadata.uid !== process.getuid?.() ||
-      (metadata.mode & 0o077) !== 0
+      (metadata.mode & 0o077) !== 0 ||
+      metadata.size < 1 || metadata.size > 16384
     ) {
       throw new BridgeError('INSECURE_SECRET_FILE', 500);
     }
@@ -412,6 +415,7 @@ async function inspectMapsKey(googleRequest, args, BridgeError) {
   return {
     status: 'SUCCEEDED',
     projectId,
+    projectNumber: String(project.projectNumber),
     keyResourceName: current.name,
     keyId: KEY_ID,
     displayName: current.key.displayName,
