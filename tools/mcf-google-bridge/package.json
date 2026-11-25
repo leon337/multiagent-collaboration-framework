@@ -9,7 +9,7 @@
     "serve": "node --env-file-if-exists=/home/leo/.config/mcf-google-bridge/bridge.env src/http.mjs",
     "auth": "node --env-file-if-exists=/home/leo/.config/mcf-google-bridge/bridge.env src/oauth.mjs",
     "test": "node --test test/*.test.mjs",
-    "check": "node --check src/bridge.mjs && node --check src/index.mjs && node --check src/http.mjs && node --check src/oauth.mjs"
+    "check": "node --check src/bridge.mjs && node --check src/index.mjs && node --check src/http.mjs && node --check src/oauth.mjs && node --check src/cloud-provisioning.mjs"
   },
   "engines": {
     "node": ">=22"
