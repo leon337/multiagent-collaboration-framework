@@ -1,6 +1,6 @@
-73d4c4941ff8ca660af3ef85484058da23924496171a4c8686b12982840df176  ../../../ops/gemini-live/checklist-sync.mjs
-f95ed791addb566cca9bca45d0e1138dceab5aeb739f3847778f4f6c1ed04d71  ../../../ops/gemini-live/checklist-sync.test.mjs
-9101ec3891edbfeeaaf7388fc220f4a0cc9d2acd81f89513953fb6a8634034b1  ../../../.github/workflows/mcf-gemini-live-f0-checklist.yml
+ff79c9ac1feaf0713fae18be6c3030f1e1cff82b20de16dad649165b71e53853  ../../../ops/gemini-live/checklist-sync.mjs
+4cdbc5fa61e9b703d9b0ec878beee269facc060bfa625b02fa6cf03766e53936  ../../../ops/gemini-live/checklist-sync.test.mjs
+566d95b4026e11ed48b2219bec8629e4f7bf7cf6c25368900aa46d1acfa4caca  ../../../.github/workflows/mcf-gemini-live-f0-checklist.yml
 ae142b60107a008797d2ca5f32c9f1df728c54b211cf42e6540512772edc8849  PHASE-00-REMEDIATION-CYCLE3.md
 ae78a85991a8cdc22eb4ce86f7ac0fd5806e61b9c1547208b42937fbf4c763b2  PHASE-00-CROSS-PHASE-HANDOFF.md
 628a96b34aef380eeec3be040eed533fa9868f21fc7e31dbbda4b3e06dacd047  PHASE-00-EXTERNAL-REVIEW-CYCLE3-CODEX.md

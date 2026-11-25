@@ -1,0 +1,105 @@
+{
+  "schema": "mcf-f0-strong-e2e/v1",
+  "time": "2026-11-17T17:52:13.222Z",
+  "virtual_media": true,
+  "origin": "http://127.0.0.1:18371/",
+  "cases": [
+    {
+      "id": "REAL_MODEL_25_SETUP",
+      "status": "PASS",
+      "detail": "setupComplete"
+    },
+    {
+      "id": "PCM_AUDIO_FRAMES_SENT",
+      "status": "PASS",
+      "detail": "{\"frames\":18,\"bytes\":49140}"
+    },
+    {
+      "id": "JPEG_CAMERA_FRAMES_SENT",
+      "status": "PASS",
+      "detail": "frames=1"
+    },
+    {
+      "id": "JPEG_SCREEN_FRAMES_SENT",
+      "status": "PASS",
+      "detail": "frames=1 (mock display capture)"
+    },
+    {
+      "id": "IMAGE_FILE_MULTIMODAL_SENT",
+      "status": "PASS",
+      "detail": "image_messages=1"
+    },
+    {
+      "id": "REAL_TEXT_SENT",
+      "status": "PASS",
+      "detail": "text_messages=2"
+    },
+    {
+      "id": "TOOL_GET_CURRENT_TIME_REAL",
+      "status": "PASS",
+      "detail": "tool_calls=1 tool_responses=1"
+    },
+    {
+      "id": "AUDIO_PCM_RESPONSE_REAL",
+      "status": "PASS",
+      "detail": "audio_chunks=62 bytes=163200"
+    },
+    {
+      "id": "MODEL_TURN_AND_TRANSCRIPT",
+      "status": "PASS",
+      "detail": "turns=1 transcript_chunks=6"
+    },
+    {
+      "id": "TRACKS_ACTUALLY_ENDED",
+      "status": "PASS",
+      "detail": "{\"cleared\":true,\"tracks\":[\"ended\",\"ended\",\"ended\"]}"
+    },
+    {
+      "id": "LIVE_3_8_SETUP",
+      "status": "PASS",
+      "detail": "setupComplete"
+    },
+    {
+      "id": "LIVE_EXTENDED_SETUP",
+      "status": "PASS",
+      "detail": "setupComplete"
+    },
+    {
+      "id": "NO_BROWSER_RUNTIME_EXCEPTIONS",
+      "status": "PASS",
+      "detail": "count=0"
+    }
+  ],
+  "counters": {
+    "sentAudioFrames": 18,
+    "sentAudioBytes": 49140,
+    "sentCameraFrames": 1,
+    "sentScreenFrames": 1,
+    "sentImageMessages": 1,
+    "sentTextMessages": 2,
+    "sentFunctionResponses": 1,
+    "modelAudioChunks": 62,
+    "modelAudioBytes": 163200,
+    "inputTranscriptions": 0,
+    "outputTranscriptions": 6,
+    "turnComplete": 1,
+    "toolCallNames": [
+      "get_current_time"
+    ],
+    "toolResponseNames": [
+      "get_current_time"
+    ],
+    "socketConnected": true
+  },
+  "browser_errors": [],
+  "source_sha256": {
+    "server.js": "75b7965efa8e0affafaf4990e26c6d40ec5af34c6cfc93e2f3e17df3ed4f020b",
+    "public/app.js": "c8c3af4469037709b8e4293451ee0603996ca9754bfc685a6d65283800b37804",
+    "public/index.html": "b60201074c56f0531f62553eb12d52995121c73f44659aa1cfd110058b4593ab",
+    "public/style.css": "d5953009b4a5cb2f6492818d042f2a56f3ef02a66aef351ebacd25a2cfa3aa24",
+    "public/telemetry.js": "9ab89b220fc70c23db1082fc31e6ae780282af588d24a2c7791cabf0d9862bf7"
+  },
+  "test_script_sha256": "70a0396c079de7994208559d671d76e293b8165215844ba7778dc90a2e483c4d",
+  "passed": 13,
+  "failed": 0
+}
