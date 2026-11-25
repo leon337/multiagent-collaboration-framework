@@ -1,0 +1,40 @@
+PHASE-01 VALIDATION FULL — checkpoint 4
+
+1. Current runtime
+- Agent Bridge /health returned HTTP 200.
+- Authenticated /v1/discovery returned schema mcf-dual-browser-runtime-discovery/v1.
+- Instance principal, profile audit-architecture, paused=false, busy=false, queueDepth=0.
+- Panes are ChatGPT title "Teste de integração MCF" and Claude title "MCF Dual Browser Cockpit evolution - Claude", both loading=false.
+- Emily/chat and Sofia/workspace remain UNBOUND with handshakeVerified=false; /v1/missions returned zero missions.
+
+2. Helper configuration
+- Source main.mjs chooses MCF_AGENT_SESSION_TOOL if set; otherwise ~/.local/bin/mcf-agent-session.
+- runAgentSessionTool executes the selected helper with env copied from process.env.
+- The helper uses MCF_REPO_PATH if set; otherwise DEFAULT_REPO = ~/Documentos/GitHub/multiagent-collaboration-framework.
+- The default path does not exist on this host; MCF_REPO_PATH and MCF_AGENT_SESSION_TOOL were absent from the observed process environment.
+- A shell-local environment change cannot update the already-running process environment. No runtime environment or helper file was modified.
+
+3. Identity state and safety
+- agent-identities.json is absent in the protected userData directory for instance principal.
+- Source profile audit-architecture statically maps chat to Emily and workspace to Sofia; this alone is not a verified binding.
+- The runtime requires canonical agent match, contract digest, session/trace identifiers, confirmed bootstrap delivery and exact MCF_AGENT_READY handshake.
+- POST /v1/agents/bootstrap invokes runtime bootstrap. When there is no reusable session, the runtime can open a fresh conversation and send an identity envelope. Startup policy explicitly defers automatic bootstrap for restored conversations.
+- Therefore the mutating bootstrap endpoint was not called. Existing restored panes were not interacted with.
+
+4. Canonical checkout
+- The local clean clone previously identified is main@47315de9; its local origin/main ref was from September and its remote uses SSH alias github-mcf-leo.
+- A read-only attempt to query that SSH remote failed host-key verification. No SSH known_hosts, Git config, refs or working trees were changed by this attempt.
+- No alternative host-authenticated path to the current GitHub main SHA has been validated. No clone was selected for runtime configuration.
+
+5. Adapter
+- dual_browser_ai socket file exists but has no active listener; authorized discovery previously returned connection refused.
+- No service was started and no socket or process state was changed.
+
+6. DSH transport smoke (separate proof)
+- Session session-a2c17442-8f20-4a59-84f5-74074a1d6688, cwd=/tmp, preset mcf.
+- Marker MCF_CUIDABEM_002_DSH_E2E_ACK_20261011 appears in assistant/message; turn/end completed; running=false; zero tool calls/results.
+- This validates the DSH transport in its test session, not identity binding of the Dual Browser panes.
+
+7. State and next action
+- Mission remains DIAGNOSTICO_PARCIAL / AGUARDANDO_DEPENDENCIA_EXTERNA.
+- Obtain host-verified authenticated access to canonical main, validate a fresh isolated checkout, then plan helper configuration and pane preservation before any mutating operation.
