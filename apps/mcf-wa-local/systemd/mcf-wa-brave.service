@@ -1,0 +1,20 @@
+[Unit]
+Description=MCF dedicated WhatsApp Web Brave (owner self-chat only)
+After=graphical-session.target
+Wants=graphical-session.target
+ConditionPathExists=/opt/brave.com/brave/brave
+
+[Service]
+Type=simple
+WorkingDirectory=/home/leo/Projetos/mcf-whatsapp-dsh-20261025/apps/mcf-wa-local
+ExecStart=/usr/bin/bash /home/leo/Projetos/mcf-whatsapp-dsh-20261025/apps/mcf-wa-local/scripts/ensure-browser.sh
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/leo/.Xauthority
+UMask=0077
+StandardOutput=null
+StandardError=null
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=default.target
