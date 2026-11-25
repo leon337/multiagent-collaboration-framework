@@ -1,0 +1,18 @@
+schema: mcf-chatgpt-session-gateway-phase-checkpoint/v1
+mission_id: MCF-CHATGPT-SESSION-GATEWAY-MVP-001
+phase: PHASE-01
+state: EXPERIMENTAL_IMPLEMENTED_UNVERIFIED_LIVE_E2E
+branch: feat/chatgpt-session-gateway-mvp
+base_sha: ea6d6dc31531846d448b85abba01c4553ec132f0
+tests:
+  total: 12
+  passed: 12
+  failed: 0
+live_discovery:
+  notebook: PASS
+  notebook-team2: PASS
+live_dispatch: NOT_RUN_AGENT_IDENTITY_NOT_READY
+live_agent_session_open: NOT_RUN_AVOID_UNGOVERNED_MUTATION
+production_authorized: false
+merge_authorized: false
+next_action: 'Reconciliar agente READY via rota autorizada e executar missão descartável end-to-end, depois revisar integração ao runtime canônico.'

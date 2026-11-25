@@ -1,0 +1,8 @@
+SMOKE — REAL LOCAL, READ-ONLY
+Command: node src/cli.mjs discover --instance notebook
+Result: PASS, expected discovery schema; agents RECONCILING -> no dispatch.
+
+Command: node src/cli.mjs discover --instance notebook-team2
+Result: PASS, expected discovery schema; agents ERROR/RECONCILING -> no dispatch.
+
+End-to-end mission receipt smoke: NOT_APPLICABLE in current session. No READY identity; gate is intentional.

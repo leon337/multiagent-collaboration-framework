@@ -1,0 +1,21 @@
+Test categories:
+1. Reject instance traversal.
+2. Reject non-loopback descriptor.
+3. Verify discovery identity and token secrecy.
+4. Reject instance mismatch.
+5. Reject paused runtime with zero mutations.
+6. Reject unverified agent identity with zero mutations.
+7. Single dispatch, queued != completed.
+8. Uncertain POST outcome, zero automatic retry.
+9. Completed result with receipt SHA.
+10. Reject missing receipt SHA.
+11. Reject draft-only independent session.
+12. Require conversation confirmation for READY session.
+
+Tool-observed local discovery for notebook:
+instance=notebook, agentProfile=audit-architecture, paused=false, busy=false, queueDepth=0, paneAgents=[Emily:RECONCILING, Sofia:RECONCILING], warningCount=1.
+
+Tool-observed local discovery for notebook-team2:
+instance=notebook-team2, agentProfile=debug-engineering, paused=false, busy=false, queueDepth=0, paneAgents=[Patrícia:ERROR, Rafael:RECONCILING], warningCount=0.
+
+No real account messages sent. No secrets or private session content recorded.
