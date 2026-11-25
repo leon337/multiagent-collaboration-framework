@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { lstat, readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -231,7 +232,7 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
         redirect: 'error',
       });
     } catch {
-      return this.unknownReceipt(request, '00000000-0000-4000-8000-000000000000', 'TRANSPORT_OUTCOME_UNKNOWN');
+      return this.unknownReceipt(request, randomUUID(), 'TRANSPORT_OUTCOME_UNKNOWN');
     }
 
     if (!response.ok) {
