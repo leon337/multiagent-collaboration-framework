@@ -1,0 +1,42 @@
+PHASE-IBV3-PHYSICAL-BOOK-ENGINE — TECHNICAL VALIDATION
+Date: 2026-09-14
+Mission: MCF-20260914-INTERACTIVE-BOOK-V3
+Branch: mission/interactive-book-v3-physical-engine-20260914
+
+STATIC VALIDATION EXECUTED
+- Local candidate JavaScript extracted from the self-contained HTML and parsed with Node `new Function()`.
+- Result: JS_PARSE_OK.
+- HTML parsed with BeautifulSoup.
+- Result: HTML_PARSE_OK.
+- Duplicate IDs: none detected.
+- Required IDs verified: stage, book, turnLayer, nextGrip, prevGrip, sound, volume, bookmark, chapters.
+- GitHub source file created successfully at experimentos/interactive-book-v3/index.html.
+
+IMPLEMENTED SURFACES
+- CSS 3D page curl segmented into 18 slices.
+- Pointer-event drag from left/right edge zones.
+- 35% commit threshold; below threshold returns page.
+- Dynamic shadow and depth during curl.
+- Corner-lift hover feedback.
+- Read/remaining page stack thickness.
+- Front cover and back cover states.
+- Web Audio paper rustle controlled by drag speed/progress.
+- Mute and volume control.
+- Selectable page text outside gesture zones.
+- Buttons and keyboard navigation.
+- Chapter navigation with fan transition.
+- Bookmark, progress and local resume via localStorage.
+- Font-size and contrast controls.
+- prefers-reduced-motion handling.
+- Source/version page.
+- Desktop two-page and mobile one-page rendering paths.
+
+NOT YET CLAIMED AS VALIDATED
+- visual fidelity of curl in the ChatGPT inline renderer;
+- pointer capture behavior in the ChatGPT sandbox;
+- audible quality/permission behavior in the ChatGPT sandbox;
+- desktop content clipping under actual renderer metrics;
+- mobile content clipping under actual renderer metrics;
+- end-to-end perceptual UX.
+
+Those items remain pending until the prototype is rendered inline and LEANDRO interacts with it.
