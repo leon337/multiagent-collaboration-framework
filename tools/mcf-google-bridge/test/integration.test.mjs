@@ -20,6 +20,8 @@ test('MCP handshake, tools/list and status tool',async()=>{
     assert.equal(listing.tools.length,7);
     assert.ok(listing.tools.some(x=>x.name==='google.status'));
     assert.ok(!listing.tools.some(x=>x.name==='google.gmail.send'));
+    assert.ok(!listing.tools.some(x=>x.name==='google.cloud.projects.create'));
+    assert.ok(!listing.tools.some(x=>x.name==='google.cloud.apiKeys.createMaps'));
     const result=await client.callTool({name:'google.status',arguments:{}});
     assert.equal(result.isError,undefined);
     assert.equal(JSON.parse(result.content[0].text).operation,'google.status');
@@ -55,6 +57,13 @@ test('HTTP loopback authenticates and denies unsupported actions',async()=>{
     const denied=await call('google.gmail.send',{to:'nobody@example.org'});
     assert.equal(denied.status,404);
     assert.equal((await denied.json()).error,'UNSUPPORTED_OPERATION');
+    const previousProvisionFlag=process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED;
+    delete process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED;
+    const cloudWrite=await call('google.cloud.projects.create',{projectId:'mcf-obras-logistica-v1',missionId:'agente-logistica-v1',displayName:'MCF Agente Logistica Obras V1'});
+    assert.equal(cloudWrite.status,403);
+    assert.equal((await cloudWrite.json()).error,'OPERATION_DISABLED');
+    if(previousProvisionFlag===undefined) delete process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED;
+    else process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED=previousProvisionFlag;
   } finally {
     await new Promise(r=>server.close(r));
     await rm(isolatedDir,{recursive:true,force:true});

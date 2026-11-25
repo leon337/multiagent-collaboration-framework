@@ -25,6 +25,10 @@ import { ExternalActionLedger } from './external-action-ledger.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
 import { GoogleBridgeReadAdapter } from './google-bridge-read.adapter.js';
+import { GoogleCloudProvisionAdapter } from './google-cloud-provision.adapter.js';
+import { McfContextAnalysisAdapter } from './mcf-context-analysis.adapter.js';
+import { McfContextModule } from '../mcf-context/mcf-context.module.js';
+import { McfCapabilityRegistryApiService } from '../mcf-context/mcf-capability-registry-api.service.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { GitHubExecutionIdentityRegistry } from './github-execution-identity.js';
 import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
@@ -71,7 +75,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
 }
 
 @Module({
-  imports: [DatabaseModule, IdentityModule],
+  imports: [DatabaseModule, IdentityModule, McfContextModule],
   controllers: [
     MissionRuntimeController,
     MissionObservabilityController,
@@ -151,6 +155,21 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
       inject: [EvidenceValidator],
     },
     {
+      provide: GoogleCloudProvisionAdapter,
+      useFactory: (evidence: EvidenceValidator) =>
+        new GoogleCloudProvisionAdapter(
+          evidence,
+          process.env.MCF_GOOGLE_CLOUD_PROVISION_RUNTIME_ENABLED === 'true',
+        ),
+      inject: [EvidenceValidator],
+    },
+    {
+      provide: McfContextAnalysisAdapter,
+      useFactory: (evidence: EvidenceValidator, capabilities: McfCapabilityRegistryApiService) =>
+        new McfContextAnalysisAdapter(evidence, capabilities),
+      inject: [EvidenceValidator, McfCapabilityRegistryApiService],
+    },
+    {
       provide: GitHubBranchPullRequestAdapter,
       useFactory: (evidence: EvidenceValidator, identities: GitHubExecutionIdentityRegistry) =>
         new GitHubBranchPullRequestAdapter(evidence, undefined, identities),
@@ -201,6 +220,8 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         codeBuddy: CodeBuddyExecutorAdapter,
         localAgentTeam: LocalAgentTeamAdapter,
         googleBridgeRead: GoogleBridgeReadAdapter,
+        googleCloudProvision: GoogleCloudProvisionAdapter,
+        contextAnalysis: McfContextAnalysisAdapter,
         astryxCli: AstryxCliDiscoveryAdapter,
       ) =>
         new AdapterRegistry([
@@ -211,6 +232,8 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           codeBuddy,
           localAgentTeam,
           googleBridgeRead,
+          googleCloudProvision,
+          contextAnalysis,
           astryxCli,
         ]),
       inject: [
@@ -221,6 +244,8 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         CodeBuddyExecutorAdapter,
         LocalAgentTeamAdapter,
         GoogleBridgeReadAdapter,
+        GoogleCloudProvisionAdapter,
+        McfContextAnalysisAdapter,
         AstryxCliDiscoveryAdapter,
       ],
     },

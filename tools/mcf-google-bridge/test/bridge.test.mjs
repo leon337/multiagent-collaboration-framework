@@ -10,8 +10,16 @@ test('PKCE has correct S256 shape', ()=>{
   assert.notEqual(a.challenge,b.challenge);
 });
 test('only explicit operations are registered',()=>{
-  assert.equal(OPERATIONS.length,7);
+  assert.equal(OPERATIONS.length,11);
   assert.equal(isAllowedOperation('google.gmail.search'),true);
+  const previous = process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED;
+  delete process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED;
+  assert.equal(isAllowedOperation('google.cloud.projects.create'),false);
+  assert.throws(() => requireAllowed('google.cloud.projects.create'), e => e.code === 'OPERATION_DISABLED');
+  process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED = 'true';
+  assert.equal(isAllowedOperation('google.cloud.projects.create'),true);
+  if (previous === undefined) delete process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED;
+  else process.env.MCF_GOOGLE_CLOUD_PROVISION_ENABLED = previous;
   assert.equal(isAllowedOperation('google.gmail.send'),false);
   assert.throws(()=>requireAllowed('google.gmail.send'),e=>e instanceof BridgeError&&e.code==='UNSUPPORTED_OPERATION');
 });

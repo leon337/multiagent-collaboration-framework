@@ -22,6 +22,7 @@ const capabilitySources = [
   'context/capabilities/cognitive-ledger-memory-read.yaml',
   'context/capabilities/mcf-capability-registry-read.yaml',
   'context/capabilities/mcf-context-recovery-read.yaml',
+  'context/capabilities/mcf-google-cloud-provision.yaml',
 ];
 
 function configuration(includeCapabilities = true): string {
@@ -86,6 +87,72 @@ describe('McfCapabilityRegistryApiService', () => {
     expect(mcf.entries.map(({ capability }) => capability.id)).toEqual(
       expect.arrayContaining(['cloud.context.local.read', 'cognitive-ledger.memory.read']),
     );
+  });
+
+
+  it('analyzes capability gaps using current live verification evidence', () => {
+    const service = McfCapabilityRegistryApiService.fromEnvironment(
+      { MCF_CONTEXT_CONFIG_JSON: configuration() },
+      () => '2026-11-25T18:00:00.000Z',
+    );
+    const report = service.analyzeGaps({
+      project_id: 'triview-workspace-linux',
+      requirements: [{
+        capability_id: 'mcf.context.recovery.read',
+        required_operations: ['context.recover'],
+        environment: 'lab',
+        resource: 'context/projects/triview-workspace-linux.yaml',
+        mode: 'READ_ONLY',
+      }],
+      live_verifications: [{
+        capability_id: 'mcf.context.recovery.read',
+        connection_state: 'CONNECTED',
+        runtime_state: 'ACTIVE',
+        verification_state: 'VERIFIED',
+        observed_at: '2026-11-25T17:59:30.000Z',
+        source_ref: 'receipt://mcf-context/live-check-001',
+      }],
+    });
+    expect(report).toMatchObject({
+      project_id: 'triview-workspace-linux',
+      read_only: true,
+      evidence_only: true,
+      summary: { total: 1, ready: 1, missing: 0, blocked: 0, needs_verification: 0 },
+      requirements: [{ capability_id: 'mcf.context.recovery.read', status: 'READY' }],
+    });
+  });
+
+  it('builds a plan-only bootstrap graph from the capability gap report', () => {
+    const service = McfCapabilityRegistryApiService.fromEnvironment(
+      { MCF_CONTEXT_CONFIG_JSON: configuration() },
+      () => '2026-11-25T18:00:00.000Z',
+    );
+    const plan = service.buildBootstrapPlan({
+      project_id: 'triview-workspace-linux',
+      project_name: 'TriView Workspace',
+      objective: 'Prepare a governed local project workflow',
+      environment: 'lab',
+      requirements: [{ capability_id: 'mcf.context.recovery.read' }],
+      production_requested: false,
+    });
+    expect(plan).toMatchObject({
+      project_id: 'triview-workspace-linux',
+      read_only: true,
+      evidence_only: true,
+      execution_started: false,
+    });
+    expect(plan.tasks.find((task) => task.id === 'bootstrap-05-provisioning')?.status).toBe('SKIPPED');
+    expect(plan.tasks.find((task) => task.id === 'bootstrap-11-deployment')?.status).toBe('SKIPPED');
+  });
+
+  it('keeps analysis disabled when capability sources are not configured', () => {
+    const service = McfCapabilityRegistryApiService.fromEnvironment({
+      MCF_CONTEXT_CONFIG_JSON: configuration(false),
+    });
+    expect(() => service.analyzeGaps({
+      project_id: 'triview-workspace-linux',
+      requirements: [{ capability_id: 'mcf.context.recovery.read' }],
+    })).toThrow(McfCapabilityRegistryUnavailableError);
   });
 
   it('stays disabled unless explicit capability sources are configured', () => {

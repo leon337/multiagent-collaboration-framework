@@ -1,0 +1,52 @@
+schema_version: 1
+
+capability:
+  id: mcf.google.cloud.provision
+  provider_project_id: multiagent-collaboration-framework
+  consumer_project_ids:
+    - cloud-infrastructure
+  mode: BOUNDED_WRITE
+
+contract:
+  protocol: MCF_GOOGLE_CLOUD_PROVISION_HTTP_V1
+  allowed_operations:
+    - project.create
+    - maps.enable
+    - maps.key.create
+    - maps.key.inspect
+  prohibited_operations:
+    - billing.link
+    - billing.unlink
+    - billing.account.create
+    - iam.admin
+    - project.delete
+    - service_account.key.create
+    - deploy
+    - public_exposure
+
+scope:
+  environments:
+    - dev
+    - lab
+  resources:
+    - google-cloud/projects/*
+    - google-cloud/api-keys/*
+
+governance:
+  authorization_state: NOT_AUTHORIZED
+  required_gate: HUMAN_GATE_CLOUD_ACCOUNT_AND_TERMS
+  expiration: null
+
+lifecycle:
+  implementation_state: DECLARED
+  connection_state: DISCONNECTED
+  runtime_state: INACTIVE
+  verification_state: NOT_VERIFIED
+  last_verified_at: null
+
+evidence:
+  - source_ref: repo://leon337/multiagent-collaboration-framework/docs/operations/MCF-GOOGLE-CLOUD-PROVISIONING.md
+    source_revision: fd125519084abfb3ee9951b0d7087aa8b34e3cf8
+    observed_at: "2026-11-25T18:02:38.000Z"
+
+freshness: LIVE_REQUIRED

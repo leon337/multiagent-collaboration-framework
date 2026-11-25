@@ -92,6 +92,251 @@ function reject(message: string): never {
   throw new McfEvidenceRejectedError(message);
 }
 
+function validateGoogleCloudProvisionReceipt(
+  receipt: McfToolReceipt,
+  expected: McfToolRequest,
+  inputs: Readonly<Record<string, unknown>>,
+): void {
+  const metadata = receipt.metadata;
+  const operation = canonicalizeToolValue(expected.operation);
+  const projectId = inputs.projectId;
+  const missionId = inputs.missionId;
+  if (
+    receipt.status !== 'SUCCEEDED' ||
+    receipt.provider !== 'mcf-google-bridge' ||
+    receipt.resource !== 'google-cloud' ||
+    !receipt.externalId ||
+    typeof projectId !== 'string' ||
+    metadata.projectId !== projectId ||
+    metadata.missionId !== missionId ||
+    metadata.readOnly !== false ||
+    metadata.billingMutationAllowed !== false ||
+    metadata.billingEnabled !== false ||
+    metadata.billingLinked !== false
+  ) {
+    reject('Google Cloud provisioning receipt does not match the approved mission scope');
+  }
+  for (const forbidden of ['keyString', 'apiKey', 'secret', 'accessToken', 'token']) {
+    if (Object.hasOwn(metadata, forbidden)) {
+      reject('Google Cloud provisioning receipt must not contain secret material');
+    }
+  }
+
+  if (operation === 'create-project') {
+    if (
+      metadata.billingLinked !== false ||
+      typeof metadata.projectNumber !== 'string' ||
+      !/^\d{6,20}$/u.test(metadata.projectNumber) ||
+      metadata.projectState !== 'ACTIVE'
+    ) {
+      reject('Google Cloud project receipt requires an active project with billing unlinked');
+    }
+    return;
+  }
+
+  if (operation === 'enable-maps-apis') {
+    const services = metadata.enabledServices;
+    const expectedServices = [
+      'apikeys.googleapis.com',
+      'geocoding-backend.googleapis.com',
+      'routes.googleapis.com',
+    ];
+    if (
+      !Array.isArray(services) ||
+      services.length !== expectedServices.length ||
+      services.some((service) => typeof service !== 'string') ||
+      [...services].sort().join('|') !== expectedServices.sort().join('|')
+    ) {
+      reject('Google Cloud Maps API enablement receipt has an unexpected service allowlist');
+    }
+    return;
+  }
+
+  if (operation === 'create-maps-key' || operation === 'inspect-maps-key') {
+    const restrictions = metadata.apiRestrictions;
+    const expectedRestrictions = [
+      'geocoding-backend.googleapis.com',
+      'routes.googleapis.com',
+    ];
+    if (
+      metadata.keyId !== 'mcf-obras-maps-v1' ||
+      typeof metadata.projectNumber !== 'string' ||
+      !/^\d{6,20}$/u.test(metadata.projectNumber) ||
+      metadata.keyResourceName !== `projects/${metadata.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
+      !Array.isArray(restrictions) ||
+      restrictions.length !== expectedRestrictions.length ||
+      restrictions.some((service) => typeof service !== 'string') ||
+      [...restrictions].sort().join('|') !== expectedRestrictions.sort().join('|') ||
+      metadata.secretStored !== true
+    ) {
+      reject('Google Cloud Maps key receipt does not prove exact API restrictions and local secret storage');
+    }
+    if (
+      operation === 'create-maps-key' &&
+      (metadata.secretAlias !== 'agente-logistica-obras/google_maps_api_key' ||
+        typeof metadata.secretFingerprint !== 'string' ||
+        !/^[a-f0-9]{64}$/u.test(metadata.secretFingerprint))
+    ) {
+      reject('Google Cloud Maps key creation receipt requires a safe secret alias and fingerprint');
+    }
+    return;
+  }
+
+  reject('Google Cloud provisioning evidence operation is not allowlisted');
+}
+
+function validateMcfCapabilityGapReport(
+  reportValue: unknown,
+  projectId: unknown,
+): void {
+  const report = requireRecord(reportValue, 'MCF capability analysis requires a gap report');
+  if (
+    report.schema_version !== 1 ||
+    report.read_only !== true ||
+    report.evidence_only !== true ||
+    report.project_id !== projectId ||
+    typeof report.analyzed_at !== 'string' ||
+    !Number.isFinite(Date.parse(report.analyzed_at))
+  ) reject('MCF capability gap report must be read-only and bound to the requested project');
+  const summary = requireRecord(report.summary, 'MCF capability gap report requires summary');
+  const requirements = requireArray(report, 'requirements', 'MCF capability gap report requires requirements');
+  const total = requireNonNegativeInteger(summary, 'total', 'MCF gap summary requires total');
+  const ready = requireNonNegativeInteger(summary, 'ready', 'MCF gap summary requires ready');
+  const missing = requireNonNegativeInteger(summary, 'missing', 'MCF gap summary requires missing');
+  const blocked = requireNonNegativeInteger(summary, 'blocked', 'MCF gap summary requires blocked');
+  const needsVerification = requireNonNegativeInteger(
+    summary,
+    'needs_verification',
+    'MCF gap summary requires needs_verification',
+  );
+  if (total !== requirements.length || ready + missing + blocked + needsVerification !== total) {
+    reject('MCF capability gap summary counts must match requirements');
+  }
+  const ids = new Set<string>();
+  for (const itemValue of requirements) {
+    const item = requireRecord(itemValue, 'MCF capability gap entries must be objects');
+    const capabilityId = recordString(item, 'capability_id', 'MCF gap entry requires capability_id');
+    if (ids.has(capabilityId)) reject('MCF capability gap report contains duplicate capability ids');
+    ids.add(capabilityId);
+    if (!['READY', 'MISSING', 'BLOCKED', 'NEEDS_VERIFICATION'].includes(String(item.status))) {
+      reject('MCF capability gap entry has an unsupported status');
+    }
+    requireArray(item, 'gaps', 'MCF capability gap entry requires gaps');
+    requireArray(item, 'allowed_operations', 'MCF capability gap entry requires allowed_operations');
+    requireArray(item, 'source_refs', 'MCF capability gap entry requires source_refs');
+  }
+}
+
+function validateMcfCapabilityGapReceipt(
+  receipt: McfToolReceipt,
+  expected: McfToolRequest,
+  inputs: Readonly<Record<string, unknown>>,
+): void {
+  if (
+    receipt.status !== 'SUCCEEDED' ||
+    receipt.provider !== 'mcf-context' ||
+    receipt.resource !== 'capability-registry' ||
+    canonicalizeToolValue(expected.operation) !== 'analyze-gaps' ||
+    !receipt.externalId ||
+    receipt.metadata.readOnly !== true ||
+    receipt.metadata.evidenceOnly !== true ||
+    receipt.metadata.executionStarted !== false ||
+    receipt.metadata.externalActionsStarted !== false
+  ) reject('MCF capability gap receipt must prove a read-only analysis with no external actions');
+  if (receipt.metadata.projectId !== inputs.project_id) {
+    reject('MCF capability gap receipt project must match the current request');
+  }
+  validateMcfCapabilityGapReport(receipt.metadata.gapReport, inputs.project_id);
+}
+
+function validateMcfProjectBootstrapReceipt(
+  receipt: McfToolReceipt,
+  expected: McfToolRequest,
+  inputs: Readonly<Record<string, unknown>>,
+): void {
+  if (
+    receipt.status !== 'SUCCEEDED' ||
+    receipt.provider !== 'mcf-context' ||
+    receipt.resource !== 'project-bootstrap' ||
+    canonicalizeToolValue(expected.operation) !== 'build-plan' ||
+    !receipt.externalId ||
+    receipt.metadata.readOnly !== true ||
+    receipt.metadata.evidenceOnly !== true ||
+    receipt.metadata.executionStarted !== false ||
+    receipt.metadata.externalActionsStarted !== false
+  ) reject('MCF project bootstrap receipt must prove plan-only execution');
+  const plan = requireRecord(receipt.metadata.bootstrapPlan, 'MCF bootstrap receipt requires bootstrapPlan');
+  if (
+    plan.schema_version !== 1 ||
+    plan.read_only !== true ||
+    plan.evidence_only !== true ||
+    plan.execution_started !== false ||
+    plan.project_id !== inputs.project_id ||
+    plan.project_name !== inputs.project_name ||
+    plan.objective !== inputs.objective
+  ) reject('MCF bootstrap plan must be read-only and bound to the current project request');
+  validateMcfCapabilityGapReport(plan.capability_gaps, inputs.project_id);
+
+  const tasks = requireArray(plan, 'tasks', 'MCF bootstrap plan requires tasks');
+  const taskIds = new Set<string>();
+  const taskById = new Map<string, Record<string, unknown>>();
+  for (const taskValue of tasks) {
+    const taskItem = requireRecord(taskValue, 'MCF bootstrap tasks must be objects');
+    const id = recordString(taskItem, 'id', 'MCF bootstrap task requires id');
+    if (taskIds.has(id)) reject('MCF bootstrap plan contains duplicate task ids');
+    taskIds.add(id);
+    taskById.set(id, taskItem);
+    recordString(taskItem, 'skill_id', 'MCF bootstrap task requires skill_id');
+    requireArray(taskItem, 'depends_on', 'MCF bootstrap task requires depends_on');
+    requireNonEmptyArray(taskItem, 'exit_criteria', 'MCF bootstrap task requires exit_criteria');
+    recordString(taskItem, 'rationale', 'MCF bootstrap task requires rationale');
+    if (!['READY', 'BLOCKED', 'SKIPPED'].includes(String(taskItem.status))) {
+      reject('MCF bootstrap task has unsupported status');
+    }
+  }
+  for (const taskItem of taskById.values()) {
+    const dependencies = requireArray(taskItem, 'depends_on', 'MCF bootstrap task requires dependencies');
+    if (dependencies.some((dependency) => typeof dependency !== 'string' || !taskIds.has(dependency))) {
+      reject('MCF bootstrap task dependency references an unknown task');
+    }
+  }
+
+  const summary = requireRecord(plan.summary, 'MCF bootstrap plan requires summary');
+  if (
+    requireNonNegativeInteger(summary, 'total_tasks', 'MCF bootstrap summary requires total_tasks') !== tasks.length ||
+    requireNonNegativeInteger(summary, 'ready', 'MCF bootstrap summary requires ready') !==
+      tasks.filter((item) => (item as Record<string, unknown>).status === 'READY').length ||
+    requireNonNegativeInteger(summary, 'blocked', 'MCF bootstrap summary requires blocked') !==
+      tasks.filter((item) => (item as Record<string, unknown>).status === 'BLOCKED').length ||
+    requireNonNegativeInteger(summary, 'skipped', 'MCF bootstrap summary requires skipped') !==
+      tasks.filter((item) => (item as Record<string, unknown>).status === 'SKIPPED').length ||
+    requireNonNegativeInteger(summary, 'requires_human_gates', 'MCF bootstrap summary requires requires_human_gates') !==
+      tasks.filter((item) => (item as Record<string, unknown>).gate !== null).length
+  ) reject('MCF bootstrap plan summary counts do not match its task graph');
+
+  const provisioning = taskById.get('bootstrap-05-provisioning');
+  if (provisioning && inputs.external_actions_authorized !== true && provisioning.status !== 'SKIPPED') {
+    if (provisioning.status !== 'BLOCKED' || provisioning.gate !== 'EXTERNAL_ACTION_AUTHORIZATION') {
+      reject('MCF bootstrap plan must block external provisioning without explicit authorization');
+    }
+  }
+  if (provisioning && inputs.external_actions_authorized === true && inputs.paid_services_required === true && inputs.allow_paid_services !== true) {
+    if (provisioning.status !== 'BLOCKED' || provisioning.gate !== 'BILLING_APPROVAL_REQUIRED') {
+      reject('MCF bootstrap plan must block paid services without billing approval');
+    }
+  }
+
+  const deployment = taskById.get('bootstrap-11-deployment');
+  if (deployment && inputs.production_requested !== true && deployment.status !== 'SKIPPED') {
+    reject('MCF bootstrap plan must skip deployment when production is not requested');
+  }
+  if (deployment && inputs.production_requested === true && inputs.production_authorized !== true) {
+    if (deployment.status !== 'BLOCKED' || deployment.gate !== 'PRODUCTION_AUTHORIZATION') {
+      reject('MCF bootstrap plan must gate production deployment');
+    }
+  }
+}
+
 function requireString(metadata: Record<string, unknown>, key: string, message: string): string {
   const value = metadata[key];
   if (typeof value !== 'string' || value.trim().length === 0) {
@@ -1826,6 +2071,15 @@ export class EvidenceValidator {
         break;
       case 'MCF-ASTRYX-COMPONENT-DISCOVERY':
         validateAstryxDiscoveryReceipt(receipt, expected, inputs);
+        break;
+      case 'MCF-GOOGLE-CLOUD-PROVISION':
+        validateGoogleCloudProvisionReceipt(receipt, expected, inputs ?? {});
+        break;
+      case 'MCF-CAPABILITY-GAP-ANALYSIS':
+        validateMcfCapabilityGapReceipt(receipt, expected, inputs ?? {});
+        break;
+      case 'MCF-PROJECT-BOOTSTRAP':
+        validateMcfProjectBootstrapReceipt(receipt, expected, inputs ?? {});
         break;
       default:
         break;

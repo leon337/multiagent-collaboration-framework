@@ -1,9 +1,18 @@
 import { join } from 'node:path';
 
 import { Injectable } from '@nestjs/common';
-import type { McfCapabilityRegistrySnapshot, McfProjectRegistryEntry } from '@rsa/contracts';
+import type {
+  McfCapabilityGapReport,
+  McfCapabilityGapRequest,
+  McfCapabilityRegistrySnapshot,
+  McfProjectBootstrapPlan,
+  McfProjectBootstrapRequest,
+  McfProjectRegistryEntry,
+} from '@rsa/contracts';
 
 import { CapabilityRegistryLoader } from './capability-registry.loader.js';
+import { McfCapabilityGapAnalyzer } from './capability-gap-analyzer.js';
+import { McfProjectBootstrapPlanner } from './project-bootstrap-planner.js';
 import { ContextSchemaValidator } from './context-schema.validator.js';
 import { loadMcfContextApiConfiguration } from './mcf-context-recovery-api.service.js';
 import { RepositoryContextSource } from './repository-context-source.js';
@@ -20,6 +29,8 @@ export class McfCapabilityRegistryApiService {
   constructor(
     private readonly loader: CapabilityRegistryLoader | null,
     private readonly now: () => string = () => new Date().toISOString(),
+    private readonly gapAnalyzer: McfCapabilityGapAnalyzer = new McfCapabilityGapAnalyzer(),
+    private readonly bootstrapPlanner: McfProjectBootstrapPlanner = new McfProjectBootstrapPlanner(),
   ) {}
 
   static fromEnvironment(
@@ -65,6 +76,16 @@ export class McfCapabilityRegistryApiService {
     } catch {
       return new McfCapabilityRegistryApiService(null, now);
     }
+  }
+
+  analyzeGaps(request: McfCapabilityGapRequest): McfCapabilityGapReport {
+    const snapshot = this.listReadOnly(request.project_id);
+    return this.gapAnalyzer.analyze(snapshot, request, this.now());
+  }
+
+  buildBootstrapPlan(request: McfProjectBootstrapRequest): McfProjectBootstrapPlan {
+    const capabilityGaps = this.analyzeGaps(request);
+    return this.bootstrapPlanner.plan(request, capabilityGaps, this.now());
   }
 
   listReadOnly(projectId?: string): McfCapabilityRegistrySnapshot {

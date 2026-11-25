@@ -416,22 +416,103 @@ function assertCodeBuddyBoundary(
   }
 }
 
-function assertGoogleBridgeReadBoundary(
+function assertMcfContextAnalysisBoundary(
   skillId: string,
   provider: string,
   operation: string,
   resource: string,
 ): void {
-  if (skillId !== 'MCF-GOOGLE-CLOUD-READ' && provider !== 'mcf-google-bridge') return;
   if (
-    skillId !== 'MCF-GOOGLE-CLOUD-READ' ||
-    provider !== 'mcf-google-bridge' ||
-    resource !== 'google-cloud' ||
-    !['status', 'list-projects'].includes(operation)
-  ) {
+    provider !== 'mcf-context' &&
+    skillId !== 'MCF-CAPABILITY-GAP-ANALYSIS' &&
+    skillId !== 'MCF-PROJECT-BOOTSTRAP'
+  ) return;
+
+  const allowed =
+    (skillId === 'MCF-CAPABILITY-GAP-ANALYSIS' &&
+      provider === 'mcf-context' &&
+      resource === 'capability-registry' &&
+      operation === 'analyze-gaps') ||
+    (skillId === 'MCF-PROJECT-BOOTSTRAP' &&
+      provider === 'mcf-context' &&
+      resource === 'project-bootstrap' &&
+      operation === 'build-plan');
+  if (!allowed) {
     throw new McfPermissionDeniedError(
-      'Google Bridge is restricted to read-only Google Cloud discovery',
+      'MCF context analysis permits only read-only capability gap and bootstrap plan operations',
     );
+  }
+}
+
+function assertGoogleBridgeBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+  inputs: Record<string, unknown>,
+): void {
+  if (
+    provider !== 'mcf-google-bridge' &&
+    skillId !== 'MCF-GOOGLE-CLOUD-READ' &&
+    skillId !== 'MCF-GOOGLE-CLOUD-PROVISION'
+  ) return;
+
+  if (provider !== 'mcf-google-bridge' || resource !== 'google-cloud') {
+    throw new McfPermissionDeniedError('Google Cloud actions require the local MCF Google Bridge resource');
+  }
+
+  if (skillId === 'MCF-GOOGLE-CLOUD-READ') {
+    if (!['status', 'list-projects'].includes(operation)) {
+      throw new McfPermissionDeniedError('Google Bridge read skill permits only status and list-projects');
+    }
+    return;
+  }
+
+  if (skillId !== 'MCF-GOOGLE-CLOUD-PROVISION') {
+    throw new McfPermissionDeniedError('Google Bridge provisioning requires its dedicated MCF skill');
+  }
+
+  const allowedOperations = new Set([
+    'create-project',
+    'enable-maps-apis',
+    'create-maps-key',
+    'inspect-maps-key',
+  ]);
+  if (!allowedOperations.has(operation)) {
+    throw new McfPermissionDeniedError('Google Cloud provisioning operation is not allowlisted');
+  }
+
+  const projectId = inputs.projectId;
+  const missionId = inputs.missionId;
+  if (
+    typeof projectId !== 'string' ||
+    !/^mcf-[a-z][a-z0-9-]{3,24}[a-z0-9]$/u.test(projectId) ||
+    inputs.approvedProjectId !== projectId ||
+    typeof missionId !== 'string' ||
+    !/^[a-z][a-z0-9-]{2,39}$/u.test(missionId)
+  ) {
+    throw new McfPermissionDeniedError('Google Cloud provisioning requires the exact approved MCF project and mission scope');
+  }
+
+  if (
+    inputs.humanGateApproved !== true ||
+    inputs.authorizedScope !== true ||
+    inputs.sensitiveAuthorization !== true ||
+    inputs.cloudAccountVerified !== true ||
+    inputs.cloudTermsAccepted !== true
+  ) {
+    throw new McfPermissionDeniedError('Google Cloud provisioning requires explicit human, account, terms and scoped authorization');
+  }
+
+  if (inputs.billingEnabled === true || inputs.enableBilling === true) {
+    throw new McfPermissionDeniedError('Google Cloud billing changes are outside the provisioning skill boundary');
+  }
+
+  if (operation === 'create-project') {
+    const displayName = inputs.displayName;
+    if (typeof displayName !== 'string' || displayName.length < 4 || displayName.length > 30) {
+      throw new McfPermissionDeniedError('Google Cloud project display name is invalid');
+    }
   }
 }
 
@@ -501,7 +582,8 @@ export class PermissionEngine {
     assertCodeBuddyBoundary(skill.skillId, provider, operation, tool.resource);
     assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);
     assertLocalAgentTeamBoundary(skill.skillId, provider, operation, resource);
-    assertGoogleBridgeReadBoundary(skill.skillId, provider, operation, resource);
+    assertGoogleBridgeBoundary(skill.skillId, provider, operation, resource, inputs);
+    assertMcfContextAnalysisBoundary(skill.skillId, provider, operation, resource);
     assertAstryxDiscoveryBoundary(skill.skillId, provider, operation, resource);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
