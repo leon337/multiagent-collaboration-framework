@@ -67,6 +67,7 @@ test('project creation is idempotent and does not link billing', async () => {
       return { done: true, response: project };
     }
     if (url.endsWith('/v3/projects/mcf-obras-logistica-v1')) return project;
+    if (url.endsWith('/billingInfo')) return { projectId, billingEnabled: false, billingAccountName: '' };
     throw new Error('unexpected request ' + url);
   };
   const result = await dispatchCloudProvisioning(
@@ -76,6 +77,7 @@ test('project creation is idempotent and does not link billing', async () => {
   );
   assert.equal(result.status, 'SUCCEEDED');
   assert.equal(result.billingLinked, false);
+  assert.equal(result.billingEnabled, false);
   assert.equal(result.projectNumber, '123456789');
   assert.equal(calls.filter((c) => c.init.method === 'POST').length, 1);
 });
@@ -96,6 +98,7 @@ test('service enablement uses only the fixed Maps API allowlist', async () => {
   const googleRequest = async (url, kind, init = {}) => {
     calls.push({ url, kind, init });
     if (url.endsWith('/v3/projects/mcf-obras-logistica-v1')) return project;
+    if (url.endsWith('/billingInfo')) return { projectId, billingEnabled: false, billingAccountName: '' };
     if (url.includes('/services/') && !url.endsWith(':enable')) {
       const service = url.split('/services/')[1];
       return { state: enabled.has(service) ? 'ENABLED' : 'DISABLED' };
@@ -113,6 +116,8 @@ test('service enablement uses only the fixed Maps API allowlist', async () => {
     dependencies(googleRequest),
   );
   assert.equal(result.status, 'SUCCEEDED');
+  assert.equal(result.billingEnabled, false);
+  assert.equal(result.billingLinked, false);
   assert.deepEqual(result.services.map((x) => x.service), [...MAPS_SERVICES]);
   assert.equal(calls.some((x) => x.url.includes('compute.googleapis.com')), false);
 });
@@ -125,6 +130,7 @@ test('restricted Maps key is stored only in owner-only file and never returned',
   const googleRequest = async (url, kind, init = {}) => {
     calls.push({ url, kind, init });
     if (url.endsWith('/v3/projects/mcf-obras-logistica-v1')) return project;
+    if (url.endsWith('/billingInfo')) return { projectId, billingEnabled: false, billingAccountName: '' };
     if (url.includes('/services/')) return { state: 'ENABLED' };
     if (url.endsWith('/locations/global/keys/mcf-obras-maps-v1')) {
       if (init.method === 'POST') throw new Error('unexpected key recreation');
@@ -152,6 +158,9 @@ test('restricted Maps key is stored only in owner-only file and never returned',
       dependencies(googleRequest),
     );
     assert.equal(result.status, 'SUCCEEDED');
+    assert.equal(result.billingEnabled, false);
+    assert.equal(result.billingLinked, false);
+    assert.equal(result.projectNumber, '123456789');
     assert.equal(result.secretAlias, 'agente-logistica-obras/google_maps_api_key');
     assert.equal(result.secretFingerprint.length, 64);
     assert.equal(JSON.stringify(result).includes(keyString), false);
@@ -179,4 +188,29 @@ test('key creation fails closed when an existing key has broader API restriction
     dispatchCloudProvisioning('google.cloud.apiKeys.createMaps', { projectId, missionId }, dependencies(googleRequest)),
     (error) => error.code === 'EXISTING_KEY_RESTRICTIONS_MISMATCH',
   );
+});
+
+
+test('Maps API enablement is blocked when billing is enabled or linked', async () => {
+  const calls = [];
+  const googleRequest = async (url, kind, init = {}) => {
+    calls.push({ url, kind, init });
+    if (url.endsWith('/v3/projects/mcf-obras-logistica-v1')) return project;
+    if (url.endsWith('/billingInfo')) {
+      return {
+        projectId,
+        billingEnabled: true,
+        billingAccountName: 'billingAccounts/000000-000000-000000',
+      };
+    }
+    throw new Error('Maps services must not be enabled when billing is linked');
+  };
+  const result = await dispatchCloudProvisioning(
+    'google.cloud.services.enableMaps',
+    { projectId, missionId },
+    dependencies(googleRequest),
+  );
+  assert.equal(result.status, 'BLOCKED');
+  assert.equal(result.reason, 'BILLING_LINK_PRESENT');
+  assert.equal(calls.some((call) => call.init.method === 'POST'), false);
 });
