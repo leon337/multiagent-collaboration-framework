@@ -22,6 +22,7 @@ const capabilitySources = [
   'context/capabilities/cognitive-ledger-memory-read.yaml',
   'context/capabilities/mcf-capability-registry-read.yaml',
   'context/capabilities/mcf-context-recovery-read.yaml',
+  'context/capabilities/mcf-google-cloud-provision.yaml',
 ];
 
 function configuration(includeCapabilities = true): string {
