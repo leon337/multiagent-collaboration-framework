@@ -124,7 +124,7 @@ function validateGoogleCloudProvisionReceipt(
     if (
       metadata.billingLinked !== false ||
       typeof metadata.projectNumber !== 'string' ||
-      !/^\\d{6,20}$/u.test(metadata.projectNumber) ||
+      !/^\d{6,20}$/u.test(metadata.projectNumber) ||
       metadata.projectState !== 'ACTIVE'
     ) {
       reject('Google Cloud project receipt requires an active project with billing unlinked');
