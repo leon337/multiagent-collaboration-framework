@@ -14,6 +14,7 @@ function compareText(left: string, right: string): number {
 
 function matchesResource(pattern: string, resource: string): boolean {
   if (pattern === resource) return true;
+  if (!pattern.includes('*')) return false;
   const segments = pattern.split('*');
   let cursor = 0;
   if (!pattern.startsWith('*')) {
@@ -95,7 +96,7 @@ function evaluateEntry(
     }
   }
 
-  if (entry.lifecycle.runtime_state === 'BLOCKED') {
+  if (live === undefined && entry.lifecycle.runtime_state === 'BLOCKED') {
     gaps.push(gap('RUNTIME_BLOCKED', 'Resolve the provider runtime block and re-verify', requiredGate));
   }
 
