@@ -1,137 +1,241 @@
 # PHASE-02 — Cognitive Memory Architecture / Contract
 
-Mission: `MCF-MEMORY-LIVE-NEXT-STABLE-001`
-Risk class: `C`
-Status: `OPEN / EXECUTION-GATED`
-Base SHA: `08fef949c49496050596e9681aaf011259e51f77`
-Authority: Leandro (reserved human authority) / Léo (delegated operational gates)
+Mission: `MCF-MEMORY-LIVE-NEXT-STABLE-001`  
+Risk class: `C`  
+Status: `OPEN / PARALLEL_EXECUTION_PREPARED / IMPLEMENTATION_BLOCKED`  
+Current recovery baseline: `main@b969df76544e69cb2ff7833a5b65bd231d4db7aa`  
+Authority: LEANDRO (final human authority) / Léo (delegated operational gates)  
 Coordinator: Mestre
 
 ## Objective
 
-Produce an approvable architecture for the next stable MCF release that integrates a governed Cognitive Ledger write capability, preserves the current live Ledger data, reconciles provider/code drift, and proves cross-chat durable memory without turning Leandro into a technical operator.
+Produce an approvable architecture for an MCF Experience Intelligence / persistent-memory layer that can learn from validated operational experience without turning hypotheses, poisoned context or stale observations into institutional truth.
 
-No implementation code is authorized by this phase artifact. Implementation remains blocked until architecture approval and the applicable Class C gates.
+This phase is design/evidence only. Product implementation, provider mutation, production promotion and release publication remain blocked.
 
-## Source of truth and precedence
+## Source precedence
 
-1. Current explicit instruction from Leandro.
-2. Live GitHub/provider state and tool receipts.
-3. Current applicable SHA/branch code and tests.
-4. `project-instructions/*` and the unified MCF operational protocol.
-5. Current mission roadmap and issue #164 decision history.
-6. Historical documentation only when not contradicted by a higher-precedence source.
+1. current explicit instruction from LEANDRO;
+2. live GitHub/provider evidence;
+3. current applicable repository SHA and tests;
+4. current MCF project instructions and unified operational protocol;
+5. issue #164 decision history and current mission artifacts;
+6. historical documents only when not contradicted above.
 
-## Product contract already closed
+## Current human execution decision
 
-The architecture must preserve the onboarding decisions already recorded in issue #164, including:
+LEANDRO requires discovery/design work to avoid serial specialist dependencies.
 
-- existing Supabase/Postgres project is the operational source and existing records are preserved;
-- write is explicit or suggested-with-confirmation, never silent automatic capture;
-- MCF writes through a dedicated OAuth/capability boundary, never with generic `service_role` access;
-- original authorized text is private provenance in `fontes`; structured meaning lives in the Evento Cognitivo;
-- capture is minimized to the relevant excerpt plus minimum context;
-- 3–8 concise keywords are generated for readability;
-- default retrieval is a compact cognitive card, with original/provenance on demand;
-- normal correction preserves history; explicit definitive deletion uses a separate hard-delete path;
-- success is only declared after persistence plus read-back and an auditable Receipt;
-- textual/structured search always works; external embeddings are opt-in and disabled by default;
-- proof uses synthetic data first and a user-authorized real memory only after gates;
-- target is `v1.2.0` if additive/no breaking change, promoted to `latest` only after all release gates.
+Required topology:
 
-## Human Delegation Firewall
+```text
+MESTRE
+   |
+   +-- Stage A: independent authoring FAN-OUT
+   |     Miriam
+   |     Sofia
+   |     Manoel
+   |     Daniela
+   |     Ricardo
+   |     Júlia
+   |     Tiago
+   |     Rafael
+   |     Eduardo
+   |     Bruno
+   |     Renato
+   |     Beatriz
+   |     Augusto
+   |     Patrícia
+   |     Lucas
+   |
+   +-- Stage B: FAN-IN review in parallel
+   |     Carmem
+   |     Emily
+   |
+   +-- Stage C
+         Léo -> internal evidence gate -> Mestre
+```
 
-Leandro is not a technical executor. Do not ask him to run CLI, SQL, migrations, deploys, inspect logs, rotate credentials, build OAuth, debug services, or produce implementation artifacts. Technical work must be performed through governed agents/tools/workflows. Escalation is reserved for authority, material purpose/cost/legal/public exposure/sensitive credential/irreversible-impact gates or an actual external dependency that cannot be resolved by the team.
+No Stage A author receives peer output. One failed author must not terminate peers.
+
+## Official agent pool rule
+
+The MCF retains its 29 official agents as the available pool.
+
+Current rule:
+
+```text
+OFFICIAL_POOL=29
+PARTICIPATION_CREDIT=ONLY_REAL_CONCRETE_DELIVERY
+DECORATIVE_FULL_ROSTER_EXECUTION=FORBIDDEN
+```
+
+A phase selects only roles with a concrete deliverable. Other roles enter later when their competence has executable work.
+
+## Executor cost policy — Brainbase authorized, zero-cost fallback
+
+LEANDRO explicitly authorized billable Brainbase task runs for this mission on 2026-09-18.
+
+Current policy:
+- Brainbase is the preferred managed executor when its billing service is available;
+- execution remains competence-based; authorization to spend does not authorize decorative/full-roster runs;
+- paid embeddings and paid/larger runners remain unnecessary by default;
+- the public GitHub-hosted + pinned local Ollama / `qwen2.5:1.5b` harness remains the zero-cost contingency executor;
+- the same anti-simulation, privacy, provenance and tool-evidence contract applies to both executors.
+
+Observed Brainbase pilot state on 2026-09-18: `BILLING_UNAVAILABLE / HTTP 503` before model/tool execution.
 
 ## Deterministic anti-simulation invariant
 
-A named agent is not considered to have participated because its name appears in a plan, prompt, comment, report, or retrospective narrative.
+A named agent receives participation credit only when evidence proves:
 
-For every participating agent, valid participation requires all of the following:
+1. distinguishable role-bound execution;
+2. mission-scoped work packet;
+3. at least one successful real tool call;
+4. machine evidence linking tool name, call ID, argument digest and result digest;
+5. non-empty role-owned artifact;
+6. timestamps and artifact SHA-256;
+7. no fabricated tool/action/provider claim.
 
-1. a real invocation/execution identity that can be distinguished from the coordinator;
-2. a mission-scoped work packet tied to that agent's official competence;
-3. an artifact created by that execution, not authored by another actor and relabeled;
-4. evidence/receipt linking agent, action, artifact, time, source and result;
-5. a visible handoff before the next dependent step.
+If any item is missing, the role remains uncredited.
 
-If any item is missing, the agent remains `PLANNED_NOT_EXECUTED`.
+## Tool Capability Contract — mission harness
 
-## Entire-team mission requirement
+Allowed tools are read-only:
 
-Leandro explicitly requires the full official roster of 29 agents to contribute to this goal. This does not waive the MCF invariant against decorative participation. Therefore every agent must have a substantive, competence-aligned deliverable somewhere in the mission before terminal delivery. Phase-specific `selected_agents` remains limited to agents whose work is actually executable in that phase.
+- `repo_search`;
+- `repo_read`;
+- `repo_list`;
+- `git_history`.
 
-Mission-wide required artifact ownership:
+The agent requests the tool. The harness validates and executes it. The agent receives the real observation before producing its final artifact.
 
-| Agent | Required substantive artifact/work product |
-|---|---|
-| Léo | gate decision(s) with evidence-based justification |
-| Mestre | mission/phase contracts, orchestration ledger and handoff map |
-| Leonardo | product/release requirements and acceptance contract |
-| Carlos | future-risk/opportunity analysis for durable memory evolution |
-| Evelyn | experience design coordination decision record |
-| Laura | memory capture/retrieval UX flow |
-| Isabela | cognitive-card visual/state specification |
-| Marina | accessibility/readability review of retrieval experience |
-| Sofia | architecture package and ADR set |
-| Rafael | implementation design/work breakdown and integration execution artifacts |
-| Manoel | database compatibility, backup/restore and migration package |
-| Renato | test strategy plus executed validation evidence |
-| Bruno | staging/live deployment, rollback, observability and SRE evidence |
-| Ricardo | threat model and security review |
-| Gabriel | branch/PR/release provenance and release evidence |
-| Carmem | technical documentation/PRF consolidation |
-| Emily | independent audit artifact based on evidence, not retrospective prose |
-| Eduardo | backend API/capability contract and service integration evidence |
-| Helena | frontend/host integration impact review where applicable, including explicit no-impact evidence if validated by her own execution |
-| André | mobile/client portability impact review where applicable, including explicit no-impact evidence if validated by his own execution |
-| Tiago | AI/RAG/embedding technical policy and fallback evaluation |
-| Daniela | data lineage/quality/reconciliation package |
-| Vinícius | code-review/refactoring findings and disposition |
-| Patrícia | failure-mode/debug/recovery drill artifact |
-| Lucas | performance/resource sustainability benchmark or bounded no-regression evidence |
-| Augusto | multiagent trace, handoff and loop observability report |
-| Beatriz | agent behavior/memory/routing evaluation and regressions |
-| Miriam | context recovery, provenance, conflict/reconciliation and memory-governance artifact |
-| Júlia | AI/data/autonomy/compliance governance review |
+The tool layer is restricted to the checked-out public repository and denies secret/credential-like paths. It does not expose tokens, private Ledger content or provider credentials.
 
-An explicit `no-impact` conclusion can count only when produced by that agent after real inspection and supported by evidence; it cannot be pre-filled by Mestre.
+## Product contract already closed
 
-## Phase 2 selected roles
+The architecture must preserve the issue #164 onboarding decisions, including:
 
-The first architecture chain requires real execution by at least: Mestre, Leonardo, Carlos, Evelyn, Laura, Isabela, Marina, Sofia, Rafael, Manoel, Ricardo, Eduardo, Tiago, Daniela, Augusto, Beatriz, Miriam and Júlia. Carmem consolidates the phase pack after those artifacts exist. Emily performs the independent audit after authoring work is complete. Léo gates the phase from evidence.
+- Supabase/Postgres remains the operational source of truth for Cognitive Ledger;
+- existing records are preserved;
+- memory capture is explicit or suggested-with-confirmation, never silent automatic capture;
+- MCF write uses a dedicated least-privilege capability/OAuth boundary, never generic `service_role`/SQL access;
+- original authorized wording is preserved as private provenance while structured meaning is represented separately;
+- correction/supersession preserves history;
+- success requires persistence + read-back + auditable Receipt;
+- textual/structured retrieval works without external embeddings;
+- external embeddings remain separate opt-in;
+- synthetic proof precedes any real memory test;
+- private memory must not be exported to public Git/CI evidence.
 
-Renato, Bruno, Gabriel, Helena, André, Vinícius, Patrícia and Lucas have mission-wide mandatory deliverables but enter dependent validation/implementation/release workstreams when their real work becomes executable. They are not credited with Phase 2 work merely because they are named here.
+## Experience Intelligence design invariants
 
-## Required architecture outputs
+```text
+CLAIM_WITHOUT_PROVENANCE != TRUSTED_FACT
 
-The phase cannot advance without real, agent-owned artifacts covering:
+MEMORY_RELEVANT
+!= MEMORY_TRUSTED
+!= MEMORY_AUTHORIZED_FOR_ACTION
 
-- current-state map: MCF runtime, Cognitive Ledger API, Supabase/Postgres, MCP/OAuth boundary, Render and Context Fabric;
-- provider/code drift reconciliation plan;
-- dedicated write capability and least-privilege authorization model;
-- write/read-back/Receipt/idempotency/collision behavior;
-- correction/supersession and privileged definitive deletion model;
-- provenance/source minimization and public-Git exclusion boundary;
-- backup, restore, migration compatibility and rollback;
-- cross-chat recovery flow and cognitive-card retrieval contract;
-- embeddings opt-in/cost/privacy boundary;
-- threat model, compliance controls and failure behavior;
-- observability, audit and release evidence model;
-- exact-SHA staging and post-release proof plan;
-- compatibility/SemVer assessment.
+RETRIEVAL
+!= AUTHORIZATION
+```
+
+Target conceptual flow:
+
+```text
+CAPTURE
+  -> EVIDENCE + PROVENANCE
+  -> VALIDATION
+  -> DURABLE EVENT
+  -> RETRIEVAL
+  -> TRUST / ACTION GATE
+  -> RECOMMENDATION
+  -> OUTCOME
+  -> FEEDBACK
+```
+
+Persistent-memory writes are privileged operations. External/tool content must not become durable behavioral instruction solely because it is relevant.
+
+## Stage A specialist outputs
+
+- Miriam — provenance, source precedence, contradictions, lifecycle and memory governance;
+- Sofia — component/boundary architecture and failure isolation;
+- Manoel — append-only/idempotent persistence, migration and backup/restore;
+- Daniela — lineage/data quality/currentness;
+- Ricardo — threat model, poisoning, auth, secrets and fail-closed controls;
+- Júlia — governance, human gates, minimization, confidence and sensitivity;
+- Tiago — zero-cost retrieval/RAG/embedding policy;
+- Rafael — implementation decomposition without implementation;
+- Eduardo — semantic API/capability/Receipt contracts;
+- Bruno — zero-cost staging/SRE/rollback/logging;
+- Renato — validation/E2E/regression matrix;
+- Beatriz — behavioral memory/agent evaluation;
+- Augusto — trace/tool/retrieval attribution and anti-simulation observability;
+- Patrícia — failure reproduction and CAF recovery;
+- Lucas — concurrency/performance/resource sustainability.
+
+## Stage B fan-in
+
+Carmem and Emily consume the same complete available Stage A package and execute in parallel.
+
+Carmem consolidates without hiding contradictions.
+
+Emily independently audits false-green risk, missing evidence, security/privacy gaps and blockers.
+
+## Stage C gate
+
+Léo consumes the authoring package plus Carmem/Emily outputs.
+
+Léo may issue only an internal evidence state such as:
+
+- `APPROVE_FOR_HUMAN_DESIGN_REVIEW`;
+- `APPROVE_WITH_RESERVATIONS`;
+- `RETURN_FOR_CORRECTION`;
+- `BLOCK`.
+
+Léo cannot infer LEANDRO approval and cannot authorize live implementation.
+
+## Human Delegation Firewall
+
+LEANDRO is not the technical operator. Do not ask him to run CLI, SQL, migrations, deployments, log inspection or provider configuration.
+
+Human escalation is reserved for material authority/purpose/risk/cost/public-exposure decisions and gates defined by protocol.
+
+## Required architecture coverage
+
+The combined package must cover:
+
+- Experience Intelligence Layer boundaries;
+- Cognitive Ledger governed write/read separation;
+- provider/code drift reconciliation;
+- provenance and source minimization;
+- contradiction/supersession semantics;
+- memory poisoning and indirect prompt injection;
+- least-privilege authorization;
+- idempotency and collision behavior;
+- retrieval trust and action authorization;
+- backup/restore/migration compatibility;
+- cross-chat recovery;
+- observability/tool/retrieval attribution;
+- evaluation and regressions;
+- zero-cost operational sustainability;
+- exact-SHA validation and rollback;
+- audit/gate evidence.
 
 ## Gates
 
-- `GATE-RUNTIME-REALITY`: no named-agent execution until the invocation path is proven real and non-simulated.
-- `GATE-ARCH-DESIGN`: architecture must be presented to Leandro at the level of product/authority decisions, not as technical operator work.
-- `GATE-CLASS-C`: Júlia/Augusto and applicable Beatriz/Miriam controls complete.
-- `GATE-SECURITY`: Ricardo threat model has no unaddressed critical risk.
-- `GATE-AUDIT`: Emily independent evidence review completes.
-- `GATE-LEO`: Léo issues a canonical internal gate decision.
+- `GATE-RUNTIME-REALITY`: named roles need real attributable execution;
+- `GATE-TOOL-EVIDENCE`: credited roles need successful tool-call evidence;
+- `GATE-CLASS-C`: governance/observability/evaluation/memory controls complete;
+- `GATE-SECURITY`: no unresolved critical security blocker;
+- `GATE-AUDIT`: Emily audit complete;
+- `GATE-LEO`: Léo internal evidence decision complete;
+- `GATE-ARCH-DESIGN`: architecture surfaced to LEANDRO at decision level;
+- implementation remains separately authorized.
 
-## Current checkpoint
+## Current next action
 
-The coordinator has recovered the live MCF runtime implementation and found that its governed internal skills validate `execution_evidence` supplied by the selected agent; the runtime itself does not originate that agent's cognitive artifact. The Chat bridge auto-executes only bootstrap planning steps and leaves governed agent steps as `READY_AGENT`. Therefore runtime receipts must not be treated as proof that Sofia/Miriam/etc. actually authored work unless an external real agent execution supplied the evidence.
+Run the zero-cost parallel tool-using harness from the current PR candidate, collect per-agent artifacts/log evidence, apply CAF to failures without stopping healthy peers, then perform the Stage B fan-in and Stage C internal gate.
 
-The next operational action is to prove or establish an invocable, non-simulated agent execution boundary. Until then, named-agent architecture outputs remain unexecuted and implementation remains blocked.
+No live Cognitive Ledger write or product implementation is authorized by this plan.
