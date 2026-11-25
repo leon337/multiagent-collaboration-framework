@@ -178,6 +178,7 @@ test('restricted Maps key is stored only in owner-only file and never returned',
 test('key creation fails closed when an existing key has broader API restrictions', async () => {
   const googleRequest = async (url) => {
     if (url.endsWith('/v3/projects/mcf-obras-logistica-v1')) return project;
+    if (url.endsWith('/billingInfo')) return { projectId, billingEnabled: false, billingAccountName: '' };
     if (url.includes('/services/')) return { state: 'ENABLED' };
     if (url.endsWith('/locations/global/keys/mcf-obras-maps-v1')) {
       return { name: 'projects/123456789/locations/global/keys/mcf-obras-maps-v1', restrictions: { apiTargets: [] } };
