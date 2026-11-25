@@ -1,0 +1,26 @@
+schema_version: 1
+
+project:
+  id: mcf-agent-workspace
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/mcf-agent-workspace
+  aliases:
+    - MCF Agent Workspace
+    - Agent Workspace
+    - Dual Browser successor
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  canonical_entrypoints:
+    - README.md
+    - docs/PRODUCT-BRIEF.md
+    - docs/ARCHITECTURE.md
+    - docs/ROADMAP.md
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
