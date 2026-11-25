@@ -344,6 +344,7 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
         result.keyId !== 'mcf-obras-maps-v1'
       ) return invalidResponse();
       Object.assign(metadata, {
+        projectNumber: result.projectNumber,
         keyResourceName: result.keyResourceName,
         keyId: result.keyId,
         apiRestrictions: result.apiRestrictions,
