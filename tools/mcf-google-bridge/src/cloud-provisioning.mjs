@@ -81,6 +81,31 @@ async function getProject(googleRequest, projectId, BridgeError) {
     throw error;
   }
 }
+async function billingStatus(googleRequest, projectId, BridgeError) {
+  let info;
+  try {
+    info = await googleRequest(
+      `https://cloudbilling.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/billingInfo`,
+      'cloud-write',
+    );
+  } catch {
+    return { status: 'UNVERIFIED', reason: 'BILLING_STATUS_UNVERIFIED' };
+  }
+  if (info?.projectId !== projectId || typeof info.billingEnabled !== 'boolean') {
+    return { status: 'UNVERIFIED', reason: 'BILLING_STATUS_UNVERIFIED' };
+  }
+  const billingLinked =
+    typeof info.billingAccountName === 'string' && info.billingAccountName.trim().length > 0;
+  if (info.billingEnabled || billingLinked) {
+    return {
+      status: 'BLOCKED',
+      reason: 'BILLING_LINK_PRESENT',
+      billingEnabled: info.billingEnabled,
+      billingLinked,
+    };
+  }
+  return { status: 'VERIFIED', billingEnabled: false, billingLinked: false };
+}
 function verifyManagedProject(project, missionId, BridgeError) {
   if (
     project.labels?.mcf_managed !== 'true' ||
@@ -99,6 +124,20 @@ async function createProject(googleRequest, args, BridgeError) {
   const existing = await getProject(googleRequest, projectId, BridgeError);
   if (existing) {
     verifyManagedProject(existing, missionId, BridgeError);
+    const billing = await billingStatus(googleRequest, projectId, BridgeError);
+    if (billing.status !== 'VERIFIED') {
+      return {
+        status: billing.status === 'BLOCKED' ? 'BLOCKED' : 'PENDING',
+        projectId,
+        projectNumber: String(existing.projectNumber),
+        reason: billing.reason,
+        ...(billing.billingEnabled === undefined ? {} : { billingEnabled: billing.billingEnabled }),
+        ...(billing.billingLinked === undefined ? {} : { billingLinked: billing.billingLinked }),
+      };
+    }
+    if (existing.state !== 'ACTIVE') {
+      return { status: 'PENDING', projectId, projectNumber: String(existing.projectNumber), reason: 'PROJECT_NOT_ACTIVE' };
+    }
     return {
       status: 'SUCCEEDED',
       projectId,
@@ -106,6 +145,7 @@ async function createProject(googleRequest, args, BridgeError) {
       displayName: existing.displayName,
       state: existing.state,
       reused: true,
+      billingEnabled: false,
       billingLinked: false,
     };
   }
@@ -125,6 +165,20 @@ async function createProject(googleRequest, args, BridgeError) {
     const raced = await getProject(googleRequest, projectId, BridgeError);
     if (!raced) return { status: 'PENDING', projectId, reason: 'CREATE_CONFLICT_RECONCILIATION_REQUIRED' };
     verifyManagedProject(raced, missionId, BridgeError);
+    const billing = await billingStatus(googleRequest, projectId, BridgeError);
+    if (billing.status !== 'VERIFIED') {
+      return {
+        status: billing.status === 'BLOCKED' ? 'BLOCKED' : 'PENDING',
+        projectId,
+        projectNumber: String(raced.projectNumber),
+        reason: billing.reason,
+        ...(billing.billingEnabled === undefined ? {} : { billingEnabled: billing.billingEnabled }),
+        ...(billing.billingLinked === undefined ? {} : { billingLinked: billing.billingLinked }),
+      };
+    }
+    if (raced.state !== 'ACTIVE') {
+      return { status: 'PENDING', projectId, projectNumber: String(raced.projectNumber), reason: 'PROJECT_NOT_ACTIVE' };
+    }
     return {
       status: 'SUCCEEDED',
       projectId,
@@ -132,6 +186,7 @@ async function createProject(googleRequest, args, BridgeError) {
       displayName: raced.displayName,
       state: raced.state,
       reused: true,
+      billingEnabled: false,
       billingLinked: false,
     };
   }
@@ -152,6 +207,20 @@ async function createProject(googleRequest, args, BridgeError) {
   const project = await getProject(googleRequest, projectId, BridgeError);
   if (!project) return { status: 'PENDING', projectId, operationName: operation.name };
   verifyManagedProject(project, missionId, BridgeError);
+  const billing = await billingStatus(googleRequest, projectId, BridgeError);
+  if (billing.status !== 'VERIFIED') {
+    return {
+      status: billing.status === 'BLOCKED' ? 'BLOCKED' : 'PENDING',
+      projectId,
+      projectNumber: String(project.projectNumber),
+      reason: billing.reason,
+      ...(billing.billingEnabled === undefined ? {} : { billingEnabled: billing.billingEnabled }),
+      ...(billing.billingLinked === undefined ? {} : { billingLinked: billing.billingLinked }),
+    };
+  }
+  if (project.state !== 'ACTIVE') {
+    return { status: 'PENDING', projectId, projectNumber: String(project.projectNumber), reason: 'PROJECT_NOT_ACTIVE' };
+  }
   return {
     status: 'SUCCEEDED',
     projectId,
@@ -159,6 +228,7 @@ async function createProject(googleRequest, args, BridgeError) {
     displayName: project.displayName,
     state: project.state,
     reused: false,
+    billingEnabled: false,
     billingLinked: false,
   };
 }
@@ -179,6 +249,17 @@ async function enableMapsApis(googleRequest, args, BridgeError) {
   const project = await getProject(googleRequest, projectId, BridgeError);
   if (!project) throw new BridgeError('PROJECT_NOT_FOUND', 404);
   verifyManagedProject(project, missionId, BridgeError);
+  const billing = await billingStatus(googleRequest, projectId, BridgeError);
+  if (billing.status !== 'VERIFIED') {
+    return {
+      status: billing.status === 'BLOCKED' ? 'BLOCKED' : 'PENDING',
+      projectId,
+      reason: billing.reason,
+      ...(billing.billingEnabled === undefined ? {} : { billingEnabled: billing.billingEnabled }),
+      ...(billing.billingLinked === undefined ? {} : { billingLinked: billing.billingLinked }),
+      services: [],
+    };
+  }
   const results = [];
   for (const service of MAPS_SERVICES) {
     const current = await getService(googleRequest, project.projectNumber, service, BridgeError);
@@ -223,6 +304,8 @@ async function enableMapsApis(googleRequest, args, BridgeError) {
   return {
     status: results.every((item) => item.state === 'ENABLED') ? 'SUCCEEDED' : 'PENDING',
     projectId,
+    billingEnabled: false,
+    billingLinked: false,
     services: results,
   };
 }
@@ -376,6 +459,8 @@ async function createMapsKey(googleRequest, args, BridgeError) {
     keyResourceName: current.name,
     keyId: KEY_ID,
     apiRestrictions: ['geocoding-backend.googleapis.com', 'routes.googleapis.com'],
+    billingEnabled: false,
+    billingLinked: false,
     ...stored,
   };
 }
@@ -410,6 +495,16 @@ async function inspectMapsKey(googleRequest, args, BridgeError) {
   const project = await getProject(googleRequest, projectId, BridgeError);
   if (!project) throw new BridgeError('PROJECT_NOT_FOUND', 404);
   verifyManagedProject(project, missionId, BridgeError);
+  const billing = await billingStatus(googleRequest, projectId, BridgeError);
+  if (billing.status !== 'VERIFIED') {
+    return {
+      status: billing.status === 'BLOCKED' ? 'BLOCKED' : 'PENDING',
+      projectId,
+      reason: billing.reason,
+      ...(billing.billingEnabled === undefined ? {} : { billingEnabled: billing.billingEnabled }),
+      ...(billing.billingLinked === undefined ? {} : { billingLinked: billing.billingLinked }),
+    };
+  }
   const current = await getKey(googleRequest, project.projectNumber, BridgeError);
   if (!current.key) return { status: 'NOT_FOUND', projectId, keyId: KEY_ID };
   return {
@@ -418,6 +513,8 @@ async function inspectMapsKey(googleRequest, args, BridgeError) {
     projectNumber: String(project.projectNumber),
     keyResourceName: current.name,
     keyId: KEY_ID,
+    billingEnabled: false,
+    billingLinked: false,
     displayName: current.key.displayName,
     apiRestrictions: (current.key.restrictions?.apiTargets ?? []).map((item) => item.service),
     restrictionsValid: hasExactApiRestrictions(current.key),
