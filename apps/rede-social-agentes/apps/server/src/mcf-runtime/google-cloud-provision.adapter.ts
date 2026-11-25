@@ -310,7 +310,7 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
       if (
         result.projectId !== projectId ||
         typeof result.projectNumber !== 'string' ||
-        !/^\\d{6,20}$/u.test(result.projectNumber) ||
+        !/^\d{6,20}$/u.test(result.projectNumber) ||
         result.keyResourceName !== `projects/${result.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
         result.keyId !== 'mcf-obras-maps-v1' ||
         !Array.isArray(result.apiRestrictions) ||
@@ -337,7 +337,7 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
       if (
         result.projectId !== projectId ||
         typeof result.projectNumber !== 'string' ||
-        !/^\\d{6,20}$/u.test(result.projectNumber) ||
+        !/^\d{6,20}$/u.test(result.projectNumber) ||
         result.keyResourceName !== `projects/${result.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
         result.restrictionsValid !== true ||
         result.secretStored !== true ||
