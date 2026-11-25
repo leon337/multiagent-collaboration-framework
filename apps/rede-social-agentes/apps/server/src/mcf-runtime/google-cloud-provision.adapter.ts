@@ -277,89 +277,89 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
     }
 
     try {
-    const metadata: Record<string, unknown> = { projectId, missionId, billingEnabled: false, billingLinked: false };
-    if (operation === 'create-project') {
-      if (
-        result.projectId !== projectId ||
-        result.billingLinked !== false ||
-        result.billingEnabled !== false ||
-        typeof result.projectNumber !== 'string' ||
-        typeof result.displayName !== 'string' ||
-        typeof result.state !== 'string'
-      ) return invalidResponse();
-      Object.assign(metadata, {
-        projectNumber: result.projectNumber,
-        displayName: result.displayName,
-        projectState: result.state,
-        reused: result.reused === true,
-        billingLinked: false,
-      });
-    } else if (operation === 'enable-maps-apis') {
-      if (
-        result.projectId !== projectId ||
-        result.billingLinked !== false ||
-        result.billingEnabled !== false ||
-        !Array.isArray(result.services) ||
-        result.services.length !== MAPS_SERVICES.length
-      ) return invalidResponse();
-      const services = result.services.map((item) => {
-        if (!isRecord(item) || typeof item.service !== 'string' || item.state !== 'ENABLED') {
-          return invalidResponse();
-        }
-        return item.service;
-      }).sort();
-      if (services.join('|') !== [...MAPS_SERVICES].sort().join('|')) return invalidResponse();
-      Object.assign(metadata, { enabledServices: services });
-    } else if (operation === 'create-maps-key') {
-      if (
-        result.projectId !== projectId ||
-        result.billingLinked !== false ||
-        result.billingEnabled !== false ||
-        typeof result.projectNumber !== 'string' ||
-        !/^\d{6,20}$/u.test(result.projectNumber) ||
-        result.keyResourceName !== `projects/${result.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
-        result.keyId !== 'mcf-obras-maps-v1' ||
-        !Array.isArray(result.apiRestrictions) ||
-        result.apiRestrictions.length !== MAPS_KEY_SERVICES.length ||
-        result.apiRestrictions.some((service) => typeof service !== 'string') ||
-        typeof result.secretAlias !== 'string' ||
-        result.secretAlias !== 'agente-logistica-obras/google_maps_api_key' ||
-        typeof result.secretFingerprint !== 'string' ||
-        !/^[a-f0-9]{64}$/u.test(result.secretFingerprint) ||
-        result.status !== 'SUCCEEDED'
-      ) return invalidResponse();
-      const restrictions = result.apiRestrictions.filter((item): item is string => typeof item === 'string').sort();
-      if (restrictions.join('|') !== [...MAPS_KEY_SERVICES].sort().join('|')) return invalidResponse();
-      Object.assign(metadata, {
-        projectNumber: result.projectNumber,
-        keyResourceName: result.keyResourceName,
-        keyId: result.keyId,
-        apiRestrictions: restrictions,
-        secretAlias: result.secretAlias,
-        secretFingerprint: result.secretFingerprint,
-        secretStored: true,
-      });
-    } else if (operation === 'inspect-maps-key') {
-      if (
-        result.projectId !== projectId ||
-        result.billingLinked !== false ||
-        result.billingEnabled !== false ||
-        typeof result.projectNumber !== 'string' ||
-        !/^\d{6,20}$/u.test(result.projectNumber) ||
-        result.keyResourceName !== `projects/${result.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
-        result.restrictionsValid !== true ||
-        result.secretStored !== true ||
-        result.keyId !== 'mcf-obras-maps-v1'
-      ) return invalidResponse();
-      Object.assign(metadata, {
-        projectNumber: result.projectNumber,
-        keyResourceName: result.keyResourceName,
-        keyId: result.keyId,
-        apiRestrictions: result.apiRestrictions,
-        secretStored: true,
-      });
-    }
-    return this.receipt(request, 'SUCCEEDED', payload.trace_id, metadata);
+      const metadata: Record<string, unknown> = { projectId, missionId, billingEnabled: false, billingLinked: false };
+      if (operation === 'create-project') {
+        if (
+          result.projectId !== projectId ||
+          result.billingLinked !== false ||
+          result.billingEnabled !== false ||
+          typeof result.projectNumber !== 'string' ||
+          typeof result.displayName !== 'string' ||
+          typeof result.state !== 'string'
+        ) return invalidResponse();
+        Object.assign(metadata, {
+          projectNumber: result.projectNumber,
+          displayName: result.displayName,
+          projectState: result.state,
+          reused: result.reused === true,
+          billingLinked: false,
+        });
+      } else if (operation === 'enable-maps-apis') {
+        if (
+          result.projectId !== projectId ||
+          result.billingLinked !== false ||
+          result.billingEnabled !== false ||
+          !Array.isArray(result.services) ||
+          result.services.length !== MAPS_SERVICES.length
+        ) return invalidResponse();
+        const services = result.services.map((item) => {
+          if (!isRecord(item) || typeof item.service !== 'string' || item.state !== 'ENABLED') {
+            return invalidResponse();
+          }
+          return item.service;
+        }).sort();
+        if (services.join('|') !== [...MAPS_SERVICES].sort().join('|')) return invalidResponse();
+        Object.assign(metadata, { enabledServices: services });
+      } else if (operation === 'create-maps-key') {
+        if (
+          result.projectId !== projectId ||
+          result.billingLinked !== false ||
+          result.billingEnabled !== false ||
+          typeof result.projectNumber !== 'string' ||
+          !/^\d{6,20}$/u.test(result.projectNumber) ||
+          result.keyResourceName !== `projects/${result.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
+          result.keyId !== 'mcf-obras-maps-v1' ||
+          !Array.isArray(result.apiRestrictions) ||
+          result.apiRestrictions.length !== MAPS_KEY_SERVICES.length ||
+          result.apiRestrictions.some((service) => typeof service !== 'string') ||
+          typeof result.secretAlias !== 'string' ||
+          result.secretAlias !== 'agente-logistica-obras/google_maps_api_key' ||
+          typeof result.secretFingerprint !== 'string' ||
+          !/^[a-f0-9]{64}$/u.test(result.secretFingerprint) ||
+          result.status !== 'SUCCEEDED'
+        ) return invalidResponse();
+        const restrictions = result.apiRestrictions.filter((item): item is string => typeof item === 'string').sort();
+        if (restrictions.join('|') !== [...MAPS_KEY_SERVICES].sort().join('|')) return invalidResponse();
+        Object.assign(metadata, {
+          projectNumber: result.projectNumber,
+          keyResourceName: result.keyResourceName,
+          keyId: result.keyId,
+          apiRestrictions: restrictions,
+          secretAlias: result.secretAlias,
+          secretFingerprint: result.secretFingerprint,
+          secretStored: true,
+        });
+      } else if (operation === 'inspect-maps-key') {
+        if (
+          result.projectId !== projectId ||
+          result.billingLinked !== false ||
+          result.billingEnabled !== false ||
+          typeof result.projectNumber !== 'string' ||
+          !/^\d{6,20}$/u.test(result.projectNumber) ||
+          result.keyResourceName !== `projects/${result.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
+          result.restrictionsValid !== true ||
+          result.secretStored !== true ||
+          result.keyId !== 'mcf-obras-maps-v1'
+        ) return invalidResponse();
+        Object.assign(metadata, {
+          projectNumber: result.projectNumber,
+          keyResourceName: result.keyResourceName,
+          keyId: result.keyId,
+          apiRestrictions: result.apiRestrictions,
+          secretStored: true,
+        });
+      }
+      return this.receipt(request, 'SUCCEEDED', payload.trace_id, metadata);
     } catch (error) {
       if (error instanceof ExternalActionAdapterError && error.code === 'INVALID_RESPONSE') {
         return this.unknownReceipt(request, payload.trace_id, 'RESPONSE_UNVERIFIABLE');
