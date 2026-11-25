@@ -25,6 +25,7 @@ import { ExternalActionLedger } from './external-action-ledger.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
 import { GoogleBridgeReadAdapter } from './google-bridge-read.adapter.js';
+import { GoogleCloudProvisionAdapter } from './google-cloud-provision.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { GitHubExecutionIdentityRegistry } from './github-execution-identity.js';
 import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
@@ -151,6 +152,15 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
       inject: [EvidenceValidator],
     },
     {
+      provide: GoogleCloudProvisionAdapter,
+      useFactory: (evidence: EvidenceValidator) =>
+        new GoogleCloudProvisionAdapter(
+          evidence,
+          process.env.MCF_GOOGLE_CLOUD_PROVISION_RUNTIME_ENABLED === 'true',
+        ),
+      inject: [EvidenceValidator],
+    },
+    {
       provide: GitHubBranchPullRequestAdapter,
       useFactory: (evidence: EvidenceValidator, identities: GitHubExecutionIdentityRegistry) =>
         new GitHubBranchPullRequestAdapter(evidence, undefined, identities),
@@ -201,6 +211,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         codeBuddy: CodeBuddyExecutorAdapter,
         localAgentTeam: LocalAgentTeamAdapter,
         googleBridgeRead: GoogleBridgeReadAdapter,
+        googleCloudProvision: GoogleCloudProvisionAdapter,
         astryxCli: AstryxCliDiscoveryAdapter,
       ) =>
         new AdapterRegistry([
@@ -211,6 +222,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           codeBuddy,
           localAgentTeam,
           googleBridgeRead,
+          googleCloudProvision,
           astryxCli,
         ]),
       inject: [
@@ -221,6 +233,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         CodeBuddyExecutorAdapter,
         LocalAgentTeamAdapter,
         GoogleBridgeReadAdapter,
+        GoogleCloudProvisionAdapter,
         AstryxCliDiscoveryAdapter,
       ],
     },
