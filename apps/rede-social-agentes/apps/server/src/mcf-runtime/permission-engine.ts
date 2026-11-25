@@ -416,6 +416,34 @@ function assertCodeBuddyBoundary(
   }
 }
 
+function assertMcfContextAnalysisBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
+  if (
+    provider !== 'mcf-context' &&
+    skillId !== 'MCF-CAPABILITY-GAP-ANALYSIS' &&
+    skillId !== 'MCF-PROJECT-BOOTSTRAP'
+  ) return;
+
+  const allowed =
+    (skillId === 'MCF-CAPABILITY-GAP-ANALYSIS' &&
+      provider === 'mcf-context' &&
+      resource === 'capability-registry' &&
+      operation === 'analyze-gaps') ||
+    (skillId === 'MCF-PROJECT-BOOTSTRAP' &&
+      provider === 'mcf-context' &&
+      resource === 'project-bootstrap' &&
+      operation === 'build-plan');
+  if (!allowed) {
+    throw new McfPermissionDeniedError(
+      'MCF context analysis permits only read-only capability gap and bootstrap plan operations',
+    );
+  }
+}
+
 function assertGoogleBridgeBoundary(
   skillId: string,
   provider: string,
@@ -555,6 +583,7 @@ export class PermissionEngine {
     assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);
     assertLocalAgentTeamBoundary(skill.skillId, provider, operation, resource);
     assertGoogleBridgeBoundary(skill.skillId, provider, operation, resource, inputs);
+    assertMcfContextAnalysisBoundary(skill.skillId, provider, operation, resource);
     assertAstryxDiscoveryBoundary(skill.skillId, provider, operation, resource);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
