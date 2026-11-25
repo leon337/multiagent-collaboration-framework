@@ -276,7 +276,7 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
       );
     }
 
-    const metadata: Record<string, unknown> = { projectId, missionId };
+    const metadata: Record<string, unknown> = { projectId, missionId, billingEnabled: false, billingLinked: false };
     if (operation === 'create-project') {
       if (
         result.projectId !== projectId ||
