@@ -1,0 +1,1 @@
+REAL PHONE TEST: one outbound call via Twilio Trial Voice Speech Recognition, status Completed, duration 38 seconds, one free trial minute consumed on meter. NO automated redial. No external LLM call nor public webhook deployment. REGRESSION: 43 pytest local and 43 Colab CPU on code version v0.2.0 phase 04 previously passed; tests not rerun this phase.

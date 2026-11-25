@@ -1,0 +1,2 @@
+Testes locais simulados não enviaram tokens pagos. A chamada real de gateway isolado usou apenas modelo listado oficialmente como Free, custou 0 no tracker local, recebeu HTTP 200; conteúdo de voz ainda não validado. Colab CPU abaixo será executado com DEMO_MODE=1, sem chave nem requisição à IA.
+Colab CPU demonstrativo: 43/43 passed, exit 0, encerrado. Não usar como validação de telefonia real.

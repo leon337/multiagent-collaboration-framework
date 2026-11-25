@@ -1,0 +1,1 @@
+MESTRE: teto R$0. Bloquear IA externa em zero_cost mode independentemente do token. Não replicar chamadas após No answer. Preservar credenciais e número verificado. Gate humano para chamada efetiva e endpoint público.

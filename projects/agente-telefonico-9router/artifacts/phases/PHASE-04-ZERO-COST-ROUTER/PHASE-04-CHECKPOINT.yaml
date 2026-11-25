@@ -1,0 +1,23 @@
+mission_id: MCF-20261019-AGENTE-TELEFONICO-9ROUTER
+phase_id: PHASE-04-ZERO-COST-ROUTER
+risk: B
+status: CPU_COLAB_HOMOLOGADO_ISOLADO
+local_test_count: 43
+budget_brl: 0
+llm_route_test:
+  provider: opencode
+  model: oc/mimo-v2.6-flash-free
+  http: 200
+  cost_delta_recorded: 0.0
+  usable_text: false
+security:
+  ZERO_COST_ONLY: 1
+  external_gateway_disallowed: true
+production_ready: false
+human_gate:
+  - actual_phone_call_answered
+  - public_https_endpoint_approved
+  - privacy_and_telephony_authorized
+colab_cpu_tests: 43
+colab_session_terminated: true
+next_action: sync_github_drive_and_hold_telephony_gate
