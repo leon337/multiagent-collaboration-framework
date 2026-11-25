@@ -284,9 +284,7 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
         result.billingEnabled !== false ||
         typeof result.projectNumber !== 'string' ||
         typeof result.displayName !== 'string' ||
-        typeof result.state !== 'string' ||
-        result.billingLinked !== false ||
-        result.billingEnabled !== false
+        typeof result.state !== 'string'
       ) return invalidResponse();
       Object.assign(metadata, {
         projectNumber: result.projectNumber,
