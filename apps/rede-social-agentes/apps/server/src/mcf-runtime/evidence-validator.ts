@@ -320,7 +320,7 @@ function validateMcfProjectBootstrapReceipt(
       reject('MCF bootstrap plan must block external provisioning without explicit authorization');
     }
   }
-  if (provisioning && inputs.paid_services_required === true && inputs.allow_paid_services !== true) {
+  if (provisioning && inputs.external_actions_authorized === true && inputs.paid_services_required === true && inputs.allow_paid_services !== true) {
     if (provisioning.status !== 'BLOCKED' || provisioning.gate !== 'BILLING_APPROVAL_REQUIRED') {
       reject('MCF bootstrap plan must block paid services without billing approval');
     }
