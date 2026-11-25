@@ -1,0 +1,67 @@
+{
+  "schema": "mcf_local_parallel_evidence/v1",
+  "mission": "MCF-HARNESS-2.1-HARDENING-001",
+  "runtime": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
+  "notebook_used": false,
+  "brainbase_used": false,
+  "workers": 6,
+  "tests_total": 93,
+  "pass": 6,
+  "fail": 0,
+  "summary_sha256": "1e1bc92d9067b37d6fad6e37393776c82aa9665d479ba46617368b928dd38a1c",
+  "shards": [
+    {
+      "id": "schema",
+      "tests": 9,
+      "pid": 2804,
+      "status": "PASS",
+      "duration_ms": 1891.12
+    },
+    {
+      "id": "security",
+      "tests": 29,
+      "pid": 2805,
+      "status": "PASS",
+      "duration_ms": 4470.12
+    },
+    {
+      "id": "anchor",
+      "tests": 12,
+      "pid": 2806,
+      "status": "PASS",
+      "duration_ms": 5714.26
+    },
+    {
+      "id": "coordination",
+      "tests": 15,
+      "pid": 2807,
+      "status": "PASS",
+      "duration_ms": 7351.8
+    },
+    {
+      "id": "executor",
+      "tests": 10,
+      "pid": 2808,
+      "status": "PASS",
+      "duration_ms": 11195.52
+    },
+    {
+      "id": "recovery",
+      "tests": 18,
+      "pid": 2809,
+      "status": "PASS",
+      "duration_ms": 11190.31
+    }
+  ],
+  "remote_exact_head": {
+    "sha": "145594c3d47d2a1ede12cd0051ceac47dbc7c9fa",
+    "harness_ci": {
+      "run": 35389797242,
+      "conclusion": "success"
+    },
+    "production_readiness": {
+      "run": 35389797116,
+      "conclusion": "success"
+    }
+  }
+}

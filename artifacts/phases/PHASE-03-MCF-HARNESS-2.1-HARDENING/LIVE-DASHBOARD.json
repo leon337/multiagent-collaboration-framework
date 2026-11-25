@@ -1,0 +1,80 @@
+{
+  "schema": "mcf_live_dashboard/v1",
+  "mission_id": "MCF-HARNESS-2.1-HARDENING-001",
+  "issue": 238,
+  "title": "MCF Harness V2.1 Hardening",
+  "status": "IN_PROGRESS",
+  "current_phase": "H5 — External attestation + CI + threat-model closure",
+  "updated_at": "2026-09-18T17:23:00-03:00",
+  "branch": "hardening/mcf-harness-2.1-20260918",
+  "current_head": "85089e7caab0c06d052e4854d9187ef61a4340e7",
+  "links": {
+    "issue": "https://github.com/leon337/multiagent-collaboration-framework/issues/238",
+    "pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/239"
+  },
+  "evidence": {
+    "local_parallel_shards": "6/6 PASS",
+    "local_tests_total": 93,
+    "harness_ci": "SUCCESS",
+    "production_readiness": "IN_PROGRESS",
+    "notebook_used": false,
+    "brainbase_used": false
+  },
+  "roadmap": [
+    {
+      "id": "H1",
+      "name": "Mailbox hardening",
+      "status": "PASS_LOCAL_CI_VALIDATED"
+    },
+    {
+      "id": "H2",
+      "name": "Scheduler hardening",
+      "status": "PASS_LOCAL_CI_VALIDATED"
+    },
+    {
+      "id": "H3",
+      "name": "Security + secrets",
+      "status": "PASS_LOCAL_CI_VALIDATED"
+    },
+    {
+      "id": "H4",
+      "name": "Journal snapshots + receipts + schema migration",
+      "status": "PASS_LOCAL_CI_VALIDATED"
+    },
+    {
+      "id": "H5",
+      "name": "External attestation + threat model + final gates",
+      "status": "IN_PROGRESS"
+    }
+  ],
+  "blockers": [
+    "Production Readiness for current head still running",
+    "HUMAN_GATE required before merge"
+  ],
+  "history": [
+    {
+      "at": "2026-09-18T16:55:00-03:00",
+      "actor": "MESTRE",
+      "type": "CI_FIX",
+      "text": "Receipt schema divergence corrected; exact-head CI recovered."
+    },
+    {
+      "at": "2026-09-18T17:04:00-03:00",
+      "actor": "MESTRE",
+      "type": "SCHEMA_MIGRATION",
+      "text": "C09 explicit fail-closed schema migration registry added."
+    },
+    {
+      "at": "2026-09-18T17:13:00-03:00",
+      "actor": "MESTRE",
+      "type": "SECRETS",
+      "text": "Secret lifecycle with TTL, revoke, zeroization and execution-scoped capability binding added."
+    },
+    {
+      "at": "2026-09-18T17:20:00-03:00",
+      "actor": "MESTRE",
+      "type": "ATTESTATION",
+      "text": "External attestation publication receipt layer added; mutable provider is never labeled immutable."
+    }
+  ]
+}
