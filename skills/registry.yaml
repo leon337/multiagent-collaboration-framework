@@ -677,10 +677,10 @@ skills:
     forbidden_tools: [billing, iam, delete, deploy, public_deployment, unrestricted_api_key, secret_exposure]
     permission_profile: HUMAN_GATE
     execution_steps: [validar_human_gate_e_conta, criar_projeto_deterministico, habilitar_apis_maps_allowlisted, criar_chave_com_api_targets_exatos, persistir_secret_0600, verificar_metadados_independentemente, registrar_receipt]
-    required_evidence: [bridge_trace_id, project_id, project_number, enabled_services, api_key_resource_name, api_restrictions, secret_fingerprint, secret_file_permissions]
+    required_evidence: [bridge_trace_id, project_id, project_number, billing_status_unlinked, enabled_services, api_key_resource_name, api_restrictions, secret_fingerprint, secret_file_permissions]
     expected_outputs: [project_metadata, maps_api_readiness, restricted_key_metadata, local_secret_alias]
     acceptance_criteria: [project_matches_approved_scope, mcf_ownership_labels_verified, billing_unlinked, exact_api_targets, key_string_not_exposed, secret_file_owner_only, signed_receipt]
-    failure_modes: [bridge_disabled, missing_adc, missing_cloud_platform_scope, account_mismatch, terms_not_accepted, project_id_collision, api_enable_pending, key_create_unknown, secret_store_failed]
+    failure_modes: [bridge_disabled, missing_adc, missing_cloud_platform_scope, account_mismatch, terms_not_accepted, project_id_collision, billing_linked_or_unverified, api_enable_pending, key_create_unknown, secret_store_failed]
     fallback: Parar, registrar UNKNOWN e reconciliar IDs determinísticos antes de qualquer retry; nunca vincular billing nem imprimir o segredo.
     handoff_to: Mestre
 
