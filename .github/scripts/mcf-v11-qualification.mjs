@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
+import { classifyStructuralDatabaseChanges } from './mcf-v11-structural-migrations.mjs';
 
 const repoRoot = process.cwd();
 const resultPath = resolve(
@@ -267,9 +268,9 @@ function structuralNoParallelArchitecture() {
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const newDbState = changed.filter((path) =>
-    /apps\/rede-social-agentes\/packages\/database\/.*(?:migration|migrations|schema)/iu.test(path),
-  );
+  const { forbiddenDatabaseStateChanges, exemptedRuntimeObservations } =
+    classifyStructuralDatabaseChanges(changed, repoRoot);
+  const newDbState = forbiddenDatabaseStateChanges;
   const forbiddenDuplicateNames = changed.filter((path) => {
     const name = basename(path).toLowerCase();
     return [
@@ -291,6 +292,7 @@ function structuralNoParallelArchitecture() {
     `structural_base=${structuralBase}`,
     `changed_paths=${changed.length}`,
     `database_state_changes=${newDbState.length}`,
+    `pinned_runtime_only_migrations=${exemptedRuntimeObservations.length}`,
     `forbidden_duplicate_core_files=${forbiddenDuplicateNames.length}`,
     `missing_existing_core_files=${missingCore.length}`,
   ];

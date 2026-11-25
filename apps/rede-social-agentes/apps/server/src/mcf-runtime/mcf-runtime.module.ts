@@ -35,6 +35,8 @@ import { MissionObservabilityController } from './mission-observability.controll
 import { MissionControlController } from './mission-control.controller.js';
 import { MissionControlRepository } from './mission-control.repository.js';
 import { MissionControlService } from './mission-control.service.js';
+import { MissionContinuationService } from './mission-continuation.service.js';
+import { PostgresMissionContinuationRepository } from './mission-continuation.repository.js';
 import { McfMissionControlTokenGuard } from './mission-control-token.guard.js';
 import { MissionObservabilityRepository } from './mission-observability.repository.js';
 import { MissionObservabilityService } from './mission-observability.service.js';
@@ -95,6 +97,18 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     McfRuntimeTokenGuard,
     McfMissionControlTokenGuard,
     MissionControlRepository,
+    {
+      provide: PostgresMissionContinuationRepository,
+      useFactory: (database: DatabaseService) =>
+        new PostgresMissionContinuationRepository(database),
+      inject: [DatabaseService],
+    },
+    {
+      provide: MissionContinuationService,
+      useFactory: (repository: PostgresMissionContinuationRepository) =>
+        new MissionContinuationService(repository),
+      inject: [PostgresMissionContinuationRepository],
+    },
     MissionV11ContextGuard,
     ContinuityRecoveryService,
     {
@@ -365,6 +379,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     AgentExecutionService,
     MissionRuntimeService,
     MissionObservabilityService,
+    MissionContinuationService,
     ContinuityRecoveryService,
     ChatRuntimeBridgeService,
     SocialTimelineService,
