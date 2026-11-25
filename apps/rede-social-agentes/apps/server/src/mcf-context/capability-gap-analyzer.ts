@@ -32,8 +32,6 @@ function matchesResource(pattern: string, resource: string): boolean {
   }
   return true;
 }
-, 'u').test(resource);
-}
 
 function gap(
   code: McfCapabilityGap['code'],
