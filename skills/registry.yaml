@@ -672,7 +672,6 @@ skills:
     owner_agents: [Mestre]
     trigger_phrases: ["provisionar projeto Google Cloud", "criar projeto Maps", "criar chave Maps restrita"]
     required_inputs: [projectId, missionId, approvedProjectId, humanGateApproved, authorizedScope, sensitiveAuthorization, cloudAccountVerified, cloudTermsAccepted]
-    optional_inputs: [displayName]
     allowed_tools: [mcf-google-bridge]
     forbidden_tools: [billing, iam, delete, deploy, public_deployment, unrestricted_api_key, secret_exposure]
     permission_profile: HUMAN_GATE
@@ -693,7 +692,6 @@ skills:
     owner_agents: [Mestre]
     trigger_phrases: ["analisar gaps de capacidade", "o que falta para executar o projeto", "mapear capacidades ausentes"]
     required_inputs: [project_id, requirements]
-    optional_inputs: [live_verifications]
     allowed_tools: [mcf-context]
     forbidden_tools: [authorize, mutate, execute, provision, write, delete, deploy, billing, iam]
     permission_profile: READ_ONLY
@@ -713,7 +711,6 @@ skills:
     owner_agents: [Mestre]
     trigger_phrases: ["planejar bootstrap do projeto", "criar plano de execução ponta a ponta", "preparar novo projeto MCF"]
     required_inputs: [project_id, project_name, objective, environment, requirements]
-    optional_inputs: [live_verifications, paid_services_required, allow_paid_services, external_actions_authorized, production_requested, production_authorized]
     allowed_tools: [mcf-context]
     forbidden_tools: [execute, provision, write, delete, deploy, billing, iam, public_deployment, send_message]
     permission_profile: READ_ONLY
