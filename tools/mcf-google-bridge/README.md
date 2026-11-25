@@ -95,7 +95,7 @@ Operações HTTP locais allowlisted:
 - google.cloud.apiKeys.createMaps — cria/reconcilia a chave mcf-obras-maps-v1 com API restrictions exatas para Geocoding e Routes; a string é gravada localmente e nunca retornada.
 - google.cloud.apiKeys.inspectMaps — consulta metadados e confirma se o secret local está presente com permissões seguras.
 
-O Bridge não implementa billing link, billing account creation, IAM administration, service-account key export, delete, deploy ou public exposure. O projeto é criado sem vincular faturamento. A chave criada restringe os serviços de API; a restrição de IP de aplicação permanece uma etapa de hardening quando o IP de saída do ambiente estiver estabilizado.
+O Bridge não implementa billing link, billing account creation, IAM administration, service-account key export, delete, deploy ou public exposure. O projeto é criado sem vincular faturamento. Antes de habilitar APIs Maps ou criar a chave, o Bridge consulta o Cloud Billing API (GET projects/{projectId}/billingInfo) e exige billingEnabled=false e ausência de billingAccountName. Se a consulta não puder ser verificada, o resultado fica PENDING/UNKNOWN; se houver conta vinculada ou billing ativo, a operação é bloqueada. A chave criada restringe os serviços de API; a restrição de IP de aplicação permanece uma etapa de hardening quando o IP de saída do ambiente estiver estabilizado.
 
 ### Autorização Cloud ADC
 
