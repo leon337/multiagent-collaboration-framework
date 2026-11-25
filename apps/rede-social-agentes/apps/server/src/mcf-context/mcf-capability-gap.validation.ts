@@ -59,7 +59,7 @@ function parseRequirement(value: unknown): McfCapabilityGapRequirement {
   }
   if (value.environment !== undefined) {
     if (typeof value.environment !== 'string' || !ENVIRONMENTS.has(value.environment)) return invalid();
-    result.environment = value.environment as McfCapabilityGapRequirement['environment'];
+    result.environment = value.environment as NonNullable<McfCapabilityGapRequirement['environment']>;
   }
   if (value.resource !== undefined) {
     if (!text(value.resource, 1, 1024)) return invalid();
@@ -67,7 +67,7 @@ function parseRequirement(value: unknown): McfCapabilityGapRequirement {
   }
   if (value.mode !== undefined) {
     if (typeof value.mode !== 'string' || !MODES.has(value.mode)) return invalid();
-    result.mode = value.mode as McfCapabilityGapRequirement['mode'];
+    result.mode = value.mode as NonNullable<McfCapabilityGapRequirement['mode']>;
   }
   if (value.require_live_verification !== undefined) {
     if (typeof value.require_live_verification !== 'boolean') return invalid();
