@@ -1,0 +1,17 @@
+[Unit]
+Description=MCF Agent Lab (Tailnet-only restricted proxy)
+After=network.target mcf-agent-studio.service
+Wants=mcf-agent-studio.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/.local/share/mcf-agent-studio
+ExecStart=/usr/bin/node %h/.local/share/mcf-agent-studio/mobile-lab-proxy.mjs
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+UMask=0077
+Environment=MCF_AGENT_LAB_PROXY_PORT=4323
+
+[Install]
+WantedBy=default.target
