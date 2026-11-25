@@ -158,8 +158,9 @@ function validateGoogleCloudProvisionReceipt(
     ];
     if (
       metadata.keyId !== 'mcf-obras-maps-v1' ||
-      typeof metadata.keyResourceName !== 'string' ||
-      !metadata.keyResourceName.includes('/locations/global/keys/mcf-obras-maps-v1') ||
+      typeof metadata.projectNumber !== 'string' ||
+      !/^\d{6,20}$/u.test(metadata.projectNumber) ||
+      metadata.keyResourceName !== `projects/${metadata.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
       !Array.isArray(restrictions) ||
       restrictions.length !== expectedRestrictions.length ||
       restrictions.some((service) => typeof service !== 'string') ||
