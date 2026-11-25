@@ -61,6 +61,7 @@ const executableSkills = new Set([
   'MCF-CLOSE-PHASE',
   'MCF-AUDIT-VISUAL-DESKTOP',
   'MCF-ASTRYX-COMPONENT-DISCOVERY',
+  'MCF-GOOGLE-CLOUD-PROVISION',
 ]);
 
 const internalSkills = new Set([
