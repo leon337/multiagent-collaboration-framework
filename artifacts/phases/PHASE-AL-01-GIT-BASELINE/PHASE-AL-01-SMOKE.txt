@@ -1,0 +1,7 @@
+SMOKE — PHASE-AL-01-GIT-BASELINE
+Application smoke tests: NAO_APLICAVEL.
+Reason: this mission registers an existing Git snapshot; no product code was changed.
+
+No new TTS synthesis performed for this mission.
+Earlier product generation tests with publicly available sample are cited as prior evidence, not re-executed here.
+The documented local product API endpoint is localhost-only.

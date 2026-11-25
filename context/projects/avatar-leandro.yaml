@@ -1,0 +1,85 @@
+schema_version: 1
+
+project:
+  id: avatar-leandro
+  lifecycle: REGISTRATION_PROPOSED
+  stage: GIT_LOCAL_BASELINE_VERSIONED
+  stage_date: 2026-10-18
+
+identity:
+  canonical_repository: null
+  repository_status: LOCAL_ONLY_NO_REMOTE
+  aliases:
+    - AVATAR LEANDRO
+    - AVATAR LEANDRO - Estúdio de Voz
+    - Estúdio de Voz
+  local_git:
+    branch: main
+    head_short: 1f6fb9e
+    tracked_files: 16
+    working_tree_at_checkpoint: CLEAN
+    verification: Remote Desktop Commander on authorized notebook, 2026-10-18
+    note: No remote URL exists. Do not represent local commit as verifiable GitHub SHA.
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: null
+  canonical_entrypoints:
+    - README.md
+    - Relatorio_Desenvolvimento_AVATAR_LEANDRO_2026-10-18.md
+    - AVATAR_LEANDRO_Colab_Diagnostico.ipynb
+    - MOTOR_VOZ/app.py
+    - MOTOR_VOZ/static/index.html
+    - MOTOR_VOZ/static/studio.js
+    - MOTOR_VOZ/static/studio.css
+    - MOTOR_VOZ/design/DESIGN.md
+    - MOTOR_VOZ/design/BRIEF_STITCH_MOBILE_FIRST.txt
+
+scope:
+  product: avatar-leandro
+  active_surface: local-voice-studio-web-ui-and-external-hf-inference
+  active_mission: MCF-AVATAR-LEANDRO-GIT-BASELINE-20261018-001
+  current_milestone: initial-local-git-commit-and-technical-report
+  mcf_issue: 447
+
+technology:
+  backend: Python FastAPI
+  frontend: HTML CSS JavaScript
+  reference_capture: Browser MediaRecorder and Microsoft LifeCam optional preview
+  tts_inference: ResembleAI Chatterbox Multilingual pt-BR public Hugging Face Space
+  prototype_ui: Google Stitch draft mobile-first
+  colab: diagnostic-only-T4-proven-no-cloning-executed
+
+verified:
+  local_git_initial_commit: true
+  technical_report_tracked: true
+  colab_notebook_tracked: true
+  hf_free_authenticated_demo_tts: true
+  actual_user_voice_fidelity_verified: false
+  mobile_ux_homologated: false
+  stitch_design_exported_and_merged: false
+  independent_self_hosted_tts: false
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
+  local_commit_snapshot: 2026-10-18
+
+governance:
+  framework: MCF
+  human_authority: LEANDRO
+  coordinator: MESTRE
+  operational_gate: LEO
+  risk_class: B
+  automatic_merge: false
+  production_changes_authorized: false
+  publication_or_new_cost_authorized: false
+  no_personal_audio_or_credentials_in_registry: true
+
+tracking:
+  mcf_issue: 447
+  mcf_registry_pr: 448
+  project_issue: null
+  phase_id: PHASE-AL-01-GIT-BASELINE

@@ -1,0 +1,6 @@
+# PHASE-AL-01-GIT-BASELINE — manifesto documental
+# NAO_APLICAVEL: nenhuma lista de checksums SHA256 independentes foi aferida nesta fase.
+# Motivo: evidencia canônica consiste no commit e nos blobs Git da branch de registro,
+# enquanto o commit 1f6fb9e é local ao notebook e nao acessivel pelo GitHub.
+# integrity_verified: false
+# Auditoria independente deve calcular hashes se requerida para aprovacao do gate.

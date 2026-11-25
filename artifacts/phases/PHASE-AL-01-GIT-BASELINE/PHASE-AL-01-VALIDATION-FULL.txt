@@ -1,0 +1,16 @@
+VALIDATION-FULL — PHASE-AL-01-GIT-BASELINE
+Scope is documentary registration only.
+
+Independent runtime regression tests: NAO_APLICAVEL.
+Reason: no product source code was changed by this MCF mission.
+
+Full independent MCF audit: PENDENTE.
+Reason: no independently executed control agent has reviewed this branch.
+
+Review must confirm:
+ - Project and Mission Context both reference Issue #447 and same mission id;
+ - local SHA is identified as LOCAL only, not published;
+ - no secrets, recordings, WAV files or user private data are committed;
+ - no MCF main mutation, merge, cost or deployment is inferred.
+
+Gate acceptance: PENDENTE.
