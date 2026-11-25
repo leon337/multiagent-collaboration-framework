@@ -280,10 +280,13 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
     if (operation === 'create-project') {
       if (
         result.projectId !== projectId ||
+        result.billingLinked !== false ||
+        result.billingEnabled !== false ||
         typeof result.projectNumber !== 'string' ||
         typeof result.displayName !== 'string' ||
         typeof result.state !== 'string' ||
-        result.billingLinked !== false
+        result.billingLinked !== false ||
+        result.billingEnabled !== false
       ) return invalidResponse();
       Object.assign(metadata, {
         projectNumber: result.projectNumber,
@@ -295,6 +298,8 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
     } else if (operation === 'enable-maps-apis') {
       if (
         result.projectId !== projectId ||
+        result.billingLinked !== false ||
+        result.billingEnabled !== false ||
         !Array.isArray(result.services) ||
         result.services.length !== MAPS_SERVICES.length
       ) return invalidResponse();
@@ -309,6 +314,8 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
     } else if (operation === 'create-maps-key') {
       if (
         result.projectId !== projectId ||
+        result.billingLinked !== false ||
+        result.billingEnabled !== false ||
         typeof result.projectNumber !== 'string' ||
         !/^\d{6,20}$/u.test(result.projectNumber) ||
         result.keyResourceName !== `projects/${result.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
