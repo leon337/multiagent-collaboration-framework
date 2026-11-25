@@ -1,0 +1,241 @@
+{
+  "schema": {
+    "id": "continuity_capsule/v1",
+    "capsule_id": "OX-CONTINUITY-2026-08-26-NORMALIZED-FIXTURE",
+    "created_at_utc": "2026-08-26T07:40:20Z",
+    "state_as_of_utc": "2026-08-26T07:40:20Z",
+    "classification": "public",
+    "storage_target_class": "public",
+    "publication_policy_ref": "PR-174-documentation-only",
+    "supersedes_capsule_id": null,
+    "supersedes_payload_sha256": null
+  },
+  "identity": {
+    "agent_id": "OX",
+    "display_name": "OX",
+    "agent_role": "external agent operated via DeepSeek Harness",
+    "agent_contract_version": "external-agent-v1-fixture-only",
+    "agent_contract_sha256": "94e6ec0074c1d9d4b8c32c19055667e324ae2c1982a54d7806e7dcb1e400070a",
+    "skills_manifest_sha256": "972c10b8e1614ce5d9d886206a24f70628194040a07e611c6e85264331ad6f93",
+    "agent_identity_fingerprint": "09ac76c6d75aa1b4d00caee69e59bcf831c1c726caa32ccd6858dbf8fc3e517f",
+    "identity_fingerprint_algorithm": "MCF_AGENT_IDENTITY_V1+SHA256",
+    "source_session_id": "session-3b58c1d4-5e1e-4438-884b-bc9c8ffaa10c",
+    "source_session_evidence_class": "INDIRECT_CORROBORATED",
+    "preset_or_profile": "mcf",
+    "skills_manifest_ref": null,
+    "runtime_persona_ref": null
+  },
+  "mission": {
+    "mission_id": "MCF-OX-CONTINUITY-RECOVERY-001",
+    "phase_id": "PHASE-01-PREDECESSOR-CAPSULE",
+    "current_goal": "Preserve verifiable continuity across migration to a new OX DSH session.",
+    "current_state": "Predecessor capsule sealed; successor recovery pending at snapshot time.",
+    "status": "READY_FOR_HANDOFF",
+    "next_action": "Successor validates capsule, reconciles current sources, and emits recovery receipt.",
+    "return_to": "MESTRE"
+  },
+  "authority": {
+    "final_human_authority": "LEANDRO",
+    "orchestrator": "MESTRE",
+    "standing_authorizations": [
+      {
+        "authorization_id": "AUTH-OX-CONTINUITY-MIGRATION-20260826",
+        "scope": "Create continuity artifacts and perform read-only verification for OX migration; no merge/deploy/model-provider change.",
+        "granted_by": "LEANDRO",
+        "granted_at_utc": "2026-08-26T07:00:00Z",
+        "expires_at_utc": null,
+        "evidence_ref": "human-authorization-in-MCF-chat",
+        "superseded_by": null,
+        "freshness": "RECONCILE_ON_RECOVERY"
+      }
+    ],
+    "active_gates": [
+      {
+        "gate_id": "GATE-PR172-VISION",
+        "description": "Vision implementation/model-provider change remains deferred and LEANDRO-gated.",
+        "owner": "LEANDRO",
+        "freshness": "RECONCILE_ON_RECOVERY",
+        "evidence_ref": "PR-172"
+      }
+    ],
+    "prohibited_actions": [
+      "merge",
+      "deploy",
+      "release",
+      "production change",
+      "vision implementation",
+      "model/provider change"
+    ]
+  },
+  "runtime_snapshot": {
+    "runtime_type": "DeepSeek Harness",
+    "runtime_version": "0.1.1-rc.2",
+    "host_id_or_ref": "vmi3506102",
+    "workspace_ref": "/opt/sentinelx-cloud-core/mcf-labs",
+    "provider": "opencode-zen-direct",
+    "model": "x-preview-f-free",
+    "session_id": "session-3b58c1d4-5e1e-4438-884b-bc9c8ffaa10c",
+    "observed_at_utc": "2026-08-26T07:40:20Z",
+    "host_boot_id_or_boot_time": "2026-08-15T22:44:48",
+    "health_snapshot": "Host remained up across observed migration episode.",
+    "tool_profile": "mcf preset",
+    "network_surface": "DSH Web API loopback/local surface",
+    "context_pressure": 0.49
+  },
+  "repository_anchors": [
+    {
+      "repository": "leon337/multiagent-collaboration-framework",
+      "ref_type": "commit",
+      "ref": "main@2b8ce24b71c9f9095c801dafdd762a2cef202fa9",
+      "sha": "2b8ce24b71c9f9095c801dafdd762a2cef202fa9",
+      "observed_at_utc": "2026-08-26T07:40:20Z",
+      "verification_method": "git/GitHub state reported in capsule episode",
+      "freshness": "RECONCILE_ON_RECOVERY",
+      "trusted_source_ref": "github-official-repo"
+    },
+    {
+      "repository": "leon337/multiagent-collaboration-framework",
+      "ref_type": "pr",
+      "ref": "PR-172",
+      "sha": "bbc93a4eada2ac14c1f6f2e8c5dbab005fd1d4a2",
+      "observed_at_utc": "2026-08-26T07:40:20Z",
+      "verification_method": "GitHub API snapshot",
+      "freshness": "RECONCILE_ON_RECOVERY",
+      "trusted_source_ref": "github-official-repo"
+    }
+  ],
+  "decisions": [
+    {
+      "decision_id": "D-OX-CONT-001",
+      "statement": "Use an external continuity capsule before opening the successor OX session.",
+      "status": "ACTIVE",
+      "made_by": "LEANDRO/MESTRE/OX continuity protocol",
+      "made_at_utc": "2026-08-26T07:40:20Z",
+      "evidence_refs": ["artifacts/continuity/OX-CONTINUITY-CAPSULE-2026-08-26.md"],
+      "supersedes": [],
+      "requires_gate": null
+    },
+    {
+      "decision_id": "D-OX-VISION-DEFERRED",
+      "statement": "OX vision bridge remains proposal/deferred; implementation not authorized.",
+      "status": "DEFERRED",
+      "made_by": "LEANDRO",
+      "made_at_utc": "2026-08-26T07:40:20Z",
+      "evidence_refs": ["PR-172"],
+      "supersedes": [],
+      "requires_gate": "GATE-PR172-VISION"
+    }
+  ],
+  "pending_items": [
+    {
+      "pending_id": "P-CUR-1",
+      "description": "Transport the Resumption Note and independently verify the remote published bytes.",
+      "owner": "MESTRE/OX-successor",
+      "priority": "HIGH",
+      "state": "OPEN",
+      "next_action": "MESTRE transports; successor OX verifies remote hash/bytes.",
+      "acceptance_criteria": "Remote Resumption Note hash equals 5e893bf85dce22c515652c29ff6e167723d012fe329c618f78b9a1f765a2002b.",
+      "evidence_refs": ["docs/proposals/evidence/MCF-OX-COPRESENCE-RESUMPTION-NOTE-2026-08-26.md"],
+      "blocker": null,
+      "gate_id": null
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": "OX-CAPSULE-ORIGINAL",
+      "path_or_uri": "artifacts/continuity/OX-CONTINUITY-CAPSULE-2026-08-26.md",
+      "media_type": "text/markdown",
+      "size_bytes": 9446,
+      "sha256": "3d7ef5bd6b03bfb0771600f3a34a647e0cc8b0d944b12755071ef888db26f444",
+      "producer": "OX predecessor",
+      "produced_at_utc": "2026-08-26T07:40:20Z",
+      "evidence_class": "DISK_ARTIFACT",
+      "transport_state": "TRANSPORTED_AND_REMOTE_VERIFIED",
+      "remote_ref": "PR-174",
+      "verification": "SHA-256 and byte equality verified after transport.",
+      "reference_policy_ref": "official-mcf-repo-only"
+    },
+    {
+      "artifact_id": "OX-RESUMPTION-NOTE",
+      "path_or_uri": "docs/proposals/evidence/MCF-OX-COPRESENCE-RESUMPTION-NOTE-2026-08-26.md",
+      "media_type": "text/markdown",
+      "size_bytes": 4183,
+      "sha256": "5e893bf85dce22c515652c29ff6e167723d012fe329c618f78b9a1f765a2002b",
+      "producer": "OX",
+      "produced_at_utc": "2026-08-26T07:40:20Z",
+      "evidence_class": "DISK_ARTIFACT",
+      "transport_state": "PENDING_AT_SNAPSHOT",
+      "remote_ref": null,
+      "verification": "Local hash anchor in predecessor capsule.",
+      "reference_policy_ref": "official-mcf-repo-only"
+    }
+  ],
+  "events": [
+    {
+      "event_id": "EV-OX-CAPSULE-SEALED",
+      "ts_utc": "2026-08-26T07:40:20Z",
+      "actor": "OX",
+      "role": "producer",
+      "surface": "DSH workspace",
+      "carrier_class": "DISK_ARTIFACT",
+      "payload_ref": "artifacts/continuity/OX-CONTINUITY-CAPSULE-2026-08-26.md",
+      "payload_sha256": "3d7ef5bd6b03bfb0771600f3a34a647e0cc8b0d944b12755071ef888db26f444",
+      "evidence_class": "DIRECT_RUNTIME_EVIDENCE",
+      "order_ref": "LEANDRO-continuity-authorization",
+      "verification": "Capsule later transported and byte-verified.",
+      "state_as_of": "2026-08-26T07:40:20Z",
+      "host_snapshot_ref": "vmi3506102",
+      "supersedes": null
+    }
+  ],
+  "uncertainties": [
+    {
+      "uncertainty_id": "U-RELEASE-RELAY",
+      "claim_or_question": "Whether the release tag/state relayed to OX matches current official GitHub state at recovery time.",
+      "class": "UNVERIFIED",
+      "last_observed_at_utc": "2026-08-26T07:40:20Z",
+      "evidence_refs": ["MESTRE relay"],
+      "required_verification": "Query official GitHub release source during recovery.",
+      "impact_if_wrong": "May affect interpretation of current framework baseline; does not alter historical capsule hash."
+    }
+  ],
+  "provenance": {
+    "producer_agent_id": "OX",
+    "producer_session_id": "session-3b58c1d4-5e1e-4438-884b-bc9c8ffaa10c",
+    "generation_method": "Normalized structural fixture derived from the proven OX predecessor capsule. Identity contract/skills digests are synthetic fixture anchors and are not production OX identity claims.",
+    "source_refs": [
+      "artifacts/continuity/OX-CONTINUITY-CAPSULE-2026-08-26.md",
+      "artifacts/continuity/OX-POST-MIGRATION-REMOTE-VERIFY-2026-08-26.md"
+    ],
+    "operator_identity": null,
+    "git_author_identity": null,
+    "created_on_host_ref": "MESTRE-schema-qualification-fixture",
+    "verification_notes": "Operational facts map from OX migration evidence. Synthetic identity inputs exist only to exercise schema fields."
+  },
+  "memory_refs": [],
+  "trusted_sources": [
+    {
+      "source_id": "github-official-repo",
+      "source_type": "GitHub repository/API",
+      "scope": "MCF repository refs, PR state, release state and repository artifacts",
+      "authentication_or_verification_method": "Official repository API/content source",
+      "allowed_claim_classes": ["repository_state","release_state","artifact_remote_content"],
+      "freshness_policy": "Query at recovery for volatile state."
+    }
+  ],
+  "trusted_source_policy_ref": "MCF-mission-authorized-sources",
+  "authenticity": {
+    "method": "AUTHENTICATED_TRANSPORT_RECEIPT",
+    "evidence_refs": ["OX post-migration receipt","MESTRE byte-match transport verification"],
+    "verified_at_utc": "2026-08-26T08:49:00Z",
+    "verifier": "MESTRE"
+  },
+  "integrity": {
+    "canonicalization": "Fixture uses deterministic sorted-key JSON serialization for structural qualification only.",
+    "canonicalization_id": "MCF_FIXTURE_SORTED_JSON_V0",
+    "payload_sha256": "fd43dcd73b87c17473eaa34097d9c949d04259f8ef8ca8214d3ba25130cb90ea",
+    "file_sha256": null,
+    "producer_fingerprint": "OX-fixture-normalization-not-a-signature",
+    "verification_status": "STRUCTURAL_FIXTURE_SEALED"
+  }
+}
