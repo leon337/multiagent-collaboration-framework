@@ -135,6 +135,10 @@ function statusFor(gaps: readonly McfCapabilityGap[]): McfCapabilityGapItem['sta
     gaps.some((item) =>
       [
         'IMPLEMENTATION_NOT_READY',
+        'CONNECTION_NOT_READY',
+        'RUNTIME_NOT_READY',
+        'LIVE_CONNECTION_NOT_READY',
+        'LIVE_RUNTIME_NOT_READY',
         'AUTHORIZATION_REQUIRED',
         'AUTHORIZATION_EXPIRED',
         'RUNTIME_BLOCKED',
