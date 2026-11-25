@@ -104,9 +104,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y bubblewrap apparmor-profiles
-          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
-          test -f "$profile"
-          sudo install -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          # Ubuntu 25.04+ ships this profile in /etc; older runners use extra-profiles.
+          if test ! -f /etc/apparmor.d/bwrap-userns-restrict; then
+            legacy_profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+            test -f "$legacy_profile"
+            sudo install -m 0644 "$legacy_profile" /etc/apparmor.d/bwrap-userns-restrict
+          fi
           sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
           bwrap --version
           bwrap --unshare-user --unshare-pid --die-with-parent --ro-bind / / -- /bin/true
@@ -121,6 +124,34 @@ jobs:
 
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Use PostgreSQL 16 clients for backup and restore
+        working-directory: apps/rede-social-agentes
+        run: |
+          # The runner's default pg_dump can be newer than the PostgreSQL 16 service.
+          # Use the service-matched PostgreSQL 16 image; retain real backup/restore checks.
+          mkdir -p "$RUNNER_TEMP/pg16-client"
+          cat > "$RUNNER_TEMP/pg16-client/pg16-wrapper" <<'SCRIPT'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          binary="$(basename "$0")"
+          case "$binary" in
+            pg_dump|pg_restore) ;;
+            *) exit 2 ;;
+          esac
+          backup_dir="$(realpath -m "${BACKUP_DIRECTORY:-./var/readiness-backup}")"
+          exec docker run --rm --network host \
+            --user "$(id -u):$(id -g)" \
+            --mount "type=bind,source=$backup_dir,target=$backup_dir" \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE \
+            -e PGAPPNAME -e PGSSLMODE \
+            postgres:16-alpine "$binary" "$@"
+          SCRIPT
+          chmod 0700 "$RUNNER_TEMP/pg16-client/pg16-wrapper"
+          ln -s pg16-wrapper "$RUNNER_TEMP/pg16-client/pg_dump"
+          ln -s pg16-wrapper "$RUNNER_TEMP/pg16-client/pg_restore"
+          echo "$RUNNER_TEMP/pg16-client" >> "$GITHUB_PATH"
+          docker run --rm postgres:16-alpine pg_dump --version
 
       - name: Exercise backup and isolated restore
         working-directory: apps/rede-social-agentes
