@@ -1,0 +1,1 @@
+{"name":"@mcf/clinic-scheduling","private":true,"type":"module","scripts":{"test":"node --test","start":"node src/server.mjs"},"engines":{"node":">=20"},"dependencies":{"@js-temporal/polyfill":"^0.4.4","pg":"^8.13.1"}}
