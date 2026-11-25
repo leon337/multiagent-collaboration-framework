@@ -94,6 +94,7 @@ describe('Google Cloud provisioning MCF adapter', () => {
       projectNumber: '123456789',
       displayName: 'MCF Agente Logistica Obras V1',
       state: 'ACTIVE',
+      billingEnabled: false,
       billingLinked: false,
     });
     expect(subject.supports(request())).toBe(true);
@@ -158,6 +159,8 @@ describe('Google Cloud provisioning MCF adapter', () => {
       externalId: trace,
       metadata: {
         projectId,
+        billingEnabled: false,
+        billingLinked: false,
         projectNumber: '123456789',
         billingLinked: false,
         readOnly: false,
@@ -193,6 +196,9 @@ describe('Google Cloud provisioning MCF adapter', () => {
     const { adapter: subject } = adapter('google.cloud.apiKeys.createMaps', {
       status: 'SUCCEEDED',
       projectId,
+      billingEnabled: false,
+      billingLinked: false,
+      projectNumber: '123456789',
       keyResourceName: 'projects/123456789/locations/global/keys/mcf-obras-maps-v1',
       keyId: 'mcf-obras-maps-v1',
       apiRestrictions: ['routes.googleapis.com'],
