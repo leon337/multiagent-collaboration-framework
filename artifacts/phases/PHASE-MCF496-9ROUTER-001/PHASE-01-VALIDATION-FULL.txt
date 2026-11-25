@@ -1,0 +1,10 @@
+Evidência coletada em 2026-11-02:
+- /home/opc/.local/share/mcf-9router/staging/package/app/server.js executado com Node v22.23.4.
+- systemctl --user status mcf-9router.service: active (running), Next.js 16.4.2, RAM inicial ~68 a 88 MB.
+- cgroup MemoryMax=700M; MemorySwapMax=240M; CPUQuota=90%. Sem exposição pública.
+- OCI 127.0.0.1:20128/api/health retorna {"ok":true}, HTTP 200.
+- Notebook 127.0.0.1:20129/api/health via túnel retorna {"ok":true}, HTTP 200.
+- OCI GET /v1/models sem API key retorna HTTP 401, error "API key required for remote API access".
+- Testes sintéticos de 9RouterModelGateway: 8/8.
+- Credenciais e segredos não estão presentes nesta documentação.
+- Browser mission request 04804257185e4f0b: conflict, não aprovada.

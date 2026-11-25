@@ -1,0 +1,7 @@
+MVP smoke sem provedor:
+1. SSH host verificado e execução remota sob usuário opc.
+2. health remoto 200; API sem chave 401.
+3. private SSH tunnel do notebook 20129 -> 20128 remoto, health 200, chave ausente 401.
+4. Oito testes de contrato com fetch falso passaram.
+5. Não houve tráfego de inferência pago ou dados pessoais enviados a modelos.
+Não realizados: 10 minutos de carga sustentada, reboot end-to-end, conta free provider, inferência real.
