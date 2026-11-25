@@ -685,6 +685,46 @@ skills:
     handoff_to: Mestre
 
 
+  - skill_id: MCF-CAPABILITY-GAP-ANALYSIS
+    status: CURRENT_IMPLEMENTED
+    name: Analisar lacunas de capacidade do projeto
+    version: 0.1.0
+    purpose: Comparar requisitos de um projeto com o Capability Registry, escopo, autorização, conexão, runtime e evidência live, sem alterar o registry ou executar ações.
+    owner_agents: [Mestre]
+    trigger_phrases: ["analisar gaps de capacidade", "o que falta para executar o projeto", "mapear capacidades ausentes"]
+    required_inputs: [project_id, requirements]
+    optional_inputs: [live_verifications]
+    allowed_tools: [mcf-context]
+    forbidden_tools: [authorize, mutate, execute, provision, write, delete, deploy, billing, iam]
+    permission_profile: READ_ONLY
+    execution_steps: [validar_requisitos_estritos, carregar_registry_read_only, comparar_escopo_e_operacoes, verificar_autorizacao_e_lifecycle, exigir_evidencia_live, emitir_gap_report_assinado]
+    required_evidence: [capability_registry_sources, gap_codes, recommended_actions, read_only_receipt]
+    expected_outputs: [capability_gap_report, readiness_summary, human_gates]
+    acceptance_criteria: [every_requirement_classified, scope_and_operations_checked, live_verification_explicit, no_registry_mutation]
+    failure_modes: [registry_unavailable, invalid_request, capability_missing, authorization_required, live_verification_stale]
+    fallback: Reportar cada gap com ação recomendada e gate; nunca autorizar, conectar ou executar uma capability.
+    handoff_to: Mestre
+
+  - skill_id: MCF-PROJECT-BOOTSTRAP
+    status: CURRENT_IMPLEMENTED
+    name: Planejar bootstrap governado de projeto
+    version: 0.1.0
+    purpose: Compor um plano determinístico de descoberta, design, provisionamento, implementação, validação, release, deploy e closeout, incluindo dependências e gates humanos; não executa tarefas.
+    owner_agents: [Mestre]
+    trigger_phrases: ["planejar bootstrap do projeto", "criar plano de execução ponta a ponta", "preparar novo projeto MCF"]
+    required_inputs: [project_id, project_name, objective, environment, requirements]
+    optional_inputs: [live_verifications, paid_services_required, allow_paid_services, external_actions_authorized, production_requested, production_authorized]
+    allowed_tools: [mcf-context]
+    forbidden_tools: [execute, provision, write, delete, deploy, billing, iam, public_deployment, send_message]
+    permission_profile: READ_ONLY
+    execution_steps: [analisar_capability_gaps, compor_task_graph, aplicar_gates_de_custo_e_producao, emitir_plano_read_only]
+    required_evidence: [capability_gap_report, task_dependencies, human_gates, execution_started_false]
+    expected_outputs: [project_bootstrap_plan, task_graph, blockers_and_gates]
+    acceptance_criteria: [plan_is_deterministic, all_dependencies_explicit, paid_services_gated, production_authorization_gated, no_external_actions_started]
+    failure_modes: [registry_unavailable, invalid_request, project_scope_mismatch, paid_service_gate, production_gate]
+    fallback: Emitir plano com bloqueios e critérios de desbloqueio; não iniciar tarefas nem inferir autorizações.
+    handoff_to: Mestre
+
   - skill_id: MCF-FULLSTACK-VISUAL-DEVELOPMENT
     status: EXPERIMENTAL
     name: Desenvolver aplicações full-stack com desenvolvimento visual assistido
