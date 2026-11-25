@@ -1,0 +1,8 @@
+PHASE-02 SMOKE — SOURCE ACCESS ONLY
+PASS — OpenAI introducing-dots page readable.
+PASS — OpenAI safety/security/privacy page readable.
+PASS — OpenAI Help Center FAQ readable.
+PASS — GPT-6 Astra System Card and Dots appendix readable.
+NOT RUN — Live Dots agent actions, login flow, workspace, tools or Auto-review interaction.
+NOT RUN — Independent reproduction of the public metrics.
+Conclusion: source review passed; no live agent implementation test was performed.

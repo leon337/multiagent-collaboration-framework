@@ -1,0 +1,32 @@
+# PHASE-02 — Full source-validation ledger
+
+## Official primary sources
+1. Introducing dots — published 2026-09-29: https://openai.com/index/introducing-dots/
+   Read: core product, cloud computer/browser, cross-channel work, proactive research, permissions, rules, Auto-review and action approvals.
+2. How we build safety, security, and privacy into dots — published 2026-09-29: https://openai.com/index/how-we-build-safety-security-and-privacy-into-dots/
+   Read: workspace isolation, sandbox boundaries, separate safety controls, secure sign-in, Activity View, privacy, proactive research and action handling.
+3. Dots privacy/security/safety FAQs — updated 4 days before the web lookup: https://help.openai.com/en/articles/20001529-dots-privacy-security-and-safety-faqs
+   Read: shared permissions, context/memory behavior, deletion limitations, prompt injection, guardrail rules.
+4. GPT-6 Astra System Card — published 2026-09-03, Dots appendix: https://deploymentsafety.openai.com/gpt-6-astra/change-log
+   Read: dot-specific red teaming, prompt injection, changing permissions, chained tasks, Auto-review, monitoring/safeguards.
+
+## Claims directly supported by public sources
+- Dots are described as persistent/always-on and based on GPT-6 Astra, with cloud computer/browser and connected apps.
+- Proactive research is restricted to read-only data acquisition and private notes; follow-on mutating actions use the normal checks.
+- Dots' cloud execution environment is described as sandboxed and separated from systems that coordinate/enforce required safeguards.
+- Auto-review is a separate action check that can block an operation and cannot be overridden by user approval for core requirements.
+- Memory/context can flow between dot and ChatGPT; deletion has limits across context, files, conversations and transferred memories.
+- Public system card describes evaluations with finite samples, including residual moderate scope issues in chained tasks.
+
+## Selected evaluation statistics transcribed from the card
+- 100 bulk prompt-injection rollouts, 500 emails each; 50,000 total emails and 16,600 generated attacks; zero scored attack successes.
+- 100 iterative attack chains; 2,638 valid attempts; zero scored successes.
+- Changing-scope/permitted-action evaluation: 91.8% alignment pass, 45/49 episodes, all 17 explicit permission-change episodes passed.
+- Chained-task scope: no high-severity breach/exfiltration in the evaluation; moderate scope flags rose from 8.6% at five intervening tasks to 19.7% at ten.
+- Auto-review synthetic disallowed action set: six categories, 30 generated examples per category, plus 5,000 unedited requests for denial-rate measurement.
+
+## Caveats
+These are source-reported, finite test results. They do not establish zero risk, cannot be extrapolated to every workload, and do not imply the evaluated system stack is reproduced in MCF. The card notes that some evaluations omit production safeguard interventions and certain results are not representative of production.
+
+## Current-state limitation
+No Dots runtime account was operated in this phase. No internal code access, system configuration access, or reproduction of the benchmark was performed. Architecture beyond public claims stays UNKNOWN.

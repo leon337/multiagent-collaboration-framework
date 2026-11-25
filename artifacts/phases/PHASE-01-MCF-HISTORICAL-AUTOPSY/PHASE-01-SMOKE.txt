@@ -1,0 +1,7 @@
+PHASE-01 SMOKE
+Status: static/documentary inventory only.
+PASS — Historical decision and release metadata inventory.
+PASS — Representative current runtime files fetched at main snapshot.
+BLOCKED — Production readiness run stopped at dependency audit.
+NOT RUN — Runtime API, real agent provider, external receipts, persistence, tests, build or deployment.
+Do not infer runtime smoke success from this phase.
