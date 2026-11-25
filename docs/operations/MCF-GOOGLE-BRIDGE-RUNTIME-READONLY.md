@@ -45,3 +45,22 @@ Ao habilitar em um runtime local com ledger, solicitar a skill com provider e re
 ## Evidência de formatação
 
 Os quatro arquivos TypeScript alterados foram formatados por Prettier 3.9.6 em uma execução isolada do GitHub Actions, e o workflow temporário de formatação foi removido pelo mesmo commit. A suíte final deve ser aferida novamente no SHA posterior a essa execução; nenhum CI histórico de SHA anterior substitui essa verificação.
+
+
+## Atualização 2026-11-25 — escrita Cloud isolada e governada
+
+A superfície deste documento continua read-only. A branch PR #583 adiciona uma skill distinta, MCF-GOOGLE-CLOUD-PROVISION, sem ampliar a skill MCF-GOOGLE-CLOUD-READ.
+
+A nova capability:
+- usa outro adapter e outra permissão HUMAN_GATE;
+- mantém as operações mutáveis fora do MCP stdio genérico;
+- exige flags independentes no Bridge e no MissionRuntime;
+- exige approvedProjectId, humanGateApproved, authorizedScope, sensitiveAuthorization, cloudAccountVerified e cloudTermsAccepted;
+- cria apenas projeto MCF, habilita a allowlist fixa de APIs Maps, cria chave com API restrictions exatas e grava o segredo em arquivo local 0600;
+- verifica billing state por leitura antes de habilitar APIs ou criar a chave; billing ligado/ativo ou estado não verificável bloqueia a sequência;
+- nunca cria ou vincula billing, administra IAM, publica endpoints ou executa deploy;
+- transforma timeouts e respostas ambíguas em PARTIAL/UNKNOWN com reconciliação obrigatória.
+
+Contrato completo: docs/operations/MCF-GOOGLE-CLOUD-PROVISIONING.md.
+
+Esta implementação está em PR draft e não altera main nem produção. O estado read-only permanece o padrão até revisão, CI, E2E e gates de identidade/consentimento.
