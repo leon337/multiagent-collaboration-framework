@@ -1,0 +1,45 @@
+schema_version: 1
+
+capability:
+  id: workstation.mcp.status.read
+  provider_project_id: leandro-workstation-mcp
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: READ_ONLY
+
+contract:
+  protocol: REMOTE_DESKTOP_COMMANDER_BRIDGE_MCP_STREAMABLE_HTTP_OAUTH
+  allowed_operations:
+    - workstation_status
+  prohibited_operations:
+    - shell.execute
+    - filesystem.write
+    - privilege.elevate
+
+scope:
+  environments:
+    - lab
+  resources:
+    - workstation/cpu-ram-root-filesystem-metrics
+
+governance:
+  authorization_state: AUTHORIZED
+  required_gate: AUTHORIZED_BRIDGE_DEVICE_ACCESS
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: CONNECTED
+  runtime_state: ACTIVE
+  verification_state: VERIFIED
+  last_verified_at: "2026-11-13T02:48:56Z"
+
+evidence:
+  - source_ref: local://leandro-workstation-mcp/tests/e2e/local-oauth.py
+    source_revision: sha256:a481e6bf97c8137d703552dcbb369dbebce95131d513eb4332492834cc806452
+    observed_at: "2026-11-13T02:42:24Z"
+  - source_ref: local://leandro-workstation-mcp/scripts/workstation-status.py
+    source_revision: sha256:e58adc445353ffe069c8669b9506de2303b87865b7dd1a3ac7ea59d41df01780
+    observed_at: "2026-11-13T02:48:56Z"
+
+freshness: LIVE_REQUIRED
