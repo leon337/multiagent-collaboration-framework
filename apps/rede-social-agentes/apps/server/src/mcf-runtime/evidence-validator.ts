@@ -92,6 +92,96 @@ function reject(message: string): never {
   throw new McfEvidenceRejectedError(message);
 }
 
+function validateGoogleCloudProvisionReceipt(
+  receipt: McfToolReceipt,
+  expected: McfToolRequest,
+  inputs: Readonly<Record<string, unknown>>,
+): void {
+  const metadata = receipt.metadata;
+  const operation = canonicalizeToolValue(expected.operation);
+  const projectId = inputs.projectId;
+  const missionId = inputs.missionId;
+  if (
+    receipt.status !== 'SUCCEEDED' ||
+    receipt.provider !== 'mcf-google-bridge' ||
+    receipt.resource !== 'google-cloud' ||
+    !receipt.externalId ||
+    typeof projectId !== 'string' ||
+    metadata.projectId !== projectId ||
+    metadata.missionId !== missionId ||
+    metadata.readOnly !== false ||
+    metadata.billingMutationAllowed !== false
+  ) {
+    reject('Google Cloud provisioning receipt does not match the approved mission scope');
+  }
+  for (const forbidden of ['keyString', 'apiKey', 'secret', 'accessToken', 'token']) {
+    if (Object.hasOwn(metadata, forbidden)) {
+      reject('Google Cloud provisioning receipt must not contain secret material');
+    }
+  }
+
+  if (operation === 'create-project') {
+    if (
+      metadata.billingLinked !== false ||
+      typeof metadata.projectNumber !== 'string' ||
+      !/^\\d{6,20}$/u.test(metadata.projectNumber) ||
+      metadata.projectState !== 'ACTIVE'
+    ) {
+      reject('Google Cloud project receipt requires an active project with billing unlinked');
+    }
+    return;
+  }
+
+  if (operation === 'enable-maps-apis') {
+    const services = metadata.enabledServices;
+    const expectedServices = [
+      'apikeys.googleapis.com',
+      'geocoding-backend.googleapis.com',
+      'routes.googleapis.com',
+    ];
+    if (
+      !Array.isArray(services) ||
+      services.length !== expectedServices.length ||
+      services.some((service) => typeof service !== 'string') ||
+      [...services].sort().join('|') !== expectedServices.sort().join('|')
+    ) {
+      reject('Google Cloud Maps API enablement receipt has an unexpected service allowlist');
+    }
+    return;
+  }
+
+  if (operation === 'create-maps-key' || operation === 'inspect-maps-key') {
+    const restrictions = metadata.apiRestrictions;
+    const expectedRestrictions = [
+      'geocoding-backend.googleapis.com',
+      'routes.googleapis.com',
+    ];
+    if (
+      metadata.keyId !== 'mcf-obras-maps-v1' ||
+      typeof metadata.keyResourceName !== 'string' ||
+      !metadata.keyResourceName.includes('/locations/global/keys/mcf-obras-maps-v1') ||
+      !Array.isArray(restrictions) ||
+      restrictions.length !== expectedRestrictions.length ||
+      restrictions.some((service) => typeof service !== 'string') ||
+      [...restrictions].sort().join('|') !== expectedRestrictions.sort().join('|') ||
+      metadata.secretStored !== true
+    ) {
+      reject('Google Cloud Maps key receipt does not prove exact API restrictions and local secret storage');
+    }
+    if (
+      operation === 'create-maps-key' &&
+      (metadata.secretAlias !== 'agente-logistica-obras/google_maps_api_key' ||
+        typeof metadata.secretFingerprint !== 'string' ||
+        !/^[a-f0-9]{64}$/u.test(metadata.secretFingerprint))
+    ) {
+      reject('Google Cloud Maps key creation receipt requires a safe secret alias and fingerprint');
+    }
+    return;
+  }
+
+  reject('Google Cloud provisioning evidence operation is not allowlisted');
+}
+
 function requireString(metadata: Record<string, unknown>, key: string, message: string): string {
   const value = metadata[key];
   if (typeof value !== 'string' || value.trim().length === 0) {
@@ -1826,6 +1916,9 @@ export class EvidenceValidator {
         break;
       case 'MCF-ASTRYX-COMPONENT-DISCOVERY':
         validateAstryxDiscoveryReceipt(receipt, expected, inputs);
+        break;
+      case 'MCF-GOOGLE-CLOUD-PROVISION':
+        validateGoogleCloudProvisionReceipt(receipt, expected, inputs ?? {});
         break;
       default:
         break;
