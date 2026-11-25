@@ -341,6 +341,8 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
     } else if (operation === 'inspect-maps-key') {
       if (
         result.projectId !== projectId ||
+        result.billingLinked !== false ||
+        result.billingEnabled !== false ||
         typeof result.projectNumber !== 'string' ||
         !/^\d{6,20}$/u.test(result.projectNumber) ||
         result.keyResourceName !== `projects/${result.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
