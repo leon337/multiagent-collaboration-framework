@@ -22,7 +22,8 @@ const fake=({redirect=false,site='https://example.com/'}={})=>{
 };
 test('publicUrl rejects local, private, file and credential URL before MCP',()=>{
  const blocked=['http://example.com','https://127.0.0.1/','https://10.2.3.4/','https://192.168.1.2/',
-  'https://[::1]/','file:///etc/passwd','https://localhost/','https://my.internal/','https://a.local/',
+  'https://[::1]/','file:///etc/passwd','https://localhost/','https://localhost./','https://localhost../',
+  'https://127.0.0.1./','https://my.internal/','https://a.local/',
   'https://user:password@example.com','https://example.com:8443'];
  for(const u of blocked)assert.throws(()=>publicUrl(u),u);
  assert.equal(publicUrl('https://example.com/path').origin,'https://example.com');

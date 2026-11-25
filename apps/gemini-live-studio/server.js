@@ -10,7 +10,7 @@ const ROOT=__dirname, PUBLIC=path.join(ROOT,'public'), PRIVATE=path.join(ROOT,'.
 const KEY_FILE=path.join(PRIVATE,'api-key.json');
 const PORT=Number(process.env.PORT||18371), HOST='127.0.0.1';
 const TYPES={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8'};
-const safeFiles={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/telemetry.js':'telemetry.js','/media-policy.js':'media-policy.js','/vision-ui.js':'vision-ui.js','/playwright-tools.js':'playwright-tools.js','/capture-worklet.js':'capture-worklet.js','/style.css':'style.css'};
+const safeFiles={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/telemetry.js':'telemetry.js','/media-policy.js':'media-policy.js','/vision-ui.js':'vision-ui.js','/playwright-tools.js':'playwright-tools.js','/voice-approval.js':'voice-approval.js','/capture-worklet.js':'capture-worklet.js','/style.css':'style.css'};
 let actionAt=0,visionBusy=false,visionAt=0,catalogCache=null;
 const browserBridge=new BrowserGateway();
 
