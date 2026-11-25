@@ -152,7 +152,7 @@ async function authorizedHeaders(kind) {
 }
 export async function googleRequest(url, kind, init={}) {
   const host=new URL(url).hostname;
-  if(!['generativelanguage.googleapis.com','www.googleapis.com','gmail.googleapis.com','calendar.googleapis.com','cloudresourcemanager.googleapis.com','serviceusage.googleapis.com','apikeys.googleapis.com'].includes(host))
+  if(!['generativelanguage.googleapis.com','www.googleapis.com','gmail.googleapis.com','calendar.googleapis.com','cloudresourcemanager.googleapis.com','serviceusage.googleapis.com','apikeys.googleapis.com','cloudbilling.googleapis.com'].includes(host))
     throw new BridgeError('GOOGLE_HOST_NOT_ALLOWED',403);
   const headers={...(await authorizedHeaders(kind)), 'accept':'application/json', ...(init.body?{'content-type':'application/json'}:{})};
   let result;
