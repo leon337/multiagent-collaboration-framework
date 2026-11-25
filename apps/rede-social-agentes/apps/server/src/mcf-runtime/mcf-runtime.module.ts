@@ -31,6 +31,7 @@ import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapte
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
 import { LocalAgentTeamAdapter } from './local-agent-team.adapter.js';
+import { LocalOllamaProviderAdapter } from './local-ollama.provider.js';
 import { MissionObservabilityController } from './mission-observability.controller.js';
 import { MissionControlController } from './mission-control.controller.js';
 import { MissionControlRepository } from './mission-control.repository.js';
@@ -84,7 +85,17 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
   ],
   providers: [
     AgentExecutionService,
-    ProviderAdapterRegistry,
+    {
+      provide: ProviderAdapterRegistry,
+      useFactory: () => {
+        const config = loadRuntimeConfig();
+        return new ProviderAdapterRegistry(
+          config.MCF_LOCAL_OLLAMA_ENABLED
+            ? [new LocalOllamaProviderAdapter({ timeoutMs: config.MCF_LOCAL_OLLAMA_TIMEOUT_MS })]
+            : [],
+        );
+      },
+    },
     SkillRegistryLoader,
     PermissionEngine,
     EvidenceValidator,
