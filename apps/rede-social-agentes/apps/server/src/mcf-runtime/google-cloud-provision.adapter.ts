@@ -309,9 +309,13 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
     } else if (operation === 'create-maps-key') {
       if (
         result.projectId !== projectId ||
-        typeof result.keyResourceName !== 'string' ||
+        typeof result.projectNumber !== 'string' ||
+        !/^\\d{6,20}$/u.test(result.projectNumber) ||
+        result.keyResourceName !== `projects/${result.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
         result.keyId !== 'mcf-obras-maps-v1' ||
         !Array.isArray(result.apiRestrictions) ||
+        result.apiRestrictions.length !== MAPS_KEY_SERVICES.length ||
+        result.apiRestrictions.some((service) => typeof service !== 'string') ||
         typeof result.secretAlias !== 'string' ||
         result.secretAlias !== 'agente-logistica-obras/google_maps_api_key' ||
         typeof result.secretFingerprint !== 'string' ||
@@ -321,6 +325,7 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
       const restrictions = result.apiRestrictions.filter((item): item is string => typeof item === 'string').sort();
       if (restrictions.join('|') !== [...MAPS_KEY_SERVICES].sort().join('|')) return invalidResponse();
       Object.assign(metadata, {
+        projectNumber: result.projectNumber,
         keyResourceName: result.keyResourceName,
         keyId: result.keyId,
         apiRestrictions: restrictions,
@@ -331,6 +336,9 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
     } else if (operation === 'inspect-maps-key') {
       if (
         result.projectId !== projectId ||
+        typeof result.projectNumber !== 'string' ||
+        !/^\\d{6,20}$/u.test(result.projectNumber) ||
+        result.keyResourceName !== `projects/${result.projectNumber}/locations/global/keys/mcf-obras-maps-v1` ||
         result.restrictionsValid !== true ||
         result.secretStored !== true ||
         result.keyId !== 'mcf-obras-maps-v1'
