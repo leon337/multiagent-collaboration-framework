@@ -21,6 +21,8 @@ O MESTRE deve fazer capability discovery na própria atividade e verificar que a
 8. EMILY audita independentemente o SHA candidato; LÉO decide gate interno com justificativa e evidências; LEANDRO mantém decisões reservadas. Merge e produção são gates diferentes.
 9. Preservar checkpoint persistente no GitHub/ledger MCF para o próximo chat. Subagentes de outra conversa **não são assumidos vivos**; reavaliar disponibilidade e estado.
 
+O `completed` de uma invocação não habilita encerramento isoladamente: o [gate P0 de conclusão coletiva](MCF-GATE-CONCLUSAO-COLETIVA.md) exige ID, estado terminal atual, artefatos e handoff recebido/verificado de **todas** as convocações obrigatórias, incluindo outras superfícies sem confundí-las com subagentes nativos. Falta de status ou recibo resulta em checkpoint pendente, nunca entrega fictícia.
+
 ## 3. Recibo mínimo da delegação
 
 ```yaml
