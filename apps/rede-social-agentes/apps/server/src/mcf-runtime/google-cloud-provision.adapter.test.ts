@@ -72,7 +72,7 @@ function bridgeResponse(operation: string, result: unknown): Response {
   return new Response(JSON.stringify({ trace_id: trace, operation, result }), { status: 200 });
 }
 function adapter(operation: string, result: unknown) {
-  const transport = vi.fn(async () => bridgeResponse(operation, result));
+  const transport = vi.fn(async (_input: string, _init?: RequestInit) => bridgeResponse(operation, result));
   const evidenceValidator = evidence();
   return {
     transport,
