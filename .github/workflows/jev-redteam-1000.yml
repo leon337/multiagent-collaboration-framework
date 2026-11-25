@@ -1,0 +1,121 @@
+name: MCF Jev Harvest Redteam 1000
+
+on:
+  push:
+    branches:
+      - experimentos/jev-vercel-decision-lab-20260923
+    paths:
+      - .github/workflows/jev-redteam-1000.yml
+
+permissions:
+  contents: read
+
+env:
+  ENDPOINT: https://mcf-ecosystem-roadmap-git-experimentos-jev-c59048-predix-ai-br.vercel.app/api/evaluate
+
+jobs:
+  redteam:
+    name: Redteam shard ${{ matrix.shard }} / 5
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify existing Jev evaluator endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            code=$(curl -sS --max-time 15 -o /tmp/endpoint.txt -w '%{http_code}' "$ENDPOINT" || true)
+            if [ "$code" = "405" ] || [ "$code" = "200" ]; then
+              echo "Jev evaluator endpoint reachable (HTTP=$code)"
+              exit 0
+            fi
+            echo "endpoint attempt $attempt/12 returned HTTP=$code"
+            sleep 10
+          done
+          echo "Evaluator endpoint unavailable"
+          cat /tmp/endpoint.txt || true
+          exit 1
+
+      - name: Generate deterministic 1,000-case corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { buildAllRedteamCases } from './docs/api/redteam-1000-cases.js';
+          const cases = buildAllRedteamCases();
+          if (cases.length !== 1000) throw new Error('expected exactly 1000 cases');
+          fs.writeFileSync('/tmp/redteam-cases.json', JSON.stringify(cases));
+          console.log('generated', cases.length, 'cases');
+          NODE
+
+      - name: Execute shard against temporary Jev evaluator
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/run_jev_redteam_shard.py             --cases /tmp/redteam-cases.json             --endpoint "$ENDPOINT"             --shard "${{ matrix.shard }}"             --shards 5             --out "jev-redteam-results/shards/shard-${{ matrix.shard }}.ndjson"
+          test "$(wc -l < "jev-redteam-results/shards/shard-${{ matrix.shard }}.ndjson")" = "200"
+
+      - name: Upload shard evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcf-jev-redteam-shard-${{ matrix.shard }}
+          path: jev-redteam-results/shards/shard-${{ matrix.shard }}.ndjson
+          retention-days: 3
+          if-no-files-found: error
+
+  harvest:
+    name: Aggregate + 9-Jev divergence harvest
+    needs: redteam
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all five shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: mcf-jev-redteam-shard-*
+          path: jev-redteam-results/shards
+          merge-multiple: true
+
+      - name: Aggregate 1,000-case red team
+        shell: bash
+        run: |
+          set -euo pipefail
+          ls -lah jev-redteam-results/shards
+          test "$(cat jev-redteam-results/shards/shard-*.ndjson | wc -l)" = "1000"
+          python3 scripts/aggregate_jev_redteam_1000.py
+          test "$(jq '.total' jev-redteam-results/summary.json)" = "1000"
+          test "$(jq 'length' jev-redteam-results/selected-for-jev9.json)" = "12"
+
+      - name: Replay 12 highest-value cases with 9 independent Jev evaluations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/run_jev9_replay.py             --selected jev-redteam-results/selected-for-jev9.json             --endpoint "$ENDPOINT"             --out jev-redteam-results/jev9-replay.ndjson
+          test "$(wc -l < jev-redteam-results/jev9-replay.ndjson)" = "108"
+
+      - name: Final harvest synthesis
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/aggregate_jev_redteam_1000.py
+          test -s jev-redteam-results/divergence-ledger.json
+          test -s jev-redteam-results/golden-candidates.json
+          test -s jev-redteam-results/jev9-consensus.json
+          cat jev-redteam-results/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload permanent harvest evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcf-jev-harvest-redteam-1000
+          path: jev-redteam-results/
+          retention-days: 14
+          if-no-files-found: error
