@@ -1,0 +1,43 @@
+Expanded validation evidence — MCF-431
+
+Source of truth read:
+- docs/MCF-CURRENT-STATE.md (SHA fetched: 5c67f4958c67296cc497bece192043b855202ff1; volatile facts require live confirmation).
+- docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md (SHA: 22b318926dc11a3ebf2558b283ec1366432329f2).
+- docs/operations/MCF-UI-OPERATING-MANUAL.md (SHA: e9dc3a5b284b0af64812d6512e21163c9519949d).
+- docs/protocols/MCF-PROTOCOLO-DUAL-BROWSER-RUNTIME-DISCOVERY.md (live GitHub read completed).
+
+Local Bridge read-only measurements:
+- GET /v1/discovery ~262 ms on first request, HTTP 200.
+- GET /v1/state?pane=workspace ~1.6 ms, HTTP 200.
+- GET /v1/text?pane=workspace ~5.8 ms, HTTP 200.
+- GET /v1/interactive?pane=workspace ~26.3 ms, HTTP 200.
+- GET /v1/live/snapshot ~39.3 ms, HTTP 200.
+- GET /v1/live/stream?after=<snapshot highWatermark> ~2.8 ms to HTTP headers, HTTP 200; first SSE event `channel.ready`.
+- Missing Authorization bearer: HTTP 401.
+- Wrong X-MCF-Instance: HTTP 409.
+
+These are single-sample local measurements, not a statistically valid performance benchmark and not measurements of the OCI remote browser.
+
+Repository isolation:
+- Original worktree `/var/lib/sentinelx/mcf-labs/leo-deepseek-harness/workspaces/multiagent-collaboration-framework` was dirty with unrelated staged/unstaged/untracked changes. No changes were made to those files.
+- An isolated worktree was created at `/var/lib/sentinelx/mcf-labs/leo-deepseek-harness/workspaces/mcf-431-oracle-browser`, branch `mission/mcf-431-oracle-browser`, starting from freshly fetched `origin/main` commit `460d6e6f`.
+
+Security:
+- Bridge token was used transiently and not written to the report/output.
+- No credentials, cookies, MFA data, or IP addresses were included.
+- No security layer, MFA, SSH restriction, or OCI policy was bypassed.
+
+
+## Reproducible local baseline — 2026-10-09 22:04 BRT
+Method: 30 sequential samples per authenticated read-only route over loopback; 10 SSE connects using the valid `highWatermarkEventId` cursor. All requests were local to `127.0.0.1`; no remote OCI inference. Percentiles use nearest-rank p50/p95.
+
+| Route | Samples | Statuses | p50 | p95 | Max |
+|---|---:|---|---:|---:|---:|
+| `/v1/discovery` | 30 | 200×30 | 207.72 ms | 230.75 ms | 285.91 ms |
+| `/v1/state?pane=workspace` | 30 | 200×30 | 3.35 ms | 4.54 ms | 6.26 ms |
+| `/v1/text?pane=workspace` | 30 | 200×30 | 8.61 ms | 10.18 ms | 10.25 ms |
+| `/v1/interactive?pane=workspace` | 30 | 200×30 | 20.42 ms | 37.04 ms | 46.07 ms |
+| `/v1/live/snapshot` | 30 | 200×30 | 27.84 ms | 48.54 ms | 73.95 ms |
+| `/v1/live/stream` to headers | 10 | 200×10 | 1.49 ms | 4.35 ms | 4.35 ms |
+
+SSE first event was `channel.ready` in all checked behavior; snapshot had `resetRequired=false` and 0 buffered events at measurement time. A first exploratory request returned 406 only because the harness passed an empty `after=` cursor; the corrected harness used `highWatermarkEventId` and all 10 valid SSE connects returned 200. This is a harness correction, not a product failure. The benchmark is a local baseline only; no comparable pre-change baseline exists and remote tunnel validation remains BLOCKED.

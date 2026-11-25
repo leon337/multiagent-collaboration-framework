@@ -1,0 +1,33 @@
+mission_id: MCF-431
+phase_id: PHASE-MCF-431-OCI-DUAL-BROWSER-001
+cycle: 2
+state: IN_PROGRESS
+objective_met: false
+last_verified_at: "2026-10-09T21:25:00-03:00"
+worktree:
+  path: /var/lib/sentinelx/mcf-labs/leo-deepseek-harness/workspaces/mcf-431-oracle-browser
+  branch: mission/mcf-431-oracle-browser
+  base_sha: 460d6e6f
+verified:
+  sentinelx_visual_readback: PASS
+  local_cockpit_0_6_9: PASS
+  bridge_readonly_routes: PASS
+  live_sse_local: PASS
+  local_tests_5_of_5: PASS
+  auth_negative_tests: PASS
+pending:
+  oracle_inventory_live: true
+  a1_flex_quota_capacity_cost: true
+  remote_ssh_and_cloud_browser_service: true
+  remote_cdp_tunnel: true
+  remote_browser_via_dual_browser: true
+  secure_session_persistence: true
+  end_to_end_remote_streaming: true
+  before_after_latency_benchmark: true
+blockers:
+  - remote_cdp_ports_9222_9223_refused
+  - oci_console_navigation_blocked_before_effect_by_security_layer
+  - ssh_host_key_changed_requires_out_of_band_verification_before_tunnel
+infrastructure_mutations: none
+human_action_required: true
+next_action: "Operator must verify the current ED25519 fingerprint via a trusted OCI console/serial-console path before re-enabling SSH tunnel; do not accept the endpoint key or bypass StrictHostKeyChecking." 
