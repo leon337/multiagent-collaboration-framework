@@ -55,14 +55,16 @@ export class McfProjectBootstrapPlanner {
       (item) => item.status === 'NEEDS_VERIFICATION',
     );
 
-    let provisioningStatus: McfProjectBootstrapTask['status'] = 'READY';
+    let provisioningStatus: McfProjectBootstrapTask['status'] = provisionRequired ? 'READY' : 'SKIPPED';
     let provisioningGate: string | null = null;
-    let provisioningRationale = 'Provision only the explicitly requested and allowlisted provider resources.';
-    if (request.external_actions_authorized !== true) {
+    let provisioningRationale = provisionRequired
+      ? 'Provision only the explicitly requested and allowlisted provider resources.'
+      : 'No Google Cloud provisioning requirement was declared; do not create cloud resources.';
+    if (provisionRequired && request.external_actions_authorized !== true) {
       provisioningStatus = 'BLOCKED';
       provisioningGate = 'EXTERNAL_ACTION_AUTHORIZATION';
       provisioningRationale = 'External provisioning requires explicit mission-scoped authorization.';
-    } else if (request.paid_services_required === true && request.allow_paid_services !== true) {
+    } else if (provisionRequired && request.paid_services_required === true && request.allow_paid_services !== true) {
       provisioningStatus = 'BLOCKED';
       provisioningGate = 'BILLING_APPROVAL_REQUIRED';
       provisioningRationale = 'The project requires paid services, but billing was not explicitly authorized.';
@@ -83,14 +85,19 @@ export class McfProjectBootstrapPlanner {
         ? provisioningGate ?? (hasBlockingGaps ? 'CAPABILITY_GAP_RESOLUTION' : 'LIVE_PROVIDER_VERIFICATION')
         : null;
 
+    const releaseStatus: McfProjectBootstrapTask['status'] = e2eStatus === 'READY' ? 'READY' : 'BLOCKED';
     const deploymentStatus: McfProjectBootstrapTask['status'] =
       request.production_requested !== true
         ? 'SKIPPED'
-        : request.production_authorized === true
+        : request.production_authorized === true && releaseStatus === 'READY'
           ? 'READY'
           : 'BLOCKED';
     const deploymentGate =
-      deploymentStatus === 'BLOCKED' ? 'PRODUCTION_AUTHORIZATION' : null;
+      deploymentStatus === 'BLOCKED'
+        ? request.production_authorized === true ? 'RELEASE_VALIDATION_REQUIRED' : 'PRODUCTION_AUTHORIZATION'
+        : null;
+    const closeoutStatus: McfProjectBootstrapTask['status'] =
+      releaseStatus === 'READY' && deploymentStatus !== 'BLOCKED' ? 'READY' : 'BLOCKED';
 
     const tasks: McfProjectBootstrapTask[] = [
       task(
@@ -188,8 +195,8 @@ export class McfProjectBootstrapPlanner {
         'RELEASE',
         'MCF-GIT-PR-RELEASE',
         ['bootstrap-07-local-validation', 'bootstrap-08-security-review', 'bootstrap-09-end-to-end'],
-        e2eStatus === 'READY' ? 'READY' : 'BLOCKED',
-        e2eStatus === 'READY' ? null : e2eGate ?? 'END_TO_END_VALIDATION_REQUIRED',
+        releaseStatus,
+        releaseStatus === 'READY' ? null : e2eGate ?? 'END_TO_END_VALIDATION_REQUIRED',
         ['reviewed_pull_request', 'ci_green', 'release_evidence_recorded'],
         'Create a reviewable release candidate; merge and deploy remain separate authorization boundaries.',
       ),
@@ -210,8 +217,8 @@ export class McfProjectBootstrapPlanner {
         'CLOSEOUT',
         'MCF-CLOSE-PHASE',
         ['bootstrap-10-release', 'bootstrap-11-deployment'],
-        'READY',
-        null,
+        closeoutStatus,
+        closeoutStatus === 'READY' ? null : 'OPEN_BLOCKERS_MUST_BE_EVIDENCED_OR_ASSIGNED',
         ['all_requirements_have_evidence_or_named_blocker', 'no_orphaned_tasks', 'handoff_and_runbook_complete'],
         'Close only after every requirement is evidenced or has an explicit owner and unblock condition.',
       ),
