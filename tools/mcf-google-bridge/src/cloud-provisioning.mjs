@@ -391,7 +391,14 @@ async function createMapsKey(googleRequest, args, BridgeError) {
 
   const services = await enableMapsApis(googleRequest, { projectId, missionId }, BridgeError);
   if (services.status !== 'SUCCEEDED') {
-    return { status: 'PENDING', projectId, reason: 'MAPS_APIS_NOT_READY', services: services.services };
+    return {
+      status: services.status,
+      projectId,
+      reason: services.reason ?? 'MAPS_APIS_NOT_READY',
+      ...(services.billingEnabled === undefined ? {} : { billingEnabled: services.billingEnabled }),
+      ...(services.billingLinked === undefined ? {} : { billingLinked: services.billingLinked }),
+      services: services.services,
+    };
   }
 
   const current = await getKey(googleRequest, project.projectNumber, BridgeError);
