@@ -276,6 +276,7 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
       );
     }
 
+    try {
     const metadata: Record<string, unknown> = { projectId, missionId, billingEnabled: false, billingLinked: false };
     if (operation === 'create-project') {
       if (
@@ -359,5 +360,11 @@ export class GoogleCloudProvisionAdapter implements ExternalActionAdapter {
       });
     }
     return this.receipt(request, 'SUCCEEDED', payload.trace_id, metadata);
+    } catch (error) {
+      if (error instanceof ExternalActionAdapterError && error.code === 'INVALID_RESPONSE') {
+        return this.unknownReceipt(request, payload.trace_id, 'RESPONSE_UNVERIFIABLE');
+      }
+      throw error;
+    }
   }
 }
