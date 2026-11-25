@@ -1,0 +1,46 @@
+# VALIDATION — teste e estado factual em 2026-10-20
+AUTOMATED / GitHub:
+PASS — get_repo: repository_full_name correto, permissões de escrita GitHub e default_branch=main.
+PASS — GET git/ref/heads/main: SHA 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615.
+PASS — busca GitHub específica por Miracast, GNOME Network Displays e Samsung: nenhuma correspondência direta nas consultas (busca não é prova exaustiva).
+PASS — issue #453 criada; branch de documentação criada.
+NOT_EXECUTED — CI/document linter/shellcheck: não há resultado disponível neste momento.
+LOCAL_CONFIG / notebook:
+BLOCKED_NOT_EXECUTED — distribuição, sessão, USB/chipset/driver/firmware/P2P.
+BLOCKED_NOT_EXECUTED — app/versão, codecs, NetworkManager e wpa_supplicant.
+BLOCKED_NOT_EXECUTED — alteração e validação do rollback; zero alterações realizadas.
+PHYSICAL_TV:
+BLOCKED_NOT_EXECUTED — modelo/recepção Wi-Fi Display.
+BLOCKED_NOT_EXECUTED — descoberta, pareamento, imagem e 10 minutos de estabilidade.
+BLOCKED_NOT_EXECUTED — reconexão, término, TV desligada e pós-reboot.
+CLAIM <= EVIDENCE. Nenhum aceite técnico A1–A8 aprovado.
+
+CI / HEAD e34db3a (antes deste checkpoint documental):
+PASS — check Vercel Preview Comments, conclusão success (somente esse check).
+FAIL — MCF Production Readiness, job production-candidate-readiness, step Dependency vulnerability gate: 27 issues (1 critical/10 high/16 moderate), exit 1.
+SKIPPED — format, lint, typecheck, test, build e demais steps após audit. NÃO computar como PASS.
+BLOCKED — merge/gate de integração da PR #454.
+
+
+VALIDAÇÃO REAL / PREDIX 2026-10-20:
+PASS_LOCAL — A1: OS Mint 22.1 Cinnamon X11; USB 2357:0107 RTL8192EU; driver rtl8xxxu, firmware 35.7, modo P2P ausente em iw phy.
+PASS_LOCAL — A2: GND 0.92.1, NM 1.46, WPA 2.10, codecs, portal e fallback X11 diagnosticados.
+PASS_LOCAL — M01 toggle rádio com backup; conexão Wi-Fi passou a connected e Ethernet permaneceu connected; P2P não apareceu.
+PASS_LOCAL — iw pacote privado verificado por SHA256 antes de executar; não instalado no sistema; extraídos removidos.
+PASS_LOCAL — SSDP encontrou Samsung UN40J5200 na LAN, por três descritores UPnP.
+PASS_LOCAL — M04 rollback estado original de rádio/driver/app e Ethernet preservada; arquivos privados 600.
+PARTIAL — A3: manual Screen Mirroring da série, mas nenhum receptor P2P físico testado ou descoberto.
+BLOCKED_NOT_EXECUTED — A4/A5: conexão Miracast/imagem/10 minutos/reconexão/desconexão (driver sem P2P).
+NOT_EXECUTED — TV desligada, reboot e teste físico. Não converter em PASS.
+NOT_PASSED — Gate de merge do PR #454 (Production Readiness falhou na auditoria de dependências).
+
+
+CICLO_4_2026-10-20_PREDIX
+PASS: rádio Wi-Fi e Ethernet connected; outra opção de driver kernel não instalada; HDMI existe mas desconectada.
+PASS: Samsung UN40J5200 SOAP GetProtocolInfo e AVTransport; 287 perfis sink, MPEG-TS H.264+AAC anunciado.
+PASS_LOCAL_ONLY: GStreamer 480x270 TS H.264+AAC criado e decodificado sem gravação persistente; OpenH264 imprime cmInitParaError (aviso).
+M05_SOAP_CONTROL=PASS; TV_STREAMED_IMAGE=NO; HTTP request sem transferência de bytes.
+M06_SOAP_CONTROL=PASS; TV_HTTP_HEAD=1; TV_HTTP_GET=0; BYTES=0; TV_TRANSITIONING durante teste.
+PASS_CLEANUP: TV retornou STOPPED após timeout (sem confirmação visual da fonte), teste HTTP/processos encerrados, scripts temporários removidos, rede preservada.
+NOT_PASSED: A4/A5 image, 10 min stability, reconnect, complete mirroring.
+CI_GATE=BLOCKED, PR_454_DRAFT, ISSUE_453_OPEN.

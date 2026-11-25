@@ -1,0 +1,85 @@
+mission_contract:
+  mission_id: MCF-20261020-MIRACAST-MINT-SAMSUNG-001
+  parent_mission_id: null
+  phase_id: PHASE-MIRACAST-MINT-SAMSUNG-001
+  title: "GNOME Network Displays: espelhamento Linux Mint para TV Samsung via TP-Link USB"
+  objective: "Obter espelhamento Miracast sem fio, funcional e repetível, com hardware atual"
+  expected_outcome: "Imagem estável por 10 minutos, reconexão, encerramento limpo e rollback demonstráveis"
+  scope:
+    - "Diagnóstico USB/driver/firmware/Wi-Fi P2P"
+    - "Sessão X11/Wayland, GNOME Network Displays, codecs, NM/wpa_supplicant"
+    - "TV Samsung modelo/capacidade/sink"
+    - "Ajustes mínimos reversíveis, pareamento e testes reais"
+  out_of_scope:
+    - "Firmware, compras, serviços pagos e mudanças irreversíveis"
+    - "Troca de driver/NetworkManager sem evidência"
+    - "Publicação de credenciais, rede privada ou deploy"
+  inputs:
+    - "Declaração de LEANDRO: Linux Mint, TP-Link USB conectado, GNOME Network Displays instalado, TV Samsung"
+  source_of_truth:
+    - "GitHub live e docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md"
+    - "tools/terminal autorizados do notebook, se disponíveis"
+    - "Modelo oficial da TV e README upstream de GNOME Network Displays"
+  assumptions:
+    - "Hardware e versão de software ainda não observados"
+  acceptance_criteria:
+    - A1_SO_USB_P2P_COM_PROVA
+    - A2_SOFTWARE_COM_PROVA
+    - A3_TV_DISCOVERY_COM_PROVA
+    - A4_10_MIN_ESPELHAMENTO
+    - A5_RECONEXAO_E_STOP
+    - A6_TV_INDISPONIVEL_ROLLBACK_REBOOT_SE_SEGURO
+    - A7_PRF_CHECKLIST_INSTRUCOES
+    - A8_AUTORIDADE_E_PRIVACIDADE
+  authorizations:
+    - "LEANDRO autorizou diagnosticar/testar/alterar somente opções seguras e reversíveis dentro do objetivo"
+  prohibitions:
+    - "Não comprar nem alterar firmware"
+    - "Não registrar credenciais no código"
+    - "Não enviar mensagens ou publicar produção"
+    - "Não publicar evidências privadas no GitHub público"
+  risk_class: B
+  current_state: BLOCKED
+  cycle: 3
+  selected_agents: [MESTRE, LÉO, Miriam, Augusto, Sofia, Rafael, Bruno, Patrícia, Renato, Carmem, Emily, Júlia, Gabriel]
+  decision_authority: LÉO
+  human_escalation_triggers:
+    - "Custo, credencial excepcional, firmware, ação irreversível, mudança estratégica ou lançamento público"
+    - "Ação física essencial na TV, apenas depois de esforços independentes viáveis"
+  phase_artifact_directory: artifacts/phases/PHASE-MIRACAST-MINT-SAMSUNG-001
+human_delegation_firewall:
+  mode: TEAM_FIRST
+  human_as_executing_agent: false
+  team_execution_attempted: true
+  attempted_actions: [github_read, predix_remote_environment_discovery, usb_driver_investigation, wifi_toggle_and_rollback, temporary_iw_extraction_and_cleanup, samsung_ssdp_discovery, gnd_debug_and_restore]
+  evidence: [issue_453, predix_verified, usb_2357_0107, iw_phy_no_p2p, rollback_verified]
+  tool_limitation: "Potiguar monthly quota was account mismatch; correct Predix connection works; no sudo and no P2P driver capability"
+  fallback_exhausted: true
+  intervention_required: false
+  leo_approved: false
+  human_action_count: 0
+  return_to_team_defined: true
+phase_traceability_pack:
+  directory: artifacts/phases/PHASE-MIRACAST-MINT-SAMSUNG-001
+  integrity_verified: false
+leo_gate:
+  decision: BLOQUEAR
+  justification: "A1/A2 diagnóstico e rollback comprovados; A3 parcial, A4/A5 sem P2P nativo, nenhum teste de imagem"
+  next_state: BLOCKED
+  next_action: "Avaliar alternativas existentes; não substituir driver/kernel sem gate"
+  responsible: Bruno
+mission_closeout:
+  mission_id: MCF-20261020-MIRACAST-MINT-SAMSUNG-001
+  phase_id: PHASE-MIRACAST-MINT-SAMSUNG-001
+  final_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  objective_met: false
+  evidence: [github_read, issue_453, predix_remote_commands, iw_phy_no_p2p, samsung_upnp_model, rollback_pass]
+  blockers: [no_p2p_in_current_driver, tv_physical_mirroring_not_tested, ci_failure_dependency_audit]
+  human_action_required: false
+  human_action_count: 0
+  next_action: "Avaliar hardware/protocolo existente e gate se novo driver/kernel necessário; não fingir teste Miracast"
+  checkpoint_recipient: MESTRE
+
+# Ciclo 4 2026-10-20 — Solicitação explícita /plan /tasks ./checklist /autonomous-run /run executada de modo síncrono por Predix.
+# Miracast permanece sem P2P no driver rtl8xxxu. Via alternativa LAN/UPnP M05/M06 não validou vídeo (TV HEAD sem GET, 0 bytes).
+# GetTransportInfo da Samsung retornou STOPPED após testes. Nenhuma captura da tela privada/10min/reconexão; sem merge nem troca de driver.

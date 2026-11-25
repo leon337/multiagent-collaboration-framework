@@ -1,0 +1,85 @@
+mission_id: MCF-20261020-MIRACAST-MINT-SAMSUNG-001
+issue: https://github.com/leon337/multiagent-collaboration-framework/issues/453
+pr: https://github.com/leon337/multiagent-collaboration-framework/pull/454
+phase_id: PHASE-MIRACAST-MINT-SAMSUNG-001
+date: 2026-10-20
+branch: mission/20261020-miracast-mint-samsung
+authority_human: LEANDRO
+orchestrator: MESTRE
+decision_authority: LÉO
+risk_class: B
+current_state: BLOCKED
+final_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+blocker: "Driver rtl8xxxu não anuncia P2P; rota DLNA alternativa não comprovou vídeo (somente HEAD, sem GET)"
+objective_met: false
+cycle: 4
+connection_used: Predix
+other_connection: "Potiguar - quota 0%; não usar como conta desta missão"
+notebook: leo-N43SM
+os: "Linux Mint 22.1 Xia"
+kernel: "6.8.0-147-generic"
+desktop: Cinnamon
+session_type: x11
+usb_vid_pid: "2357:0107"
+adapter: "TP-Link TL-WN821N v5/v6"
+chipset: "RTL8192EU rev B (SMIC)"
+driver: rtl8xxxu
+firmware: "rtlwifi/rtl8192eu_nic.bin rev 35.7"
+wifi_interface: wlxd03745975502
+p2p_advertised_modes: []
+other_advertised_modes: [managed, AP, AP-VLAN, monitor]
+p2p_device_in_networkmanager: false
+gnome_network_displays: "0.92.1-2build2"
+network_manager: "1.46.0"
+wpa_supplicant: "2.10"
+screencast_portal: "missing in initial debug; X11 fallback upstream"
+encoder: openh264enc
+tv_model_lan: UN40J5200
+tv_evidence: "3 SSDP/UPnP descriptors (Samsung Electronics); Screen Mirroring on J5200 manual"
+tv_physical_miracast_test: NOT_EXECUTED
+native_connection_test: NOT_EXECUTED
+stability_test: NOT_EXECUTED
+reconnect_test: NOT_EXECUTED
+ethernet_state_after_rollback: connected
+wifi_radio_after_rollback: enabled_by_human_request_in_later_round
+wifi_soft_block_after_rollback: false_as_of_cycle_4
+gnome_network_displays_after_rollback: normal_process_running
+iw_system_installation: none
+private_evidence_directory: "~/.local/state/mcf/MCF-20261020-MIRACAST-MINT-SAMSUNG-001"
+private_artifacts: [wifi-radio-before.txt, network-displays-debug.log]
+private_artifacts_permissions: "600; directory 700"
+local_changes_remaining: [wifi_radio_enabled_per_human_request]
+local_rollback_verified: true
+merge_authorized: false
+ci_20261020: "MCF Production Readiness failed dependency vulnerability gate (27 issues); do not merge"
+leo_gate: "BLOQUEAR objetivo completo; aceitar descoberta e rollback parciais apenas"
+human_gate_required_for: "novo gasto, substituição arriscada de driver/kernel ou firmware, ação irreversível"
+next_action: "Checar fisicamente Samsung depois de testes UPnP, avaliar cabo HDMI existente ou adaptador P2P; não prometer screen mirroring; sem novas tentativas UPnP cegas."
+checkpoint_recipient: MESTRE
+
+cycle4:
+  user_commands: ["/plan", "/tasks", "./checklist", "/autonomous-run", "/run"]
+  autonomous_execution_completed_synchronously: true
+  daemon_or_automation_created: false
+  native_miracast: BLOCKED_NO_DRIVER_P2P
+  alternative: DLNA_UPNP_H264_AAC
+  tv_model: UN40J5200
+  tv_sink_profiles: 287
+  tv_sink_h264_aac_mpegts: true
+  local_gstreamer_test: PASS_WITH_ENCODER_WARNING
+  run_m05_soap_set_play: PASS
+  run_m05_bytes_to_tv: 0
+  run_m06_soap_set_play: PASS
+  run_m06_http_methods: HEAD_ONLY
+  run_m06_http_get_requests: 0
+  run_m06_bytes_to_tv: 0
+  tv_last_avtransport_status: STOPPED_VERIFIED
+  tv_physical_source_restored: UNKNOWN
+  desktop_stream: NOT_EXECUTED
+  scripts_cleaned_up: true
+  network_wifi_connected: true
+  network_ethernet_connected: true
+  memory_available_mib_approx: 850
+  swap_free_mib_approx: 17
+  no_purchase_no_driver_modification: true
+  human_visual_test_needed: true
