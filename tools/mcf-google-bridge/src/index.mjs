@@ -20,7 +20,9 @@ const registry=[
   }],
   ['google.cloud.projects','Consulta os projetos GCP visiveis via ADC',{}]
 ];
-if(registry.length!==OPERATIONS.length) throw Error('INCOMPLETE_REGISTRY');
+// Mutating Cloud operations are HTTP-only and dispatched through the MCF runtime PermissionEngine/HDF.
+// Never expose them over generic MCP stdio, which has no caller identity or mission authorization.
+if(registry.some(([name])=>!OPERATIONS.includes(name))) throw Error('INVALID_MCP_REGISTRY');
 
 export function createMcpServer() {
   const server=new McpServer({name:'mcf-google-bridge',version:'0.1.0'});
