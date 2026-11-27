@@ -9,7 +9,7 @@
 
 ## Purpose
 
-Allow LEANDRO to complete Google OAuth in a persistent, visible Google Chrome session. The preferred control path is the authorized Chrome extension through MESTRE Browser Control (MBC); CDP is reserved for a separately reviewed local adapter and must remain loopback-only. The legacy headless Playwright Chromium context is not the authentication target. Supported platforms may use either a same-tab redirect or an authentication popup/new tab. For a popup, the browser retains the platform opener, focuses the OAuth page in the remote viewer, and restores the opener when the popup closes. For a same-tab redirect, the viewer follows the Google page and the provider's normal return navigation restores the platform in the same tab.
+Allow LEANDRO to complete Google OAuth in a persistent, visible Google Chrome session. The preferred control path is the authorized Chrome extension through MESTRE Browser Control (MBC); CDP is reserved for a separately reviewed local adapter and must remain loopback-only. The legacy headless Playwright Chromium context is not the authentication target. Supported platforms may use either a same-tab redirect or an authentication popup/new tab. For a popup, the browser retains the platform opener, focuses the OAuth page in the authorized Chrome session, and restores the opener when the popup closes. For a same-tab redirect, the Chrome tab follows the Google page and the provider's normal return navigation restores the platform in the same tab.
 
 This is a human-assisted sign-in capability. It is not an autonomous credential manager and does not grant permission to perform account or financial actions.
 
@@ -24,7 +24,7 @@ When LEANDRO asks to sign in with Google, authenticate a site through the MCF br
 5. Open the saved platform link in the authorized Google Chrome session controlled through MBC. Confirm the browser client, active mission, and platform domain. Do not use the legacy isolated/headless DSH Chromium context for Google OAuth.
 6. Trigger only the platform's visible sign-in flow. Verify that the page is actually a sign-in flow, not registration, before continuing.
 7. For a same-tab redirect, verify the active page moves to an exact approved Google identity host over HTTPS and wait for the provider's return navigation. For a new page, verify its opener is the allowlisted platform and its destination is an exact approved Google identity host or the same platform's domain. Focus only validated pages in the viewer. Close unknown-origin popups.
-8. Hand the viewer to LEANDRO. LEANDRO enters the Google identity, password, passkey, recovery factor, or MFA code directly. The agent must not read, type, copy, store, transmit, or summarize those values.
+8. Hand the authorized Chrome session to LEANDRO. LEANDRO enters the Google identity, password, passkey, recovery factor, or MFA code directly in Chrome. The agent must not read, type, copy, store, transmit, or summarize those values.
 9. Wait for the OAuth flow to return or close. Verify only a non-sensitive session signal (for example, a signed-in account label or an authenticated app landing page). Never inspect cookies, localStorage, sessionStorage, OAuth codes, URL query state, or tokens.
 10. Re-open the other saved platform only after the first flow is finished. Confirm that each domain retains its own session in the same persistent browser profile.
 11. Record the platform, domains, popup lifecycle, persistence result, viewer reachability, and HUMAN_GATE disposition without recording the user's email or secrets.
@@ -59,7 +59,7 @@ Never:
 - execute deposits, withdrawals, trades, purchases, transfers, or other financial actions as part of sign-in;
 - reuse another person's profile or cross-chat browser state.
 
-The user may complete the login directly in the viewer. If the provider requires extra verification or blocks the attempt, stop and report the exact non-secret blocker.
+The user completes login directly in the authorized Chrome session controlled by MBC. If the provider requires extra verification or blocks the attempt, stop and report the exact non-secret blocker.
 
 ## Verification checklist
 
@@ -87,14 +87,14 @@ Observed in the current local runtime:
 - A regression test was added for platform-origin validation and exact Google identity hosts: 3/3 PASS.
 - The previous runtime behavior closed all new pages.
 - After the fix and service restart, the IQ Option sign-in modal exposed a Google sign-in action; selecting it navigated the active MCF browser page to a Google Accounts sign-in page. The observed IQ Option flow used same-tab navigation, not a separate popup; OAuth query/state data was removed from status and snapshot output.
-- No credential was entered. The user has not yet completed authentication. The Google sign-in attempt occurred in the legacy headless isolated context; it is not evidence that the installed interactive Chrome/Brave session can authenticate.
+- No credential was entered. The user has not yet completed authentication. The Google sign-in attempt occurred in the legacy headless isolated context; it is not evidence that the installed interactive Google Chrome session can authenticate.
 - Olymptrade sign-in control was visible in the expanded menu, but its semantic click timed out; the Google OAuth flow for Olymptrade remains unqualified.
 - Remote Tailscale viewer mapping on port 8511 was configured, but external device reachability has not yet been verified.
 - This capability is not an executable MCF server-runtime skill. Its current qualification is local-browser + orchestration/documentation; do not count it among the server's executable skills.
 
 ## Recovery and handoff
 
-If the popup is blocked, first inspect the runtime's popup lifecycle and opener/destination evidence. Do not disable the route guard or permit arbitrary popups. Preserve the authorized Google Chrome profile and current page. If CDP is unavailable, do not silently switch to headless Chromium; stop and ask LEANDRO to authorize a visible dedicated browser session. If a code change requires restarting the browser service, warn LEANDRO first when an OAuth flow is open, because restart closes the active popup.
+If the popup is blocked, first inspect the runtime's popup lifecycle and opener/destination evidence. Do not disable the route guard or permit arbitrary popups. Preserve the authorized Google Chrome profile and current page. If the MBC Chrome client is unavailable, do not silently switch to headless Chromium or Brave; stop and request a visible, explicitly authorized Google Chrome session. If a code change requires restarting the browser service, warn LEANDRO first when an OAuth flow is open, because restart closes the active popup.
 
 For continuation, open Issue #584, revalidate the host and saved-link catalog, test Olymptrade, let LEANDRO complete the Google login manually, verify the resulting non-sensitive session state, then update this runbook and the issue with evidence.
 
