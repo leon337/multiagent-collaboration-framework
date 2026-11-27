@@ -9,7 +9,7 @@
 
 ## Purpose
 
-Allow LEANDRO to complete Google OAuth in a persistent, isolated MCF browser session when a supported platform uses either a same-tab redirect or an authentication popup/new tab. For a popup, the browser retains the platform opener, focuses the OAuth page in the remote viewer, and restores the opener when the popup closes. For a same-tab redirect, the viewer follows the Google page and the provider's normal return navigation restores the platform in the same tab.
+Allow LEANDRO to complete Google OAuth in a persistent, visible Google Chrome session. The preferred control path is the authorized Chrome extension through MESTRE Browser Control (MBC); CDP is reserved for a separately reviewed local adapter and must remain loopback-only. The legacy headless Playwright Chromium context is not the authentication target. Supported platforms may use either a same-tab redirect or an authentication popup/new tab. For a popup, the browser retains the platform opener, focuses the OAuth page in the remote viewer, and restores the opener when the popup closes. For a same-tab redirect, the viewer follows the Google page and the provider's normal return navigation restores the platform in the same tab.
 
 This is a human-assisted sign-in capability. It is not an autonomous credential manager and does not grant permission to perform account or financial actions.
 
@@ -18,10 +18,10 @@ This is a human-assisted sign-in capability. It is not an autonomous credential 
 When LEANDRO asks to sign in with Google, authenticate a site through the MCF browser, use a saved authenticated link, or resume an OAuth popup:
 
 1. Read this runbook and the `MCF-BROWSER-FEDERATED-AUTH` entry in `skills/registry.yaml`.
-2. Reconcile the live host and runtime. Do not trust an old hostname, port, process, profile, URL, or session claim.
+2. Reconcile the live host and runtime. Do not trust an old hostname, port, process, profile, URL, or session claim. Standard browser for this mission: installed Google Chrome; Brave is not the selected browser.
 3. On the authorized host, verify the user service `mcf-dsh-browser-viewer.service`, local health endpoint on port 3096, and the current Tailscale Serve mapping. Derive the remote URL from live `tailscale serve status`; never reuse an unverified link.
 4. Use the saved-link catalog to resolve the intended platform. Current catalog entries observed during this mission: `IQ Option` and `Olymptrade`. Re-read the catalog before use.
-5. Open the saved platform link in the isolated persistent profile. Confirm the browser status and platform domain.
+5. Open the saved platform link in the authorized Google Chrome session controlled through MBC. Confirm the browser client, active mission, and platform domain. Do not use the legacy isolated/headless DSH Chromium context for Google OAuth.
 6. Trigger only the platform's visible sign-in flow. Verify that the page is actually a sign-in flow, not registration, before continuing.
 7. For a same-tab redirect, verify the active page moves to an exact approved Google identity host over HTTPS and wait for the provider's return navigation. For a new page, verify its opener is the allowlisted platform and its destination is an exact approved Google identity host or the same platform's domain. Focus only validated pages in the viewer. Close unknown-origin popups.
 8. Hand the viewer to LEANDRO. LEANDRO enters the Google identity, password, passkey, recovery factor, or MFA code directly. The agent must not read, type, copy, store, transmit, or summarize those values.
@@ -31,7 +31,7 @@ When LEANDRO asks to sign in with Google, authenticate a site through the MCF br
 
 ## Runtime behavior and origin policy
 
-The local DSH Browser implementation uses a persistent Playwright Chromium context and a viewer. A new page is not automatically trusted merely because it was created by the browser.
+The legacy local DSH Browser implementation still uses a persistent Playwright Chromium context and viewer. It is retained for isolated automation, but it is not qualified for Google OAuth. Google OAuth must use the installed Google Chrome interactive session through the authorized MBC extension. A new page is not automatically trusted merely because it was created by the browser.
 
 The popup policy is intentionally narrow:
 
@@ -63,7 +63,10 @@ The user may complete the login directly in the viewer. If the provider requires
 
 ## Verification checklist
 
-- [ ] Runtime and viewer health confirmed on the authorized host.\n- [ ] Installed Chrome/Brave binary and exact authorized profile confirmed.\n- [ ] CDP attach is loopback-only, or a visible dedicated browser profile is launched.\n- [ ] Google sign-in is not attempted in the legacy headless isolated DSH context.
+- [ ] Runtime and viewer health confirmed on the authorized host.
+- [ ] Installed Google Chrome session and exact authorized profile confirmed through MBC.
+- [ ] MBC extension reports connected and the `mestre-her-agent` mission is active.
+- [ ] Google sign-in is not attempted in the legacy headless isolated DSH context.
 - [ ] Saved link resolves to the intended platform.
 - [ ] Sign-in flow distinguished from registration.
 - [ ] Popup opener matches the saved platform origin.
@@ -91,6 +94,38 @@ Observed in the current local runtime:
 
 ## Recovery and handoff
 
-If the popup is blocked, first inspect the runtime's popup lifecycle and opener/destination evidence. Do not disable the route guard or permit arbitrary popups. Preserve the persistent Chrome/Brave profile and current page. If CDP is unavailable, do not silently switch to headless Chromium; stop and ask LEANDRO to authorize a visible dedicated browser session. If a code change requires restarting the browser service, warn LEANDRO first when an OAuth flow is open, because restart closes the active popup.
+If the popup is blocked, first inspect the runtime's popup lifecycle and opener/destination evidence. Do not disable the route guard or permit arbitrary popups. Preserve the authorized Google Chrome profile and current page. If CDP is unavailable, do not silently switch to headless Chromium; stop and ask LEANDRO to authorize a visible dedicated browser session. If a code change requires restarting the browser service, warn LEANDRO first when an OAuth flow is open, because restart closes the active popup.
 
 For continuation, open Issue #584, revalidate the host and saved-link catalog, test Olymptrade, let LEANDRO complete the Google login manually, verify the resulting non-sensitive session state, then update this runbook and the issue with evidence.
+
+
+## MESTRE Live voice co-agent — architecture update (2026-11-27)
+
+LEANDRO selected **Google Chrome** as the standard browser. The operational topology uses two concurrent MESTRE instances with distinct responsibilities:
+
+- **MESTRE (ChatGPT/orchestrator):** owns the mission, coordinates actions, observes evidence, and remains accountable for HUMAN_GATE.
+- **MESTRE Live (Gemini Live voice session):** provides real-time spoken conversation with LEANDRO and may execute browser actions only through the MESTRE Browser Control (MBC) gateway and its registered client `mestre-her-agent`. It must not access Playwright sockets, CDP directly, or Electron/admin identity.
+
+MESTRE Live is an existing runtime session/profile of the canonical MESTRE identity, not a new canonical agent identity. Its local service is `mestre-agent.service` on loopback port 8878; Tailscale Serve maps port 8466 to that service (tailnet-only). The browser viewer remains port 3096, mapped to 8511. The viewer header now contains a **MESTRE Live** link that opens the voice app in a separate tab so the browser session can continue operating.
+
+### Live host evidence observed 2026-11-27
+
+- `mestre-agent.service`: active/running; `GET /health` returned `{"ok":true,"configured":true}`.
+- `GET /api/live/status`: `ready=true`, model `gemini-3.8-live`, `mic_only_when_started=true`. This proves provider/runtime readiness, not that LEANDRO's microphone is currently connected.
+- `mestre-browser-control.service`: active/running; gateway health returned `ok=true`, version `0.5.2`.
+- MBC status for `mestre-her-agent`: mission `MESTRE_AGENT_HTTP_HTTPS_20261104` active, level `autonomo`, extension state `connected`, no pending requests. The mission's currently reported domains are public HTTP/HTTPS. Revalidate this scope and its authorization before every new mission; do not infer authorization for other domains or sensitive actions.
+- MESTRE Live's adapter declares browser status/action tools and routes them exclusively through MBC. It explicitly disallows direct Playwright/CDP access.
+- The separate ChatGPT↔Gemini relay on port 8892 reported `player_connected=false` and `audio_ready=false`; it is not evidence of an active audio connection and is not required to open the MESTRE Live app itself.
+
+### Interaction and concurrency rules
+
+1. Open the MESTRE Live link from the browser viewer. On a remote device, Tailscale must be connected; the voice app is tailnet-only.
+2. LEANDRO explicitly starts the microphone/Live session and grants browser microphone permission when prompted. No background listening before the user starts it.
+3. MESTRE Live speaks with LEANDRO and can use MBC browser tools within the registered mission scope. Authentication, MFA, CAPTCHA, consent, account changes, and financial actions remain HUMAN_GATE.
+4. MESTRE (ChatGPT) remains the orchestrator and must not issue concurrent browser mutations while MESTRE Live is operating the same browser session. Use one browser writer at a time; reconcile MBC mission/lease state before switching control.
+5. The voice agent must narrate material actions, distinguish proposal from execution, and report tool receipts and observed postconditions. Speech alone is not authorization for a sensitive action.
+6. If the Live session is unavailable, the browser operator may continue only through the separately authorized MBC path; do not fall back to the isolated headless Chromium context for Google authentication.
+
+### Qualification boundary
+
+The local UI link and service readiness are verified. End-to-end microphone capture, spoken turn-taking during a browser task, Chrome identity confirmation in MBC, and coordinated command handoff with the ChatGPT orchestrator still require an interactive E2E test with LEANDRO. Until that test passes, classify the two-agent voice/browser workflow as `EXPERIMENTAL`, not fully qualified.
