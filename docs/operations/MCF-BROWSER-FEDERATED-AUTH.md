@@ -129,3 +129,29 @@ MESTRE Live is an existing runtime session/profile of the canonical MESTRE ident
 ### Qualification boundary
 
 The embedded local UI panel, CSP allowlist, iframe permission delegation, and service readiness are verified. End-to-end microphone capture, spoken turn-taking during a browser task, Chrome identity confirmation in MBC, and coordinated command handoff with the ChatGPT orchestrator still require an interactive E2E test with LEANDRO. Until that test passes, classify the two-agent voice/browser workflow as `EXPERIMENTAL`, not fully qualified.
+
+
+## MESTRE Live observability and dedicated MBC session — 2026-11-27
+
+The MCF Browser viewer now embeds both the MESTRE Live voice app and an **O que o MESTRE vê** observer panel in the same page. The observer uses the registered MBC client `mestre-her-agent` and reads the browser through the governed MBC tools:
+
+- `browser_take_screenshot` supplies the visual screenshot.
+- `browser_snapshot` supplies the redacted DOM/text observation passed back to the model.
+- Tool start/finish events provide an action timeline with labels, duration, status, and verification. The UI animates running actions and distinguishes an observation from an unverified execution result.
+
+The viewer's local API proxies the observer endpoints with the viewer bearer token; the MESTRE service independently validates that token. Screenshot and page observation are returned on demand, not written to disk or added to persistent logs. The normal DSH viewer image still represents isolated Chromium and must not be presented as what MESTRE sees; only the MBC observer panel represents the MESTRE Chrome session.
+
+### MBC session collision correction
+
+The Live adapter previously invoked MBC using the legacy shared session. The client mission was active and the extension connected, but tabs were reserved by `chatgpt-main`, causing `TAB_OWNED_BY_OTHER_MISSION` on read-only snapshot/screenshot calls. A dedicated session was created for `mestre-her-agent`, stored in `~/.config/mestre-browser-control/mestre-her-agent.session` with mode `0600`. The adapter now loads this token for every gateway call and fails closed if it is missing; it does not fall back to the legacy shared session. MBC snapshot and screenshot then passed.
+
+The Live service serializes agent actions and observer captures with one process-local lock. This prevents the observer from competing with an in-flight action inside this runtime. It does not replace MBC's cross-client tab ownership rules or the one-writer mission policy.
+
+### Evidence and qualification
+
+- Remote Tailscale viewer and embedded Live iframe loaded on desktop and mobile.
+- Remote iframe audio roundtrip passed using a simulated microphone: 41 PCM chunks sent, one audio chunk received, zero underruns, approximately 1.6 seconds to first audio.
+- Real MBC `browser_snapshot` tool events were recorded as running → executed with `observation_available` and duration; the observer timeline displayed them.
+- The observer returned a valid JPEG screenshot (1783×2223 in the latest mobile test) and a 7,200-character bounded snapshot.
+- Physical microphone/speaker use on LEANDRO's device and exact Chrome profile identity remain unverified; keep the workflow `EXPERIMENTAL`.
+- Chatterbox synthesis remains disabled for privacy. A read-only status endpoint now reports the disabled state instead of returning 404; no remote Avatar synthesis route was enabled.
