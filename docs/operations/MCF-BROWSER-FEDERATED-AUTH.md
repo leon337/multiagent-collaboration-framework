@@ -63,7 +63,7 @@ The user may complete the login directly in the viewer. If the provider requires
 
 ## Verification checklist
 
-- [ ] Runtime and viewer health confirmed on the authorized host.
+- [ ] Runtime and viewer health confirmed on the authorized host.\n- [ ] Installed Chrome/Brave binary and exact authorized profile confirmed.\n- [ ] CDP attach is loopback-only, or a visible dedicated browser profile is launched.\n- [ ] Google sign-in is not attempted in the legacy headless isolated DSH context.
 - [ ] Saved link resolves to the intended platform.
 - [ ] Sign-in flow distinguished from registration.
 - [ ] Popup opener matches the saved platform origin.
@@ -80,17 +80,17 @@ The user may complete the login directly in the viewer. If the provider requires
 
 Observed in the current local runtime:
 
-- Persistent isolated Chromium profile and local viewer health confirmed.
+- The legacy isolated/headless DSH browser and local viewer health were confirmed, but this browser mode is not qualified for Google OAuth.
 - A regression test was added for platform-origin validation and exact Google identity hosts: 3/3 PASS.
 - The previous runtime behavior closed all new pages.
 - After the fix and service restart, the IQ Option sign-in modal exposed a Google sign-in action; selecting it navigated the active MCF browser page to a Google Accounts sign-in page. The observed IQ Option flow used same-tab navigation, not a separate popup; OAuth query/state data was removed from status and snapshot output.
-- No credential was entered. The user has not yet completed authentication.
+- No credential was entered. The user has not yet completed authentication. The Google sign-in attempt occurred in the legacy headless isolated context; it is not evidence that the installed interactive Chrome/Brave session can authenticate.
 - Olymptrade sign-in control was visible in the expanded menu, but its semantic click timed out; the Google OAuth flow for Olymptrade remains unqualified.
 - Remote Tailscale viewer mapping on port 8511 was configured, but external device reachability has not yet been verified.
 - This capability is not an executable MCF server-runtime skill. Its current qualification is local-browser + orchestration/documentation; do not count it among the server's executable skills.
 
 ## Recovery and handoff
 
-If the popup is blocked, first inspect the runtime's popup lifecycle and opener/destination evidence. Do not disable the route guard or permit arbitrary popups. Preserve the persistent profile and current page. If a code change requires restarting the browser service, warn LEANDRO first when an OAuth flow is open, because restart closes the active popup.
+If the popup is blocked, first inspect the runtime's popup lifecycle and opener/destination evidence. Do not disable the route guard or permit arbitrary popups. Preserve the persistent Chrome/Brave profile and current page. If CDP is unavailable, do not silently switch to headless Chromium; stop and ask LEANDRO to authorize a visible dedicated browser session. If a code change requires restarting the browser service, warn LEANDRO first when an OAuth flow is open, because restart closes the active popup.
 
 For continuation, open Issue #584, revalidate the host and saved-link catalog, test Olymptrade, let LEANDRO complete the Google login manually, verify the resulting non-sensitive session state, then update this runbook and the issue with evidence.
