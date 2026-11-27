@@ -2,7 +2,7 @@
 
 - **Capability:** `MCF-BROWSER-FEDERATED-AUTH`
 - **Mission:** [Issue #584](https://github.com/leon337/multiagent-collaboration-framework/issues/584)
-- **Status:** `EXPERIMENTAL` — local service and UI link verified; full interactive E2E pending
+- **Status:** `EXPERIMENTAL` — local service and embedded panel verified; full interactive E2E pending
 - **Selected browser:** Google Chrome
 - **Authority:** LEANDRO
 - **Orchestrator:** MESTRE (ChatGPT)
@@ -46,7 +46,7 @@ The separate ChatGPT↔Gemini relay on port 8892 reported `player_connected=fals
 ## User workflow
 
 1. Open the MCF Browser viewer.
-2. Select **MESTRE Live** in the header. The link opens the existing voice app in a separate tab; browser operation continues in the original tab.
+2. Click **MESTRE Live** in the header. The voice app opens inside an integrated side panel in the same MCF Browser screen; it does not open a new tab. On desktop, the browser and voice panel are side by side; on narrow screens, the panel stacks below the browser.
 3. Connect to Tailscale first when using a remote device.
 4. Start the microphone/Live session manually and grant Chrome microphone permission.
 5. Speak to MESTRE Live. It narrates the task and may call MBC browser tools within the active mission scope.
@@ -54,17 +54,17 @@ The separate ChatGPT↔Gemini relay on port 8892 reported `player_connected=fals
 
 ## Local viewer change
 
-The local viewer at `/home/leo/.local/share/mcf-dsh-browser` now exposes a `MESTRE Live` link in its header. It chooses the local port 8878 for localhost access and Tailscale Serve port 8466 for tailnet hostnames. Backups were created before editing:
+The local viewer at `/home/leo/.local/share/mcf-dsh-browser` now embeds the existing MESTRE Live app in a lazy-loaded iframe panel. The header button toggles the panel without navigating away from the browser. It chooses local port 8878 for localhost access and Tailscale Serve port 8466 for tailnet hostnames. The viewer CSP explicitly allows only these two Live origins, and the iframe delegates `microphone` and `autoplay`; the user must still start the microphone and grant permission. Backups were created before editing:
 
-- `viewer.html.backup-before-20261127-live-agent`
-- `viewer.js.backup-before-20261127-live-agent`
+- `viewer.html.backup-before-20261127-inline-live`
+- `viewer.js.backup-before-20261127-inline-live`
 
 The DSH Browser runtime directory is not a Git checkout. This local UI change is therefore documented but is not part of the MCF repository diff.
 
 ## E2E still required
 
-- [ ] Open MESTRE Live from the viewer on desktop and Android/Tailscale.
-- [ ] Start microphone manually; verify user speech is received and agent audio is heard.
+- [ ] Open the integrated MESTRE Live panel from the viewer on desktop and Android/Tailscale; confirm no new tab is opened.
+- [ ] Start microphone inside the embedded panel manually; verify browser permission, user speech capture, and agent audio playback.
 - [ ] Keep a browser task running while speaking; verify turn-taking does not interrupt the browser.
 - [ ] Verify MESTRE Live's MBC client is attached to the intended Google Chrome profile, not another browser.
 - [ ] Verify only one writer controls the browser at a time.
