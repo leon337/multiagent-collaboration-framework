@@ -36,10 +36,19 @@ skill:
     viewer_tailnet_port: 8511
     ui_integration: embedded_iframe_panel
     iframe_permissions: [microphone, autoplay]
+    observer_panel: MCF_BROWSER_MBC_OBSERVER
+    observer_source: MBC_ONLY
+    observer_tools: [browser_snapshot, browser_take_screenshot]
+    observer_events: [tool_started, tool_finished]
+    observer_refresh_ms: 5000
+    observer_event_poll_ms: 250
+    observer_auth: viewer_token_proxy_and_backend_validation
+    observer_persistence: no_page_content_or_screenshot_storage
+    dedicated_mbc_session: mestre-her-agent.session
     browser_gateway: MESTRE Browser Control (MBC)
     browser_client_id: mestre-her-agent
     browser_control_policy: MBC_ONLY
     microphone_policy: HUMAN_START_REQUIRED
-    status: EXPERIMENTAL_E2E_PENDING
-    responsibilities: [real_time_voice_conversation, narrate_browser_progress, receive_human_guidance]
+    status: EXPERIMENTAL_PHYSICAL_MIC_AND_CHROME_PROFILE_PENDING
+    responsibilities: [real_time_voice_conversation, narrate_browser_progress, receive_human_guidance, expose_live_tool_activity_and_mbc_observation]
     restrictions: [no_direct_playwright_or_cdp, no_concurrent_browser_writer, human_gate_for_authentication_and_sensitive_actions]
