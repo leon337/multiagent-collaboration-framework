@@ -165,7 +165,7 @@ A Skill `MCF-FULLSTACK-VISUAL-DEVELOPMENT` permanece `EXPERIMENTAL` e é um cont
 
 ## Autenticação federada em Browser persistente (experimental)
 
-O MCF documenta a capacidade assistida pelo humano de autenticação Google em pop-ups de um Browser persistente, com validação estrita de origem e retorno à aba da plataforma. Novos chats devem ler o [runbook](docs/operations/MCF-BROWSER-FEDERATED-AUTH.md), descobrir `MCF-BROWSER-FEDERATED-AUTH` em [skills/registry.yaml](skills/registry.yaml) e reconciliar a [Issue #584](https://github.com/leon337/multiagent-collaboration-framework/issues/584). O registro é experimental e não representa uma skill executável do MissionRuntime.
+O MCF documenta a capacidade assistida pelo humano de autenticação Google por redirect na mesma aba ou pop-up em Browser persistente, com validação estrita de origem e retorno à aba da plataforma. Novos chats devem ler o [runbook](docs/operations/MCF-BROWSER-FEDERATED-AUTH.md), descobrir `MCF-BROWSER-FEDERATED-AUTH` em [skills/registry.yaml](skills/registry.yaml) e reconciliar a [Issue #584](https://github.com/leon337/multiagent-collaboration-framework/issues/584). O registro é experimental e não representa uma skill executável do MissionRuntime.
 
 ## Skills
 
