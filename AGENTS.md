@@ -89,3 +89,13 @@ Não solicitar novo consentimento se `google.status` já indicar OAuth conectado
 Quando LEANDRO pedir login com Google, autenticação OAuth em pop-up, uso de links salvos autenticados ou retomada de uma sessão web, **ler antes** [MCF-BROWSER-FEDERATED-AUTH](docs/operations/MCF-BROWSER-FEDERATED-AUTH.md), descobrir `MCF-BROWSER-FEDERATED-AUTH` em [skills/registry.yaml](skills/registry.yaml) e reconciliar a [Issue #584](https://github.com/leon337/multiagent-collaboration-framework/issues/584). A capacidade é `EXPERIMENTAL`, assistida pelo humano e qualificada apenas no browser local até que E2E e persistência sejam demonstrados para cada plataforma.
 
 O MESTRE deve verificar host, serviço, viewer, Tailscale Serve e catálogo de links ao vivo. Somente redirects na mesma aba ou novas páginas originados por uma plataforma allowlisted e destinados a hosts Google exatos ou retorno ao mesmo domínio são aceitos; novas páginas exigem opener confiável e destinos desconhecidos falham fechados. LEANDRO digita credenciais e MFA diretamente no viewer. Nunca ler cookies/storage, copiar tokens, registrar query strings OAuth ou executar ações financeiras. Não reiniciar o browser com um OAuth aberto sem avisar, pois isso encerra a janela de autenticação.
+
+
+## Browser + voice co-agent discovery (2026-11-27)
+
+When LEANDRO asks to operate an authenticated website in Google Chrome while speaking with an agent, read:
+- [MCF Browser Federated Authentication](docs/operations/MCF-BROWSER-FEDERATED-AUTH.md)
+- [MESTRE Live Voice Co-Agent](docs/operations/MCF-BROWSER-LIVE-AGENT.md)
+- `skills/web/MCF-BROWSER-FEDERATED-AUTH.yaml`
+
+The intended session uses MESTRE (ChatGPT) as orchestrator and the existing MESTRE Live runtime (`mestre-agent.service`, Gemini 3.8 Live) as voice co-agent. MESTRE Live may operate the shared Chrome session only through the MBC client `mestre-her-agent`; never access Playwright/CDP directly. Only one writer may mutate the browser at a time. Microphone capture starts only after LEANDRO explicitly starts the Live session. Revalidate MBC extension and mission authorization live; service readiness alone does not prove microphone connectivity or Chrome identity. This workflow remains EXPERIMENTAL until the interactive voice/browser E2E checklist passes.
