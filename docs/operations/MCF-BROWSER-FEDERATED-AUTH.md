@@ -106,7 +106,7 @@ LEANDRO selected **Google Chrome** as the standard browser. The operational topo
 - **MESTRE (ChatGPT/orchestrator):** owns the mission, coordinates actions, observes evidence, and remains accountable for HUMAN_GATE.
 - **MESTRE Live (Gemini Live voice session):** provides real-time spoken conversation with LEANDRO and may execute browser actions only through the MESTRE Browser Control (MBC) gateway and its registered client `mestre-her-agent`. It must not access Playwright sockets, CDP directly, or Electron/admin identity.
 
-MESTRE Live is an existing runtime session/profile of the canonical MESTRE identity, not a new canonical agent identity. Its local service is `mestre-agent.service` on loopback port 8878; Tailscale Serve maps port 8466 to that service (tailnet-only). The browser viewer remains port 3096, mapped to 8511. The viewer header now contains a **MESTRE Live** link that opens the voice app in a separate tab so the browser session can continue operating.
+MESTRE Live is an existing runtime session/profile of the canonical MESTRE identity, not a new canonical agent identity. Its local service is `mestre-agent.service` on loopback port 8878; Tailscale Serve maps port 8466 to that service (tailnet-only). The browser viewer remains port 3096, mapped to 8511. The viewer header now contains a **MESTRE Live** toggle that opens the existing voice app inside an embedded side panel in the same MCF Browser screen. It does not open a new tab. The iframe uses an explicit CSP `frame-src` allowlist for the local Live origin (`127.0.0.1:8878`) and the tailnet origin (`mcf-leo-n43sm.tail582305.ts.net:8466`), and delegates `microphone`/`autoplay`; the Live service remains a separate origin and retains its own API/WebSocket paths.
 
 ### Live host evidence observed 2026-11-27
 
@@ -119,7 +119,7 @@ MESTRE Live is an existing runtime session/profile of the canonical MESTRE ident
 
 ### Interaction and concurrency rules
 
-1. Open the MESTRE Live link from the browser viewer. On a remote device, Tailscale must be connected; the voice app is tailnet-only.
+1. Open the MCF Browser viewer and click the **MESTRE Live** header toggle. The Live app loads inside the same page in a side panel; it does not navigate to another app or tab. On a remote device, Tailscale must be connected; the voice app is tailnet-only.
 2. LEANDRO explicitly starts the microphone/Live session and grants browser microphone permission when prompted. No background listening before the user starts it.
 3. MESTRE Live speaks with LEANDRO and can use MBC browser tools within the registered mission scope. Authentication, MFA, CAPTCHA, consent, account changes, and financial actions remain HUMAN_GATE.
 4. MESTRE (ChatGPT) remains the orchestrator and must not issue concurrent browser mutations while MESTRE Live is operating the same browser session. Use one browser writer at a time; reconcile MBC mission/lease state before switching control.
@@ -128,4 +128,4 @@ MESTRE Live is an existing runtime session/profile of the canonical MESTRE ident
 
 ### Qualification boundary
 
-The local UI link and service readiness are verified. End-to-end microphone capture, spoken turn-taking during a browser task, Chrome identity confirmation in MBC, and coordinated command handoff with the ChatGPT orchestrator still require an interactive E2E test with LEANDRO. Until that test passes, classify the two-agent voice/browser workflow as `EXPERIMENTAL`, not fully qualified.
+The embedded local UI panel, CSP allowlist, iframe permission delegation, and service readiness are verified. End-to-end microphone capture, spoken turn-taking during a browser task, Chrome identity confirmation in MBC, and coordinated command handoff with the ChatGPT orchestrator still require an interactive E2E test with LEANDRO. Until that test passes, classify the two-agent voice/browser workflow as `EXPERIMENTAL`, not fully qualified.
