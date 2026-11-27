@@ -93,7 +93,7 @@ The DSH Browser viewer and MESTRE Live runtime directories are not Git checkouts
 - [x] Simulated microphone input sent PCM to Gemini Live and received playable response audio through the cross-origin iframe; latest run sent 41 PCM chunks, received 1 audio chunk, had zero underruns, and ~1.6 s estimated first-audio latency.
 - [x] Explicit stop control tears down the Live session in the browser test.
 - [x] Observer panel displays an MBC screenshot and the corresponding redacted browser snapshot from the dedicated MESTRE session.
-- [x] Tool timeline displays real `tool_started` / `tool_finished` events for `browser_snapshot`, including duration and `observation_available`; no browser arguments or typed text are exposed in the timeline.
+- [x] Tool timeline displays real `tool_started` / `tool_finished` events for `browser_snapshot`, including duration and `observation_available`; a concurrent desktop E2E test observed the pulsing `agentEvent running` state during a real 3.7 s MBC call and the green `done` state after completion. No browser arguments or typed text are exposed in the timeline.
 - [x] Observer and agent browser calls are serialized by a shared process-local MBC lock.
 - [x] Chatterbox status no longer produces a 404: the read-only status route explicitly reports that Chatterbox is disabled in this runtime; synthesis/start/stop routes remain disabled for privacy.
 - [ ] LEANDRO's physical microphone and speaker on the actual Android/device must be tested interactively; automated audio tests used a simulated microphone.
