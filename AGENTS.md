@@ -83,3 +83,9 @@ Quando a missão envolver autenticação Google Drive, MCF Google Bridge, preset
 
 Não solicitar novo consentimento se `google.status` já indicar OAuth conectado; primeiro validar leitura real. Não assumir que o token legado do agente (escopo observado `drive.file`) equivale ao token do Bridge (escopo observado `drive`). Comparar identidade e escopos em cada boundary. Nunca registrar credenciais, tokens, e-mails ou hostnames privados no Git. Operações de escrita devem usar arquivo temporário criado pela própria missão, seguido de leitura, atualização, exclusão e confirmação de ausência. A documentação não amplia permissões do runtime nem substitui HDF/PermissionEngine.
 
+
+## Autenticação federada em Browser persistente (2026-11-27)
+
+Quando LEANDRO pedir login com Google, autenticação OAuth em pop-up, uso de links salvos autenticados ou retomada de uma sessão web, **ler antes** [MCF-BROWSER-FEDERATED-AUTH](docs/operations/MCF-BROWSER-FEDERATED-AUTH.md), descobrir `MCF-BROWSER-FEDERATED-AUTH` em [skills/registry.yaml](skills/registry.yaml) e reconciliar a [Issue #584](https://github.com/leon337/multiagent-collaboration-framework/issues/584). A capacidade é `EXPERIMENTAL`, assistida pelo humano e qualificada apenas no browser local até que E2E e persistência sejam demonstrados para cada plataforma.
+
+O MESTRE deve verificar host, serviço, viewer, Tailscale Serve e catálogo de links ao vivo. Somente pop-ups iniciados por uma plataforma allowlisted e destinados a hosts Google exatos ou retorno ao mesmo domínio são aceitos; destinos desconhecidos falham fechados. LEANDRO digita credenciais e MFA diretamente no viewer. Nunca ler cookies/storage, copiar tokens, registrar query strings OAuth ou executar ações financeiras. Não reiniciar o browser com um OAuth aberto sem avisar, pois isso encerra a janela de autenticação.
