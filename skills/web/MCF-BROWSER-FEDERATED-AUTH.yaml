@@ -32,6 +32,10 @@ skill:
     model: gemini-3.8-live
     local_port: 8878
     tailnet_serve_port: 8466
+    viewer_local_port: 3096
+    viewer_tailnet_port: 8511
+    ui_integration: embedded_iframe_panel
+    iframe_permissions: [microphone, autoplay]
     browser_gateway: MESTRE Browser Control (MBC)
     browser_client_id: mestre-her-agent
     browser_control_policy: MBC_ONLY
