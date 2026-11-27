@@ -426,7 +426,7 @@ skills:
     allowed_tools: [Remote_Desktop_Commander, dsh-browser-agent, dsh-builtin-browser]
     forbidden_tools: [credential_capture, password_entry_by_agent, token_or_cookie_access, oauth_state_logging, mfa_bypass, captcha_bypass, untrusted_popup_navigation, financial_actions]
     permission_profile: HUMAN_GATE
-    execution_steps: [resolve_saved_platform_link, verify_persistent_profile_and_viewer, open_platform_in_authorized_browser, trigger_user_initiated_sign_in, validate_popup_opener_and_https_origin, focus_oauth_popup_in_viewer, pause_for_human_credentials_and_mfa, verify_non_sensitive_authenticated_session_signal, restore_platform_opener, record_evidence_and_handoff]
+    execution_steps: [resolve_saved_platform_link, verify_persistent_profile_and_viewer, open_platform_in_authorized_browser, trigger_user_initiated_sign_in, distinguish_same_tab_redirect_from_new_popup, validate_popup_opener_and_https_origin_when_new_page, focus_oauth_page_in_viewer, pause_for_human_credentials_and_mfa, verify_non_sensitive_authenticated_session_signal, restore_platform_opener_or_same_tab_return, record_evidence_and_handoff]
     required_evidence: [mission_id, platform_domain, browser_profile_identity, popup_opener_domain, popup_destination_domain, popup_lifecycle, session_persistence, human_gate_state, secret_exposure_check]
     expected_outputs: [federated_auth_session, browser_auth_receipt, cross_chat_runbook_reference]
     acceptance_criteria: [popup_origin_is_allowlisted, google_identity_origin_is_exactly_allowlisted, untrusted_popups_fail_closed, opener_restored_on_popup_close, persistent_profile_reused, human_completes_credentials_and_mfa, authenticated_state_verified_without_reading_secrets, no_financial_action]
