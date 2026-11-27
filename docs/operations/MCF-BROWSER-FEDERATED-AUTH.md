@@ -9,7 +9,7 @@
 
 ## Purpose
 
-Allow LEANDRO to complete Google OAuth in a persistent, isolated MCF browser session when a supported platform opens an authentication popup or new tab. The browser must retain the platform opener, focus the OAuth page in the remote viewer, and return to the opener when the popup closes or the provider redirects back.
+Allow LEANDRO to complete Google OAuth in a persistent, isolated MCF browser session when a supported platform uses either a same-tab redirect or an authentication popup/new tab. For a popup, the browser retains the platform opener, focuses the OAuth page in the remote viewer, and restores the opener when the popup closes. For a same-tab redirect, the viewer follows the Google page and the provider's normal return navigation restores the platform in the same tab.
 
 This is a human-assisted sign-in capability. It is not an autonomous credential manager and does not grant permission to perform account or financial actions.
 
@@ -23,7 +23,7 @@ When LEANDRO asks to sign in with Google, authenticate a site through the MCF br
 4. Use the saved-link catalog to resolve the intended platform. Current catalog entries observed during this mission: `IQ Option` and `Olymptrade`. Re-read the catalog before use.
 5. Open the saved platform link in the isolated persistent profile. Confirm the browser status and platform domain.
 6. Trigger only the platform's visible sign-in flow. Verify that the page is actually a sign-in flow, not registration, before continuing.
-7. When a new page is created, verify its opener is the allowlisted platform and its destination is HTTPS on an exact approved Google identity host or the same platform's domain. Focus only validated pages in the viewer. Close unknown-origin popups.
+7. For a same-tab redirect, verify the active page moves to an exact approved Google identity host over HTTPS and wait for the provider's return navigation. For a new page, verify its opener is the allowlisted platform and its destination is an exact approved Google identity host or the same platform's domain. Focus only validated pages in the viewer. Close unknown-origin popups.
 8. Hand the viewer to LEANDRO. LEANDRO enters the Google identity, password, passkey, recovery factor, or MFA code directly. The agent must not read, type, copy, store, transmit, or summarize those values.
 9. Wait for the OAuth flow to return or close. Verify only a non-sensitive session signal (for example, a signed-in account label or an authenticated app landing page). Never inspect cookies, localStorage, sessionStorage, OAuth codes, URL query state, or tokens.
 10. Re-open the other saved platform only after the first flow is finished. Confirm that each domain retains its own session in the same persistent browser profile.
@@ -41,7 +41,7 @@ The popup policy is intentionally narrow:
 - HTTPS is required. Embedded URL credentials are rejected.
 - Unknown opener, unknown destination, lookalike domains, and insecure schemes fail closed.
 - Existing network route guards remain in force. This feature must not relax private-IP, DNS, localhost, or internal-network protections.
-- The popup is focused in the viewer; closing it restores the opener tab when still available.
+- A separate popup is focused in the viewer; closing it restores the opener tab when still available. Same-tab redirects remain in the same tab and return through the provider's redirect.
 
 The allowlist is a technical starting point for this mission, not a universal allowlist for arbitrary sites. Add another platform only through a separately reviewed change with explicit origin evidence and tests.
 
@@ -83,9 +83,9 @@ Observed in the current local runtime:
 - Persistent isolated Chromium profile and local viewer health confirmed.
 - A regression test was added for platform-origin validation and exact Google identity hosts: 3/3 PASS.
 - The previous runtime behavior closed all new pages.
-- After the fix and service restart, the IQ Option sign-in modal exposed a Google sign-in action; selecting it opened a Google Accounts sign-in page in the active MCF browser view.
+- After the fix and service restart, the IQ Option sign-in modal exposed a Google sign-in action; selecting it navigated the active MCF browser page to a Google Accounts sign-in page. The observed IQ Option flow used same-tab navigation, not a separate popup; OAuth query/state data was removed from status and snapshot output.
 - No credential was entered. The user has not yet completed authentication.
-- Olymptrade popup OAuth flow remains to be tested.
+- Olymptrade sign-in control was visible in the expanded menu, but its semantic click timed out; the Google OAuth flow for Olymptrade remains unqualified.
 - Remote Tailscale viewer mapping on port 8511 was configured, but external device reachability has not yet been verified.
 - This capability is not an executable MCF server-runtime skill. Its current qualification is local-browser + orchestration/documentation; do not count it among the server's executable skills.
 
