@@ -21,7 +21,7 @@ Para mensagens a clientes, fornecedores e parceiros, seguir [MCF-AGENT-PUBLIC-CO
 Padrões iniciais **condicionais à disponibilidade e ao tipo de tarefa**:
 
 - **Agente executor textual em geral:** `gemini-3.8-flash` (somente quando compatível e com quota). **Exceção explícita mais recente no DSH nativo do MESTRE:** provedor `mcf-live`, modelo padrão `gemini-3.8-live`; `gemini-3.8-live-extended-thinking` para raciocínio avançado. 3.1 Flash Live e 2.5 Native Audio permanecem alternativas; não enviar IDs Live diretamente ao endpoint textual Google, usar adaptador local 3100.
-- **Conversa de voz em tempo real (DSH nativo do MESTRE):** `gemini-3.8-live` é padrão atual conforme instrução explícita mais recente; `gemini-3.8-live-extended-thinking` disponível como opção. O painel independente de voz MESTRE Live pode manter outra preferência de sessão; não confundir com o seletor do DSH.
+- **Conversa de voz em tempo real (DSH nativo do MESTRE):** `gemini-3.8-live` é padrão atual conforme instrução explícita mais recente; `gemini-3.8-live-extended-thinking` disponível como opção. O runtime de voz MESTRE Live é exibido em painel integrado ao MCF Browser (sem abrir outro aplicativo); pode manter outra preferência de sessão, distinta do seletor do DSH.
 - **Voz com planejamento e raciocínio mais profundo:** `gemini-3.8-live-extended-thinking`, somente por escolha explícita após verificar quota.
 - **Transcrição ao vivo:** `gemini-3.5-transcribe-live`.
 - **Tradução de voz ao vivo:** `gemini-3.5-live-translate-preview`.
