@@ -1,0 +1,54 @@
+skill:
+  skill_id: MCF-BROWSER-FEDERATED-AUTH
+  name: "Autenticação federada em Browser persistente"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Permitir autenticação Google assistida pelo humano em sessão interativa e persistente do Google Chrome instalado, anexada via CDP local ou iniciada em perfil MCF dedicado, com validação de origem e retorno à aba de origem."
+  owner_agents: [Mestre]
+  supporting_agents: [Rafael, Beatriz, Emily]
+  trigger_phrases: ["login com Google no navegador MCF", "autenticação Google em pop-up", "OAuth no browser persistente", "entrar em site usando Google", "autenticar Olymptrade", "autenticar IQ Option"]
+  required_inputs: [target_platform, authorized_google_chrome_session, exact_authorized_profile, human_authorization]
+  optional_inputs: [saved_link_id, expected_google_identity, cdp_endpoint, browser_vendor, profile_reference]
+  allowed_tools: [Remote_Desktop_Commander, dsh-browser-agent, dsh-builtin-browser]
+  forbidden_tools: [credential_capture, password_entry_by_agent, token_or_cookie_access, oauth_state_logging, mfa_bypass, captcha_bypass, untrusted_popup_navigation, financial_actions]
+  permission_profile: HUMAN_GATE
+  execution_steps: [resolve_saved_platform_link, verify_installed_google_chrome_and_exact_authorized_profile, attach_via_loopback_cdp_or_launch_visible_dedicated_profile, verify_persistent_profile_and_viewer, open_platform_in_authorized_browser, trigger_user_initiated_sign_in, distinguish_same_tab_redirect_from_new_popup, validate_popup_opener_and_https_origin_when_new_page, focus_oauth_page_in_viewer, pause_for_human_credentials_and_mfa, verify_non_sensitive_authenticated_session_signal, restore_platform_opener_or_same_tab_return, record_evidence_and_handoff]
+  required_evidence: [mission_id, platform_domain, browser_profile_identity, popup_opener_domain, popup_destination_domain, popup_lifecycle, session_persistence, human_gate_state, secret_exposure_check]
+  expected_outputs: [federated_auth_session, browser_auth_receipt, cross_chat_runbook_reference]
+  acceptance_criteria: [installed_google_chrome_binary_used, exact_authorized_google_chrome_profile_reused, cdp_loopback_only_or_visible_dedicated_profile, headless_isolated_dsh_context_not_used_for_google_oauth, popup_origin_is_allowlisted, google_identity_origin_is_exactly_allowlisted, untrusted_popups_fail_closed, opener_restored_on_popup_close, persistent_profile_reused, human_completes_credentials_and_mfa, authenticated_state_verified_without_reading_secrets, no_financial_action]
+  failure_modes: [browser_unavailable, authorized_profile_not_attachable, cdp_not_loopback, popup_closed_by_runtime, popup_opener_unknown, oauth_domain_not_allowlisted, viewer_unreachable, mfa_required, captcha_required, session_not_persisted, authenticated_state_unverifiable]
+  fallback: "Parar no HUMAN_GATE e manter a aba/plataforma intacta; orientar LEANDRO a concluir manualmente no viewer. Nunca copiar credenciais, tokens, cookies ou códigos; nunca contornar CAPTCHA/MFA."
+  handoff_to: Beatriz
+  governance:
+    data_classification: SENSITIVE_POSSIBLE
+    human_gate_triggers: [authentication, two_factor_authentication, captcha, account_linking, account_change, payment, purchase, financial_action]
+    prohibited_actions: [capture_credentials, expose_oauth_state, read_cookies_or_tokens, bypass_access_control, bypass_captcha, bypass_mfa, initiate_financial_transaction]
+
+  voice_agent:
+    runtime_profile: MESTRE-LIVE
+    canonical_identity: MESTRE
+    service: mestre-agent.service
+    provider: mcf-live
+    model: gemini-3.8-live
+    local_port: 8878
+    tailnet_serve_port: 8466
+    viewer_local_port: 3096
+    viewer_tailnet_port: 8511
+    ui_integration: embedded_iframe_panel
+    iframe_permissions: [microphone, autoplay]
+    observer_panel: MCF_BROWSER_MBC_OBSERVER
+    observer_source: MBC_ONLY
+    observer_tools: [browser_snapshot, browser_take_screenshot]
+    observer_events: [tool_started, tool_finished]
+    observer_refresh_ms: 5000
+    observer_event_poll_ms: 250
+    observer_auth: viewer_token_proxy_and_backend_validation
+    observer_persistence: no_page_content_or_screenshot_storage
+    dedicated_mbc_session: mestre-her-agent.session
+    browser_gateway: MESTRE Browser Control (MBC)
+    browser_client_id: mestre-her-agent
+    browser_control_policy: MBC_ONLY
+    microphone_policy: HUMAN_START_REQUIRED
+    status: EXPERIMENTAL_PHYSICAL_MIC_AND_CHROME_PROFILE_PENDING
+    responsibilities: [real_time_voice_conversation, narrate_browser_progress, receive_human_guidance, expose_live_tool_activity_and_mbc_observation]
+    restrictions: [no_direct_playwright_or_cdp, no_concurrent_browser_writer, human_gate_for_authentication_and_sensitive_actions]

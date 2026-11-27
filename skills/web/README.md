@@ -31,6 +31,7 @@ Firecrawl pode continuar disponível como **fallback opcional**, mas nenhuma Ski
 | `MCF-WEB-RESEARCH` | Firecrawl Agent / Research | `READ_ONLY` |
 | `MCF-WEB-INTERACT` | Firecrawl Interact | `SCOPED_WRITE` |
 | `MCF-WEB-MONITOR` | Firecrawl Monitor | `SCOPED_WRITE` |
+| `MCF-BROWSER-FEDERATED-AUTH` | Google OAuth assistido em Browser persistente | `HUMAN_GATE` |
 
 `firecrawl_parse` não é recriado aqui: arquivos locais devem usar as capacidades já existentes de Files, PDF, Documents e demais skills de artefato.
 
@@ -82,3 +83,8 @@ Para tornar estas Skills executáveis pelo runtime servidor, será necessário i
 10. validação de evidência.
 
 Até lá, o status correto é **EXPERIMENTAL / orchestration-ready / runtime-adapter-pending**.
+
+
+## Browser federated authentication (experimental)
+
+Para autenticação Google assistida pelo humano em Browser persistente, consultar [MCF-BROWSER-FEDERATED-AUTH](./MCF-BROWSER-FEDERATED-AUTH.yaml), o [runbook](../../docs/operations/MCF-BROWSER-FEDERATED-AUTH.md) e a [Issue #584](https://github.com/leon337/multiagent-collaboration-framework/issues/584). Esta capability é experimental e não integra o conjunto de skills executáveis do MissionRuntime.

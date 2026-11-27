@@ -21,7 +21,7 @@ Para mensagens a clientes, fornecedores e parceiros, seguir [MCF-AGENT-PUBLIC-CO
 Padrões iniciais **condicionais à disponibilidade e ao tipo de tarefa**:
 
 - **Agente executor textual em geral:** `gemini-3.8-flash` (somente quando compatível e com quota). **Exceção explícita mais recente no DSH nativo do MESTRE:** provedor `mcf-live`, modelo padrão `gemini-3.8-live`; `gemini-3.8-live-extended-thinking` para raciocínio avançado. 3.1 Flash Live e 2.5 Native Audio permanecem alternativas; não enviar IDs Live diretamente ao endpoint textual Google, usar adaptador local 3100.
-- **Conversa de voz em tempo real (DSH nativo do MESTRE):** `gemini-3.8-live` é padrão atual conforme instrução explícita mais recente; `gemini-3.8-live-extended-thinking` disponível como opção. O painel independente de voz MESTRE Live pode manter outra preferência de sessão; não confundir com o seletor do DSH.
+- **Conversa de voz em tempo real (DSH nativo do MESTRE):** `gemini-3.8-live` é padrão atual conforme instrução explícita mais recente; `gemini-3.8-live-extended-thinking` disponível como opção. O runtime de voz MESTRE Live é exibido em painel integrado ao MCF Browser (sem abrir outro aplicativo). O painel **O que o MESTRE vê** exibe screenshot + snapshot pelo MBC e a linha do tempo das ferramentas; não confundir com a captura do Chromium isolado do viewer.
 - **Voz com planejamento e raciocínio mais profundo:** `gemini-3.8-live-extended-thinking`, somente por escolha explícita após verificar quota.
 - **Transcrição ao vivo:** `gemini-3.5-transcribe-live`.
 - **Tradução de voz ao vivo:** `gemini-3.5-live-translate-preview`.
@@ -83,3 +83,19 @@ Quando a missão envolver autenticação Google Drive, MCF Google Bridge, preset
 
 Não solicitar novo consentimento se `google.status` já indicar OAuth conectado; primeiro validar leitura real. Não assumir que o token legado do agente (escopo observado `drive.file`) equivale ao token do Bridge (escopo observado `drive`). Comparar identidade e escopos em cada boundary. Nunca registrar credenciais, tokens, e-mails ou hostnames privados no Git. Operações de escrita devem usar arquivo temporário criado pela própria missão, seguido de leitura, atualização, exclusão e confirmação de ausência. A documentação não amplia permissões do runtime nem substitui HDF/PermissionEngine.
 
+
+## Autenticação federada em Browser persistente (2026-11-27)
+
+Quando LEANDRO pedir login com Google, autenticação OAuth em pop-up, uso de links salvos autenticados ou retomada de uma sessão web, **ler antes** [MCF-BROWSER-FEDERATED-AUTH](docs/operations/MCF-BROWSER-FEDERATED-AUTH.md), descobrir `MCF-BROWSER-FEDERATED-AUTH` em [skills/registry.yaml](skills/registry.yaml) e reconciliar a [Issue #584](https://github.com/leon337/multiagent-collaboration-framework/issues/584). A capacidade é `EXPERIMENTAL`, assistida pelo humano e qualificada apenas no browser local até que E2E e persistência sejam demonstrados para cada plataforma.
+
+O MESTRE deve verificar host, serviço, viewer, Tailscale Serve e catálogo de links ao vivo. Somente redirects na mesma aba ou novas páginas originados por uma plataforma allowlisted e destinados a hosts Google exatos ou retorno ao mesmo domínio são aceitos; novas páginas exigem opener confiável e destinos desconhecidos falham fechados. LEANDRO digita credenciais e MFA diretamente no viewer. Nunca ler cookies/storage, copiar tokens, registrar query strings OAuth ou executar ações financeiras. Não reiniciar o browser com um OAuth aberto sem avisar, pois isso encerra a janela de autenticação.
+
+
+## Browser + voice co-agent discovery (2026-11-27)
+
+When LEANDRO asks to operate an authenticated website in Google Chrome while speaking with an agent, read:
+- [MCF Browser Federated Authentication](docs/operations/MCF-BROWSER-FEDERATED-AUTH.md)
+- [MESTRE Live Voice Co-Agent](docs/operations/MCF-BROWSER-LIVE-AGENT.md)
+- `skills/web/MCF-BROWSER-FEDERATED-AUTH.yaml`
+
+The intended session uses MESTRE (ChatGPT) as orchestrator and the existing MESTRE Live runtime (`mestre-agent.service`, Gemini 3.8 Live) as voice co-agent. MESTRE Live may operate the Chrome session only through the MBC client `mestre-her-agent` and its dedicated protected session token; never access Playwright/CDP directly. The embedded observer panel reads screenshot + snapshot through MBC and shows tool start/finish events without persisting page content. Only one writer may mutate the browser at a time; observer reads serialize with the Live agent's browser calls. Microphone capture starts only after LEANDRO explicitly starts the Live session. Remote simulated-microphone audio roundtrip and MBC observation are verified; physical microphone and exact Chrome profile identity remain pending, so the workflow stays EXPERIMENTAL.

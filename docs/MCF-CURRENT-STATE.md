@@ -191,6 +191,16 @@ três providers foram sincronizadas nos seus branches seguros, e o recovery fina
 recuperou **4/4** no segundo SHA. Isso não conecta nem ativa provider, não torna evidência histórica
 current e não autoriza runtime de produção, VPS, SSH ou escrita.
 
+## Extensão Browser Federated Authentication — EXPERIMENTAL (2026-11-27)
+
+A capacidade `MCF-BROWSER-FEDERATED-AUTH` foi registrada no catálogo para descoberta cross-chat e tem runbook em [MCF-BROWSER-FEDERATED-AUTH](operations/MCF-BROWSER-FEDERATED-AUTH.md), vinculada à [Issue #584](https://github.com/leon337/multiagent-collaboration-framework/issues/584).
+
+- Objetivo: autenticação Google iniciada pelo humano por redirect na mesma aba ou pop-up de plataformas previamente allowlisted, com perfil persistente e retorno à aba de origem.
+- Qualificação observada: 4/4 testes unitários da política de origem e sanitização de URL passaram; o fluxo Google da IQ Option abriu no viewer local após corrigir o fechamento automático de novas páginas.
+- Pendências: testar OAuth da Olymptrade, permitir que LEANDRO conclua login manual, verificar estado autenticado sem ler cookies/tokens, validar retorno/continuidade da sessão e acesso remoto do viewer.
+- Limite: `EXPERIMENTAL`, orchestration-ready; não é skill executável do servidor MissionRuntime e não amplia permissões do runtime.
+- Segurança: HUMAN_GATE obrigatório; credenciais/MFA permanecem sob controle humano; sem captura de segredos, bypass de CAPTCHA/MFA ou ações financeiras.
+
 ## 6. Governança de produção atual
 
 O PR #145 substituiu o histórico divergente do PR #143 e resolveu a Issue #140.
