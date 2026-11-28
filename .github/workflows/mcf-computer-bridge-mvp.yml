@@ -1,0 +1,24 @@
+name: MCF Computer Bridge MVP
+on:
+  push:
+    branches: [feat/mcf-computer-bridge-mvp-001]
+    paths:
+      - "experiments/mcf-computer-bridge-mvp/**"
+      - ".github/workflows/mcf-computer-bridge-mvp.yml"
+  pull_request:
+    paths:
+      - "experiments/mcf-computer-bridge-mvp/**"
+      - ".github/workflows/mcf-computer-bridge-mvp.yml"
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile
+        run: python -m py_compile experiments/mcf-computer-bridge-mvp/server.py experiments/mcf-computer-bridge-mvp/test_server.py
+      - name: Unit tests
+        working-directory: experiments/mcf-computer-bridge-mvp
+        run: python -m unittest -v
